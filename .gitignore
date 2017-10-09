@@ -3,3 +3,10 @@
 ################################################################################
 
 /.vs/PaJaMa.Database/v14
+/Library/bin/Debug
+/Library/obj/Debug
+/packages
+/Studio/packages
+/UnitTests/bin/Debug
+/UnitTests/obj/Debug
+*.user
