@@ -31,7 +31,8 @@ namespace PaJaMa.Database.Library.Helpers
                 typeof(System.Data.OleDb.OleDbConnection),
                 typeof(System.Data.Odbc.OdbcConnection),
 				typeof(System.Data.SQLite.SQLiteConnection),
-				typeof(Npgsql.NpgsqlConnection)
+				typeof(Npgsql.NpgsqlConnection),
+                typeof(MySql.Data.MySqlClient.MySqlConnection)
             };
 
             
