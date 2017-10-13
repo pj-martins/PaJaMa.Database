@@ -150,6 +150,13 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 					else if (!databaseObject.ForeignKeys.Any(k => k.ForeignKeyName.ToLower() == tk.ForeignKeyName.ToLower()))
 					{
+                        if (targetTable.ParentDatabase.IsPostgreSQL)
+                        {
+                            // column being dropped
+                            if (tk.Columns.Any(c => !databaseObject.Columns.Any(x => x.ColumnName == c.ChildColumn.ColumnName)))
+                                continue;
+                        }
+
 						items.AddRange(new ForeignKeySynchronization(targetDatabase, tk).GetDropItems());
 					}
 				}

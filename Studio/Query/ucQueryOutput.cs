@@ -266,8 +266,11 @@ namespace PaJaMa.Database.Studio.Query
 
 									foreach (DataGridViewColumn col in grid.Columns)
 									{
-										var dtCol = dt.Columns[col.Name];
-										col.ToolTipText = dtCol.DataType.Name;
+                                        if (!string.IsNullOrEmpty(col.Name))
+                                        {
+                                            var dtCol = dt.Columns[col.Name];
+                                            col.ToolTipText = dtCol.DataType.Name;
+                                        }
 									}
 
 									int i = 0;

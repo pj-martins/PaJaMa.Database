@@ -115,7 +115,7 @@ namespace PaJaMa.Database.Library.Helpers
 							if (!ignorePrompt)
 							{
 								var args = new DialogEventArgs("Failed to synchronize \"" + (kvp.Key is WorkspaceWithSourceBase && kvp.Key.TargetObject == null ? (kvp.Key as WorkspaceWithSourceBase).SourceObject.ObjectName : kvp.Key.TargetObject.ObjectName)
-									+ "\": " + ex.Message + ". Would you like to continue?");
+									+ "\": " + ex.Message + "\r\n\r\n" + script + ".\r\n\r\nWould you like to continue?");
 								Prompt(this, args);
 								switch (args.Result)
 								{

@@ -11,12 +11,12 @@ namespace PaJaMa.Database.Library.Helpers
 {
 	public class NonSqlServerSchemaHelper
 	{
-		public static List<Table> GetTables(DbConnection connection, string database = null)
+		public static List<Table> GetTables(DbConnection connection, string connectionString, string database = null)
 		{
 			List<Table> tables = new List<Table>();
 			using (var conn = (DbConnection)Activator.CreateInstance(connection.GetType()))
 			{
-				conn.ConnectionString = connection.ConnectionString;
+				conn.ConnectionString = connectionString;
 				conn.Open();
 				if (!string.IsNullOrEmpty(database))
 					conn.ChangeDatabase(database);

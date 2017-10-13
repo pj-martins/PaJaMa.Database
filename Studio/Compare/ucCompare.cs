@@ -97,13 +97,13 @@ namespace PaJaMa.Database.Studio.Compare
 						switch (dlgResult)
 						{
 							case WinControls.YesNoMessageDialogResult.No:
-								e2.Result = Common.YesYesToAllNo.No;
+								e3.Result = Common.YesYesToAllNo.No;
 								break;
 							case WinControls.YesNoMessageDialogResult.Yes:
-								e2.Result = Common.YesYesToAllNo.Yes;
+								e3.Result = Common.YesYesToAllNo.Yes;
 								break;
 							case WinControls.YesNoMessageDialogResult.YesToAll:
-								e2.Result = Common.YesYesToAllNo.YesToAll;
+								e3.Result = Common.YesYesToAllNo.YesToAll;
 								break;
 						}
 					};

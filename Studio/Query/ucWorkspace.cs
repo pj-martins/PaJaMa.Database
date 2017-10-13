@@ -181,7 +181,7 @@ namespace PaJaMa.Database.Studio.Query
 				if (chkUseDummyDA.Checked)
 					tables = NonSqlServerSchemaHelper.GetTablesExistingConnection(_currentConnection);
 				else
-					tables = NonSqlServerSchemaHelper.GetTables(_currentConnection);
+					tables = NonSqlServerSchemaHelper.GetTables(_currentConnection, txtConnectionString.Text);
 				foreach (var table in tables)
 				{
 					var node = treeTables.Nodes.Add(table.ToString());
