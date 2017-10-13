@@ -26,7 +26,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return ToString() + " (" + ObjectType + ")"; }
 		}
 
-        public virtual string QueryObjectName
+        public string QueryObjectName
         {
             get { return DriverHelper.GetConvertedObjectName(ParentDatabase, ObjectName); }
         }

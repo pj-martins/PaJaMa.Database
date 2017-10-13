@@ -19,18 +19,30 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("ALTER TABLE [{0}].[{1}] DROP CONSTRAINT [{2}]", databaseObject.Table.Schema.SchemaName,
-				databaseObject.Table.TableName, databaseObject.ConstraintName));
+            if (targetDatabase.IsPostgreSQL)
+            {
+                if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
+                    return new List<SynchronizationItem>();
+            }
+			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1}{2}", databaseObject.Table.ObjectNameWithSchema,
+				databaseObject.QueryObjectName, targetDatabase.IsPostgreSQL ? ";" : ""));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			string def = databaseObject.ColumnDefault;
+            if (targetDatabase.IsPostgreSQL)
+            {
+                if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
+                    return new List<SynchronizationItem>();
+            }
+
+            string def = databaseObject.ColumnDefault;
 			if (!string.IsNullOrEmpty(def) && def.StartsWith("((") && def.EndsWith("))"))
 				def = def.Substring(1, def.Length - 2);
 
-			return getStandardItems(string.Format(@"ALTER TABLE [{0}].[{1}] ADD  CONSTRAINT [{2}]  DEFAULT {3} FOR [{4}]",
-				databaseObject.Table.Schema.SchemaName, databaseObject.Table.TableName, databaseObject.ConstraintName, def, databaseObject.Column.ColumnName), 7);
+			return getStandardItems(string.Format(@"ALTER TABLE {0} ADD  CONSTRAINT {1}  DEFAULT {2} FOR {3}{4}",
+				databaseObject.Table.ObjectNameWithSchema, databaseObject.QueryObjectName, def, databaseObject.Column.QueryObjectName,
+                targetDatabase.IsPostgreSQL ? ";" : ""), 7);
 		}
 
 		//public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)

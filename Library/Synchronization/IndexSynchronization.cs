@@ -37,15 +37,14 @@ namespace PaJaMa.Database.Library.Synchronization
 			var includeCols = databaseObject.IndexColumns.Where(i => i.Ordinal == 0);
 			var sb = new StringBuilder();
 
-			sb.AppendLineFormat(@"CREATE {0} {1} INDEX {2} ON {3}{4}
+			sb.AppendLineFormat(@"CREATE {0} {1} INDEX {2} ON {3}
 (
-	{5}
-){6}", 
+	{4}
+){5}{6}", 
 (bool)databaseObject.IsUnique ? "UNIQUE" : "",
 databaseObject.IndexType,
 DriverHelper.GetConvertedObjectName(targetDatabase, databaseObject.IndexName),
-string.IsNullOrEmpty(schema) ? string.Empty : DriverHelper.GetConvertedObjectName(targetDatabase, schema) + ".",
-DriverHelper.GetConvertedObjectName(targetDatabase, databaseObject.Table.TableName),
+databaseObject.Table.ObjectNameWithSchema,
 string.Join(",\r\n\t",
 indexCols.OrderBy(c => c.Ordinal).Select(c =>
 	string.Format("{0} {1}", DriverHelper.GetConvertedObjectName(targetDatabase, c.ColumnName), c.Descending ? "DESC" : "ASC")).ToArray()),
@@ -55,7 +54,7 @@ INCLUDE (
 )", string.Join(",\r\n\t",
 includeCols.Select(c =>
 	string.Format("{0}", DriverHelper.GetConvertedObjectName(targetDatabase, c.ColumnName)).ToString()))
-	));
+	), targetDatabase.IsPostgreSQL ? ";" : "");
 
 			return sb;
 		}

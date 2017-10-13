@@ -43,7 +43,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
             get { return TableName; }
         }
 
-        public string QueryNameWithSchema
+        public string ObjectNameWithSchema
         {
             get
             {

@@ -20,7 +20,7 @@ namespace PaJaMa.Database.Library.Synchronization
         public override List<SynchronizationItem> GetDropItems()
         {
             return getStandardItems(string.Format("ALTER TABLE {0} DROP COLUMN {1}{2}",
-                        databaseObject.Table.QueryNameWithSchema,
+                        databaseObject.Table.ObjectNameWithSchema,
                         databaseObject.QueryObjectName,
                         targetDatabase.IsPostgreSQL ? ";" : ""),
                         level: 1,
@@ -79,7 +79,7 @@ namespace PaJaMa.Database.Library.Synchronization
             if (add || !targetDatabase.IsPostgreSQL)
             {
                 sb.AppendLineFormat("ALTER TABLE {0} {6} {1} {2}{3} {4} {5}{7}",
-                   databaseObject.Table.QueryNameWithSchema,
+                   databaseObject.Table.ObjectNameWithSchema,
                    databaseObject.QueryObjectName,
                    databaseObject.DataType,
                    part2,
@@ -91,7 +91,7 @@ namespace PaJaMa.Database.Library.Synchronization
             }
             else
             {
-                sb.AppendLineFormat("ALTER TABLE {0}", databaseObject.Table.QueryNameWithSchema);
+                sb.AppendLineFormat("ALTER TABLE {0}", databaseObject.Table.ObjectNameWithSchema);
                 sb.AppendLineFormat("ALTER COLUMN {0} SET DATA TYPE {1}{2},", databaseObject.QueryObjectName, databaseObject.DataType, part2);
                 sb.AppendLineFormat("ALTER COLUMN {0} {1} DEFAULT {2},", databaseObject.QueryObjectName, string.IsNullOrEmpty(def) ? "DROP" : "SET",
                     def);
@@ -115,12 +115,12 @@ namespace PaJaMa.Database.Library.Synchronization
                     item = new SynchronizationItem(databaseObject);
                     item.Differences.Add(new Difference() { PropertyName = "Formula", SourceValue = databaseObject.Formula, TargetValue = targetColumn == null ? string.Empty : targetColumn.Formula });
                     if (targetColumn != null)
-                        item.AddScript(1, string.Format("ALTER TABLE {0} DROP COLUMN {1}{2}", databaseObject.Table.QueryNameWithSchema,
+                        item.AddScript(1, string.Format("ALTER TABLE {0} DROP COLUMN {1}{2}", databaseObject.Table.ObjectNameWithSchema,
                             databaseObject.QueryObjectName,
                         targetDatabase.IsPostgreSQL ? ";" : ""));
 
                     item.AddScript(3, string.Format("ALTER TABLE {0} ADD {1} AS {2}",
-                        databaseObject.Table.QueryNameWithSchema,
+                        databaseObject.Table.ObjectNameWithSchema,
                         databaseObject.QueryObjectName,
                         databaseObject.Formula));
 

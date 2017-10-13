@@ -151,7 +151,6 @@ namespace PaJaMa.Database.Library.Helpers
         public static string GetConvertedObjectName(DatabaseObjects.Database targetDatabase, string objectName)
         {
             if (string.IsNullOrEmpty(objectName)) return objectName;
-
             var colFormat = "{0}";
             if (targetDatabase.IsPostgreSQL)
                 colFormat = "\"{0}\"";

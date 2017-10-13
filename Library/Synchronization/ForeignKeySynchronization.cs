@@ -23,23 +23,25 @@ ALTER TABLE {0} {8}{7}{9} ADD CONSTRAINT {1} FOREIGN KEY({2})
 REFERENCES {3} ({4})
 ON DELETE {5}
 ON UPDATE {6}
+{10}
 ",
-    databaseObject.ChildTable.QueryNameWithSchema,
+    databaseObject.ChildTable.ObjectNameWithSchema,
     databaseObject.QueryObjectName,
     string.Join(",", databaseObject.Columns.Select(c => c.ChildColumn.QueryObjectName).ToArray()),
-    databaseObject.ParentTable.QueryNameWithSchema,
+    databaseObject.ParentTable.ObjectNameWithSchema,
     string.Join(",", databaseObject.Columns.Select(c => c.ParentColumn.QueryObjectName).ToArray()),
     databaseObject.DeleteRule,
     databaseObject.UpdateRule,
     databaseObject.ParentDatabase.IsSQLServer ? databaseObject.WithCheck : string.Empty,
     databaseObject.ParentDatabase.IsSQLServer ? " WITH" : string.Empty,
-    databaseObject.ParentDatabase.IsSQLServer ? "CHECK" : string.Empty
+    databaseObject.ParentDatabase.IsSQLServer ? "CHECK" : string.Empty,
+    targetDatabase.IsPostgreSQL ? ";" : ""
     );
             if (databaseObject.ParentDatabase.IsSQLServer)
                 createString += string.Format(@"
 ALTER TABLE {0}
 CHECK CONSTRAINT {1}
-", databaseObject.ChildTable.QueryNameWithSchema,
+", databaseObject.ChildTable.ObjectNameWithSchema,
     databaseObject.QueryObjectName);
             return getStandardItems(createString, 7);
         }
@@ -47,8 +49,8 @@ CHECK CONSTRAINT {1}
         public override List<SynchronizationItem> GetDropItems()
         {
             return getStandardDropItems(string.Format(@"
-ALTER TABLE {0} DROP CONSTRAINT {1}
-", databaseObject.ChildTable.QueryNameWithSchema, databaseObject.QueryObjectName));
+ALTER TABLE {0} DROP CONSTRAINT {1}{2}
+", databaseObject.ChildTable.ObjectNameWithSchema, databaseObject.QueryObjectName, targetDatabase.IsPostgreSQL ? ";" : ""));
         }
 
         public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)

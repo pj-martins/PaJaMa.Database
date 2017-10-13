@@ -62,10 +62,12 @@
     <Compile Include="DatabaseObjects\DatabasePrincipal.cs" />
     <Compile Include="DatabaseObjects\DefaultConstraint.cs" />
     <Compile Include="DatabaseObjects\ExtendedProperty.cs" />
+    <Compile Include="DatabaseObjects\Sequence.cs" />
     <Compile Include="DatabaseObjects\ForeignKey.cs" />
     <Compile Include="DatabaseObjects\Index.cs" />
     <Compile Include="DatabaseObjects\KeyConstraint.cs" />
     <Compile Include="DatabaseObjects\Permission.cs" />
+    <Compile Include="DatabaseObjects\Extension.cs" />
     <Compile Include="DatabaseObjects\RoutineSynonym.cs" />
     <Compile Include="DatabaseObjects\Schema.cs" />
     <Compile Include="DatabaseObjects\ServerLogin.cs" />
@@ -85,6 +87,8 @@
     </Compile>
     <Compile Include="Monitor\RawTraceReader.cs" />
     <Compile Include="Monitor\TraceSettings.cs" />
+    <Compile Include="Synchronization\SequenceSynchronization.cs" />
+    <Compile Include="Synchronization\ExtensionSynchronization.cs" />
     <Compile Include="Workspaces\Generate\ColumnWorkspace.cs" />
     <Compile Include="Workspaces\Generate\TableWorkspace.cs" />
     <Compile Include="Helpers\GeneratorHelper.cs" />

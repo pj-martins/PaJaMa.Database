@@ -41,16 +41,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public int? NumericScale { get; set; }
 		public decimal? Increment { get; set; }
 
-        public override string QueryObjectName
-        {
-            get
-            {
-                if (ParentDatabase.IsPostgreSQL)
-                    return ColumnName;
-                return base.QueryObjectName;
-            }
-        }
-
         [Ignore]
 		public string ConstraintName { get; set; }
 

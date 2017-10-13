@@ -18,7 +18,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public List<DatabasePrincipal> Principals { get; private set; }
 		public List<Permission> Permissions { get; private set; }
 		public List<Credential> Credentials { get; private set; }
-		public string ConnectionString { get; private set; }
+        public List<Extension> Extensions { get; private set; }
+        public string ConnectionString { get; private set; }
 		public bool Is2000OrLess { get; private set; }
 		public Type ConnectionType { get; private set; }
 		public bool IsPostgreSQL
@@ -65,6 +66,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Principals = new List<DatabasePrincipal>();
 			Permissions = new List<Permission>();
 			Credentials = new List<Credential>();
+            Extensions = new List<Extension>();
 
 			using (var conn = GetConnection())
 			{
@@ -87,7 +89,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				var extendedProperties = ExtendedProperty.GetExtendedProperties(conn, Is2000OrLess);
 				Schema.PopulateSchemas(this, conn, extendedProperties);
 				Table.PopulateTables(this, conn, extendedProperties, worker);
+                Sequence.PopulateSequences(this, conn);
 				DatabaseObjectBase.PopulateObjects(this, conn, extendedProperties, condensed, worker);
+                Extension.PopulateExtensions(this, conn);
 				conn.Close();
 			}
 		}
@@ -102,13 +106,18 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 						  from v in s.Views
 						  select v).OfType<DatabaseObjectBase>());
 
-			lst.AddRange(Principals.Where(p => !filter || !"|INFORMATION_SCHEMA|sys|guest|public|".Contains("|" + p.PrincipalName + "|")).ToList());
+            lst.AddRange((from s in Schemas
+                          from sq in s.Sequences
+                          select sq).OfType<DatabaseObjectBase>());
+
+            lst.AddRange(Principals.Where(p => !filter || !"|INFORMATION_SCHEMA|sys|guest|public|".Contains("|" + p.PrincipalName + "|")).ToList());
 			lst.AddRange(Schemas.Where(s => !filter || !"|INFORMATION_SCHEMA|dbo|".Contains("|" + s.SchemaName + "|")).ToList());
 			//lst.AddRange(Principals.Where(p => !"|INFORMATION_SCHEMA|sys|guest|public|dbo|".Contains("|" + p.PrincipalName + "|")).ToList());
 			//lst.AddRange(Schemas.Where(s => !"|INFORMATION_SCHEMA|dbo|".Contains("|" + s.SchemaName + "|")).ToList());
 			lst.AddRange(ServerLogins.Where(l => !filter || l.LoginType != LoginType.WindowsLogin).ToList());
 			lst.AddRange(Permissions.ToList());
 			lst.AddRange(Credentials.ToList());
+            lst.AddRange(Extensions.ToList());
 			return lst;
 		}
 

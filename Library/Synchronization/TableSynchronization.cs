@@ -57,15 +57,14 @@ namespace PaJaMa.Database.Library.Synchronization
 			var schema = DriverHelper.GetConvertedSchemaName(targetDatabase, databaseObject.Schema.SchemaName);
 			schema = DriverHelper.GetConvertedObjectName(targetDatabase, schema);
 			var tbl = DriverHelper.GetConvertedObjectName(targetDatabase, databaseObject.TableName);
-			sb.AppendLineFormat("CREATE TABLE {0}(", string.Format("{0}{1}",
-				string.IsNullOrEmpty(schema) ? string.Empty : schema + ".", tbl));
+			sb.AppendLineFormat("CREATE TABLE {0}(", databaseObject.ObjectNameWithSchema);
 
 			sb.AppendLine(getColumnCreates().ToString());
 			foreach (var kc in databaseObject.KeyConstraints)
 			{
 				sb.AppendLine(", " + new KeyConstraintSynchronization(targetDatabase, kc).GetInnerCreateText());
 			}
-			sb.AppendLine(")");
+			sb.AppendLine(string.Format("){0}", targetDatabase.IsPostgreSQL ? ";" : ""));
 			return sb.ToString();
 		}
 

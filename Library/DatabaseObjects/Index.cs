@@ -192,7 +192,8 @@ select
 	t.relname as TableName,
 	i.relname as IndexName,
 	a.attname as ColumnName,
-	case when ix.indisclustered = true then 'CLUSTERED' else 'NONCLUSTERED' end as IndexType,
+	-- TODO: case when ix.indisclustered = true then 'CLUSTERED' else 'NONCLUSTERED' end as IndexType,
+    '' as IndexType,
 	ix.indisunique as IsUnique,
 	n.nspname as SchemaName,
 	-- TODO:
