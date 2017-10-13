@@ -48,6 +48,22 @@ namespace PaJaMa.Database.Library.Helpers
 			int totalProgress = 0;
 			bool ignorePrompt = false;
 
+			// for drops remove fks first
+			var dropTables = from ws in workspaces.OfType<DropWorkspace>()
+							 where ws.TargetObject is Table && (ws.TargetObject as Table).ForeignKeys.Any()
+							 select ws.TargetObject as Table;
+			if (dropTables.Any())
+			{
+				using (var cmd = trans.Connection.CreateCommand())
+				{
+					cmd.Transaction = trans;
+					foreach (var t in dropTables)
+					{
+						t.RemoveForeignKeys(cmd);
+					}
+				}
+			}
+
 			// create tables first
 			List<SynchronizationItem> foreignKeys = new List<SynchronizationItem>();
 

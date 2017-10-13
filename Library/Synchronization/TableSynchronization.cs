@@ -558,7 +558,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("DROP TABLE [{0}].[{1}]", databaseObject.Schema.SchemaName, databaseObject.TableName));
+			return getStandardDropItems(string.Format("DROP TABLE {0}", databaseObject.ObjectNameWithSchema));
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,
