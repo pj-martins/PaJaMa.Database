@@ -112,14 +112,15 @@ join sys.schemas ps on ps.schema_id = pt.schema_id";
             else if (database.IsPostgreSQL)
             {
                 foreignKeyQuery = @"
-SELECT
+SELECT distinct
     tc.constraint_name as ForeignKeyName, tc.table_name as ChildTableName, kcu.column_name as ChildColumnName, 
     ccu.table_name AS ParentTableName, ccu.column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
-	tc.CONSTRAINT_SCHEMA as ParentTableSchema, tc.CONSTRAINT_SCHEMA as ChildTableSchema 
+	tc.CONSTRAINT_SCHEMA as ParentTableSchema, tc.CONSTRAINT_SCHEMA as ChildTableSchema
 FROM 
     information_schema.table_constraints AS tc 
 JOIN information_schema.key_column_usage AS kcu
 	ON tc.constraint_name = kcu.constraint_name
+	AND tc.table_name = kcu.table_name
 JOIN information_schema.constraint_column_usage AS ccu
 	ON ccu.constraint_name = tc.constraint_name
 join INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c on c.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
