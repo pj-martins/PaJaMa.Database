@@ -504,5 +504,5 @@ namespace PaJaMa.Database.Studio.Query
 				MessageBox.Show("Only SQL connections supported.");
 			}
 		}
-	}
+    }
 }

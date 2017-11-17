@@ -17,6 +17,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
         public string ConnectionString { get; private set; }
         public abstract string DefaultSchemaName { get; }
+        public abstract string GetConvertedObjectName(string objectName);
 
         protected abstract Type connectionType { get; }
 
@@ -39,7 +40,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
         internal virtual string ExtensionSQL => "";
         internal abstract string DatabaseSQL { get; }
 
-        internal abstract string GetConvertedObjectName(string objectName);
         internal abstract string GetConvertedColumnType(string columnType);
 
         internal virtual bool BypassConstraints => false;

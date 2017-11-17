@@ -392,31 +392,30 @@ namespace PaJaMa.Database.Studio.Query
 				_currentConnection.ChangeDatabase(selectedNode.Parent.Parent.Text);
 
 			string objName = string.Empty;
-			string schemaName = null;
+            var dbName = string.Empty;
 			string[] columns = null;
 
 			if (selectedNode.Tag is Library.DatabaseObjects.View)
 			{
 				var view = selectedNode.Tag as Library.DatabaseObjects.View;
-				objName = view.GetObjectNameWithSchema(view.ParentDatabase.DataSource);
-				if (view.Schema != null)
-					schemaName = view.Schema.SchemaName;
+                dbName = view.ParentDatabase.DataSource.GetConvertedObjectName(view.ParentDatabase.DatabaseName);
+                objName = view.GetObjectNameWithSchema(view.ParentDatabase.DataSource);
 				columns = view.Columns.Select(c => c.ColumnName).ToArray();
 			}
 			else
 			{
 				var tbl = selectedNode.Tag as Table;
-				objName = tbl.GetObjectNameWithSchema(tbl.ParentDatabase.DataSource);
-				if (tbl.Schema != null)
-					schemaName = tbl.Schema.SchemaName;
+                dbName = tbl.ParentDatabase.DataSource.GetConvertedObjectName(tbl.ParentDatabase.DatabaseName);
+                objName = tbl.GetObjectNameWithSchema(tbl.ParentDatabase.DataSource);
 				columns = tbl.Columns.Select(c => c.ColumnName).ToArray();
 			}
 
-			txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {2}\r\n{3}",
+			txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
 				topN != null ? _server.GetPreTopN(topN.Value) : string.Empty,
 				_server.GetColumnSelectList(columns),
 				objName,
-				topN != null ? _server.GetPostTopN(topN.Value) : string.Empty
+				topN != null ? _server.GetPostTopN(topN.Value) : string.Empty,
+                string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 		}
 

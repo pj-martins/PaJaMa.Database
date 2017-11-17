@@ -42,7 +42,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.Servers
 			throw new NotImplementedException();
 		}
 
-		internal override string GetConvertedObjectName(string objectName)
+		public override string GetConvertedObjectName(string objectName)
 		{
 			throw new NotImplementedException();
 		}

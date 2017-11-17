@@ -66,7 +66,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Credentials = new List<Credential>();
 			Extensions = new List<Extension>();
 
-			using (var conn = DataSource.OpenConnection())
+			using (var conn = OpenConnection())
 			{
 				using (var cmd = conn.CreateCommand())
 				{

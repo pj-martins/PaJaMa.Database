@@ -220,7 +220,7 @@ where type = 'table'
 			return true;
 		}
 
-		internal override string GetConvertedObjectName(string objectName)
+		public override string GetConvertedObjectName(string objectName)
 		{
 			return string.Format("{0}", objectName);
 		}
