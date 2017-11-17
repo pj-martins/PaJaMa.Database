@@ -19,7 +19,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardItems(string.Format("ALTER TABLE {0} DROP COLUMN {1}{2};",
+			return getStandardItems(string.Format("ALTER TABLE {0} DROP COLUMN {1};",
 						databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
 						databaseObject.GetQueryObjectName(targetDatabase.DataSource)),
 						level: 1,

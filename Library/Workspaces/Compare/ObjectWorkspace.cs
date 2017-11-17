@@ -77,19 +77,19 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		{
 			var lst = new ObjectWorkspaceList();
 
-			var fromObjs = compareHelper.FromDatabase.GetDatabaseObjects(true);
-			var toObjs = compareHelper.ToDatabase.GetDatabaseObjects(true);
+			var fromObjs = compareHelper.FromDataSource.CurrentDatabase.GetDatabaseObjects(true);
+			var toObjs = compareHelper.ToDataSource.CurrentDatabase.GetDatabaseObjects(true);
 
 			foreach (var def in fromObjs)
 			{
 				if (def.ObjectType == typeof(Schema).Name && (
-					!compareHelper.FromDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))
-					|| !compareHelper.ToDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))))
+					!compareHelper.FromDataSource.CurrentDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))
+					|| !compareHelper.ToDataSource.CurrentDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))))
 					continue;
 
 				DatabaseObjectBase sourceDef = def;
 				DatabaseObjectBase targetDef = toObjs.FirstOrDefault(t => objectsAreEqual(t, def));
-				lst.Workspaces.Add(new ObjectWorkspace(compareHelper, sourceDef, compareHelper.ToDatabase, targetDef));
+				lst.Workspaces.Add(new ObjectWorkspace(compareHelper, sourceDef, compareHelper.ToDataSource.CurrentDatabase, targetDef));
 			}
 
 

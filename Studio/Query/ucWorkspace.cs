@@ -23,7 +23,8 @@ namespace PaJaMa.Database.Studio.Query
 		private DbConnection _currentConnection;
 
 		private string _initialConnString;
-		private Type _initialDbType;
+        private Type _initialDbType;
+        private DataSource _dataSource;
 
 		private QueryEventArgs _queryEventArgs;
 
@@ -34,9 +35,9 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void ucWorkspace_Load(object sender, EventArgs e)
 		{
-			cboServer.DataSource = DriverHelper.GetDatabaseTypes();
+			cboServer.DataSource = DataSource.GetDataSourceTypes();
 
-			var settings = Properties.Settings.Default;
+            var settings = Properties.Settings.Default;
 
 			if (settings.ConnectionStrings == null)
 				settings.ConnectionStrings = string.Empty;
@@ -128,11 +129,8 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
-			Type serverType = cboServer.SelectedItem as Type;
-			var server = DataSource.GetDataSource(serverType, txtConnectionString.Text);
-
-
-			_currentConnection = server.GetConnection();
+            _dataSource = Activator.CreateInstance(cboServer.SelectedItem as Type, new object[] { txtConnectionString.Text }) as DataSource;
+            _currentConnection = _dataSource.OpenConnection();
 
 			try
 			{
@@ -144,7 +142,6 @@ namespace PaJaMa.Database.Studio.Query
 					else
 						throw new NotImplementedException();
 				}
-				_currentConnection.Open();
 			}
 			catch (Exception ex)
 			{
@@ -155,7 +152,7 @@ namespace PaJaMa.Database.Studio.Query
 
 			var uc = new ucQueryOutput();
 			uc.Dock = DockStyle.Fill;
-			if (!uc.Connect(_currentConnection, DataSource.GetDataSource(serverType, txtConnectionString.Text), _currentConnection.Database, chkUseDummyDA.Checked))
+			if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
 				return;
 
 			List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
@@ -201,25 +198,25 @@ namespace PaJaMa.Database.Studio.Query
 
 			splitMain.Panel1Collapsed = false;
 
-			foreach (var db in server.Databases)
+			foreach (var db in _dataSource.Databases)
 			{
-				var node = treeTables.Nodes.Add(db.ToString());
+				var node = treeTables.Nodes.Add(db.DatabaseName);
 				node.Nodes.Add("__NONE__");
 				node.Tag = db;
-
-				if (!string.IsNullOrEmpty(_currentConnection.Database))
-				{
-					var treeNode = treeTables.Nodes.OfType<TreeNode>().First(n => n.Text == _currentConnection.Database);
-					treeNode.Expand();
-				}
 			}
-		}
+
+            if (!string.IsNullOrEmpty(_currentConnection.Database))
+            {
+                var treeNode = treeTables.Nodes.OfType<TreeNode>().First(n => n.Text == _currentConnection.Database);
+                treeNode.Expand();
+            }
+        }
 
 		private ucQueryOutput addQueryOutput(string initialDatabase)
 		{
 			var uc = new ucQueryOutput();
 			uc.Dock = DockStyle.Fill;
-			if (!uc.Connect(_currentConnection, cboServer.SelectedItem as DataSource, initialDatabase, chkUseDummyDA.Checked))
+            if (!uc.Connect(_currentConnection, _dataSource, initialDatabase, chkUseDummyDA.Checked))
 				return null;
 			var tabPage = new TabPage();
 			tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();

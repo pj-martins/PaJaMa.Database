@@ -46,11 +46,10 @@ namespace PaJaMa.Database.Library.Helpers
 
 			_cancel = false;
 
-			using (var conn = workspace.SourceTable.ParentDatabase.DataSource.GetConnection())
+			using (var conn = workspace.SourceTable.ParentDatabase.DataSource.OpenConnection())
 			{
 				_currentCommand = conn.CreateCommand();
 				_currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));
-				conn.Open();
 				_currentReader = _currentCommand.ExecuteReader();
 				if (worker != null) worker.ReportProgress(0, string.Format("Populating {0} source table...", workspace.SourceTable.TableName));
 				dtFrom.Load(_currentReader);
@@ -60,11 +59,10 @@ namespace PaJaMa.Database.Library.Helpers
 
 			workspace.ComparedData.PrimaryKeyFields = primaryKeys;
 
-			using (var conn = workspace.TargetTable.ParentDatabase.DataSource.GetConnection())
+			using (var conn = workspace.TargetTable.ParentDatabase.DataSource.OpenConnection())
 			{
 				_currentCommand = conn.CreateCommand();
 				_currentCommand.CommandText = string.Format("select * from {0}", workspace.TargetTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));
-				conn.Open();
 				_currentReader = _currentCommand.ExecuteReader();
 				if (worker != null) worker.ReportProgress(0, string.Format("Populating {0} target table...", workspace.SourceTable.TableName));
 				dtTo.Load(_currentReader);
@@ -177,10 +175,8 @@ namespace PaJaMa.Database.Library.Helpers
 										from c in kc.Columns
 										select c.ColumnName).ToList();
 
-			using (var conn = workspace.TargetTable.ParentDatabase.GetConnection())
+			using (var conn = workspace.TargetTable.ParentDatabase.OpenConnection())
 			{
-				conn.Open();
-
 				using (var trans = conn.BeginTransaction())
 				{
 					_currentCommand = conn.CreateCommand();

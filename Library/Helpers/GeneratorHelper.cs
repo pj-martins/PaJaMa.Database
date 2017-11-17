@@ -18,10 +18,10 @@ namespace PaJaMa.Database.Library.Helpers
 		public event DialogEventHandler Prompt;
 
 		public DatabaseObjects.DataSource DataSource { get; set; }
-		public GeneratorHelper(Type driverType, string connectionString, BackgroundWorker worker)
+		public GeneratorHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
 		{
-			DataSource = DatabaseObjects.DataSource.GetDataSource(driverType, connectionString);
-			DataSource.CurrentDatabase.PopulateChildren(false, worker);
+			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DatabaseObjects.DataSource;
+            DataSource.CurrentDatabase.PopulateChildren(false, worker);
 		}
 
 		public Dictionary<Table, List<Table>> GetMissingDependencies(List<TableWorkspace> selectedWorkspaces)

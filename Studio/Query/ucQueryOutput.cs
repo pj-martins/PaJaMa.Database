@@ -79,16 +79,15 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			try
 			{
+                _server = server;
 				if (useDummyDA)
 					_currentConnection = connection;
 				else
 				{
-					_currentConnection = server.GetConnection();
+					_currentConnection = server.OpenConnection();
 					// TODO: generic
 					if (_currentConnection is SqlConnection)
 						(_currentConnection as SqlConnection).InfoMessage += ucQueryOutput_InfoMessage;
-
-					_currentConnection.Open();
 				}
 
 				pnlButtons.Enabled = splitQuery.Enabled = true;

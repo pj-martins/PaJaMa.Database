@@ -176,11 +176,11 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		{
 			var lst = new TableWorkspaceList();
 
-			var fromTbls = (from s in compareHelper.FromDatabase.Schemas
+			var fromTbls = (from s in compareHelper.FromDataSource.CurrentDatabase.Schemas
 							from t in s.Tables
 							select t).ToList();
 
-			var toTbls = (from s in compareHelper.ToDatabase.Schemas
+			var toTbls = (from s in compareHelper.ToDataSource.CurrentDatabase.Schemas
 						  from t in s.Tables
 						  select t).ToList();
 
@@ -188,7 +188,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			{
 				Table sourceTable = tbl;
 				Table targetTable = toTbls.FirstOrDefault(t => t.TableName == tbl.TableName && t.Schema.MappedSchemaName == tbl.Schema.MappedSchemaName);
-				lst.Workspaces.Add(new TableWorkspace(compareHelper, sourceTable, compareHelper.ToDatabase, targetTable));
+				lst.Workspaces.Add(new TableWorkspace(compareHelper, sourceTable, compareHelper.ToDataSource.CurrentDatabase, targetTable));
 			}
 
 			foreach (var table in toTbls

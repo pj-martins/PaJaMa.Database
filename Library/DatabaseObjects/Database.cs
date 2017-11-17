@@ -30,6 +30,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		private void populateObjects<TDatabaseObject>(DbCommand cmd, string query, BackgroundWorker worker)
 			where TDatabaseObject : DatabaseObjectBase
 		{
+            if (string.IsNullOrEmpty(query)) return;
+
 			if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()} for {DatabaseName}...");
 
 			var objs = new List<TDatabaseObject>();
@@ -49,13 +51,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			}
 		}
 
-		public DbConnection GetConnection()
+		public DbConnection OpenConnection()
 		{
-			return DataSource.GetConnection(this.DatabaseName);
+			return DataSource.OpenConnection(this.DatabaseName);
 		}
 
 		public void PopulateChildren(bool condensed, BackgroundWorker worker)
 		{
+            ExtendedProperties = new List<ExtendedProperty>();
 			Schemas = new List<Schema>();
 			ServerLogins = new List<ServerLogin>();
 			Principals = new List<DatabasePrincipal>();
@@ -63,13 +66,20 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Credentials = new List<Credential>();
 			Extensions = new List<Extension>();
 
-			using (var conn = DataSource.GetConnection())
+			using (var conn = DataSource.OpenConnection())
 			{
-				conn.Open();
 				using (var cmd = conn.CreateCommand())
 				{
 					populateObjects<ExtendedProperty>(cmd, this.DataSource.ExtendedPropertySQL, worker);
 					populateObjects<DatabasePrincipal>(cmd, this.DataSource.DatabasePrincipalSQL, worker);
+                    foreach (var dp in this.Principals)
+                    {
+                        if (dp.OwningPrincipalID > 0)
+                        {
+                            dp.Owner = this.Principals.First(p => p.PrincipalID == dp.OwningPrincipalID);
+                            dp.Owner.Ownings.Add(dp);
+                        }
+                    }
 					if (string.IsNullOrEmpty(this.DataSource.SchemaSQL))
 						Schemas.Add(new Schema(this) { SchemaName = "" });
 					else
@@ -85,9 +95,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 					}
 					populateObjects<Table>(cmd, this.DataSource.TableSQL, worker);
 					if (!DataSource.PopulateColumns(this, cmd, worker)) populateObjects<Column>(cmd, this.DataSource.ColumnSQL, worker);
-					if (!DataSource.PopulateForeignKeys(this, cmd, worker)) populateObjects<ForeignKey>(cmd, this.DataSource.ColumnSQL, worker);
-					if (!DataSource.PopulateKeyConstraints(this, cmd, worker)) populateObjects<KeyConstraint>(cmd, this.DataSource.ColumnSQL, worker);
-					if (!DataSource.PopulateIndexes(this, cmd, worker)) populateObjects<Index>(cmd, this.DataSource.ColumnSQL, worker);
+					if (!DataSource.PopulateForeignKeys(this, cmd, worker)) populateObjects<ForeignKey>(cmd, this.DataSource.ForeignKeySQL, worker);
+					if (!DataSource.PopulateKeyConstraints(this, cmd, worker)) populateObjects<KeyConstraint>(cmd, this.DataSource.KeyConstraintSQL, worker);
+					if (!DataSource.PopulateIndexes(this, cmd, worker)) populateObjects<Index>(cmd, this.DataSource.IndexSQL, worker);
 					populateObjects<DefaultConstraint>(cmd, this.DataSource.DefaultConstraintSQL, worker);
 					populateObjects<Trigger>(cmd, this.DataSource.TriggerSQL, worker);
 					populateObjects<Sequence>(cmd, this.DataSource.SequenceSQL, worker);

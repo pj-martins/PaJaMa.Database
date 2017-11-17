@@ -47,8 +47,8 @@ namespace PaJaMa.Database.Studio.Compare
 
             string fromConnString = cboSource.Text;
             string toConnString = cboTarget.Text;
-            Type fromDriverType = cboSourceDriver.SelectedItem as Type;
-            Type toDriverType = cboTargetDriver.SelectedItem as Type;
+            Type fromDataSourceType = cboSourceDriver.SelectedItem as Type;
+            Type toDataSourceType = cboTargetDriver.SelectedItem as Type;
 
             Exception exception = null;
 
@@ -61,7 +61,7 @@ namespace PaJaMa.Database.Studio.Compare
                     _differencedTabs = new List<TabPage>();
                     try
                     {
-						fromDataSource = DataSource.GetDataSource(fromDriverType, fromConnString);
+                        fromDataSource = Activator.CreateInstance(fromDataSourceType, new object[] { fromConnString }) as DataSource;
                     }
                     catch (Exception ex)
                     {
@@ -71,8 +71,8 @@ namespace PaJaMa.Database.Studio.Compare
 
                     try
                     {
-						toDataSource = DataSource.GetDataSource(toDriverType, toConnString);
-					}
+                        toDataSource = Activator.CreateInstance(toDataSourceType, new object[] { toConnString }) as DataSource;
+                    }
                     catch (Exception ex)
                     {
                         exception = new Exception("Error opening target connection: " + ex.Message);
@@ -994,8 +994,8 @@ namespace PaJaMa.Database.Studio.Compare
             new GridHelper().DecorateGrid(gridObjects);
             new GridHelper().DecorateGrid(gridDropObjects);
 
-            cboSourceDriver.DataSource = DriverHelper.GetDatabaseTypes();
-            cboTargetDriver.DataSource = DriverHelper.GetDatabaseTypes();
+            cboSourceDriver.DataSource = DataSource.GetDataSourceTypes();
+            cboTargetDriver.DataSource = DataSource.GetDataSourceTypes();
 
             if (!string.IsNullOrEmpty(Properties.Settings.Default.LastCompareSourceConnString))
                 cboSource.Text = Properties.Settings.Default.LastCompareSourceConnString;

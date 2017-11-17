@@ -12,9 +12,9 @@ namespace PaJaMa.Database.Library.Helpers
 	public class SearchHelper
 	{
 		public DatabaseObjects.DataSource DataSource { get; set; }
-		public SearchHelper(Type driverType, string connectionString, BackgroundWorker worker)
+		public SearchHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
 		{
-			DataSource = DatabaseObjects.DataSource.GetDataSource(driverType, connectionString);
+			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DatabaseObjects.DataSource;
 			DataSource.CurrentDatabase.PopulateChildren(true, worker);
 		}
 
@@ -33,9 +33,8 @@ namespace PaJaMa.Database.Library.Helpers
 							   group c by c.Column.Table into g
 							   select g;
 
-			using (var conn = DataSource.GetConnection())
+			using (var conn = DataSource.OpenConnection())
 			{
-				conn.Open();
 				using (var cmd = conn.CreateCommand())
 				{
 					foreach (var tbl in tblsToSearch)

@@ -15,11 +15,11 @@ namespace PaJaMa.Database.Studio
 		[STAThread]
 		static void Main(string[] args)
 		{
-			if (args.Any())
-			{
-				if (CommandLineHelper.ProcessArguments(args))
-					return;
-			}
+			//if (args.Any())
+			//{
+			//	if (CommandLineHelper.ProcessArguments(args))
+			//		return;
+			//}
 
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);

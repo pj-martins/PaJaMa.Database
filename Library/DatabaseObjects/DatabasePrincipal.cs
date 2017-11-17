@@ -24,6 +24,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public string LoginName { get; set; }
 		public bool IsFixedRole { get; set; }
 
+        [Ignore]
+        public int OwningPrincipalID { get; set; }
+
 		[Ignore]
 		public List<DatabasePrincipal> ChildMembers { get; set; }
 
@@ -52,8 +55,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			this.ExtendedProperties = ExtendedProperties.Where(ep => ep.Level1Object == this.PrincipalName &&
 				ep.Level1Type == "USER").ToList();
-			//if (reader["OwningPrincipalID"] != DBNull.Value)
-			//	owners.Add(princ, Convert.ToInt16(rdr["OwningPrincipalID"]));
 
 			if (string.IsNullOrEmpty(this.LoginName))
 				this.AuthenticationType = AuthenticationType.NONE;
@@ -76,11 +77,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 			// TODO:
 			/*
-			 * foreach (var owner in owners)
-			{
-				owner.Key.Owner = principals.First(p => p.PrincipalID == owner.Value);
-				owner.Key.Owner.Ownings.Add(owner.Key);
-			}
 
 			if (_is2000OrLess)
 			{

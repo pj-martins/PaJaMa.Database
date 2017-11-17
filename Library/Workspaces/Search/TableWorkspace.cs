@@ -67,7 +67,7 @@ namespace PaJaMa.Database.Library.Workspaces.Search
 		{
 			var lst = new TableWorkspaceList();
 
-			var tbls = (from s in searchHelper.Database.Schemas
+			var tbls = (from s in searchHelper.DataSource.CurrentDatabase.Schemas
 						from t in s.Tables
 						select t).ToList();
 

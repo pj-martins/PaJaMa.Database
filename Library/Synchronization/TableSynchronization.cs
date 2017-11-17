@@ -62,7 +62,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				sb.AppendLine(", " + new KeyConstraintSynchronization(targetDatabase, kc).GetInnerCreateText());
 			}
-			sb.AppendLine("){0};");
+			sb.AppendLine(");");
 			sb.AppendLine(targetDatabase.DataSource.GetPostTableCreateScript(databaseObject));
 			
 

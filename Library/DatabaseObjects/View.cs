@@ -41,14 +41,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			var currView = schema.Views.FirstOrDefault(v => v.ViewName == viewName && v.Schema.SchemaName == schema.SchemaName);
 			if (currView == null)
 			{
-				currView = reader.ToObject<View>();
+				currView = reader.ToObject<View>(ParentDatabase);
 				currView.Schema = schema;
 				currView.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == currView.ViewName && ep.ObjectSchema == currView.Schema.SchemaName &&
 					string.IsNullOrEmpty(ep.Level2Object)).ToList();
 				schema.Views.Add(currView);
 			}
 
-			var col = reader.ToObject<Column>();
+			var col = reader.ToObject<Column>(ParentDatabase);
 			if (!string.IsNullOrEmpty(col.ColumnName))
 				currView.Columns.Add(col);
 		}

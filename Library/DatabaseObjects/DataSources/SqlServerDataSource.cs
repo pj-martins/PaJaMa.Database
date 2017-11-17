@@ -105,7 +105,7 @@ where p.type in ('U', 'S') and p.name not in ('INFORMATION_SCHEMA', 'sys', 'gues
 
 		internal override string CredentialSQL => "select name as CredentialName, credential_identity as CredentialIdentity from sys.credentials";
 
-		internal override string TableSQL => "select TABLE_NAME, TABLE_SCHEMA, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
+		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
 
 		internal override string ColumnSQL => _is2000OrLess ?
 					@"select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
@@ -371,6 +371,7 @@ left join sys.server_principals sp on sp.sid = dp.sid
 
 		internal override string GetConvertedColumnDefault(string columnDefault)
 		{
+            if (string.IsNullOrEmpty(columnDefault)) return string.Empty;
 			return columnDefault.Replace("now", "getdate").Replace("uuid_generate_v4", "newid");
 		}
 

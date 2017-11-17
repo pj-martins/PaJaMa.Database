@@ -48,11 +48,10 @@ namespace PaJaMa.Database.Library.Helpers
 
 				i = 0;
 
-				using (var conn = fromDatabase.GetConnection())
+				using (var conn = fromDatabase.OpenConnection())
 				{
 					using (var cmdSrc = conn.CreateCommand())
 					{
-						conn.Open();
 						foreach (var table in datas)
 						{
 							i++;
