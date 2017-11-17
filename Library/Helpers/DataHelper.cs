@@ -49,7 +49,7 @@ namespace PaJaMa.Database.Library.Helpers
             using (var conn = workspace.SourceTable.ParentDatabase.GetConnection())
             {
                 _currentCommand = conn.CreateCommand();
-                _currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.QueryNameWithSchema);
+                _currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.ObjectNameWithSchema);
                 conn.Open();
                 _currentReader = _currentCommand.ExecuteReader();
                 if (worker != null) worker.ReportProgress(0, string.Format("Populating {0} source table...", workspace.SourceTable.TableName));
@@ -63,7 +63,7 @@ namespace PaJaMa.Database.Library.Helpers
             using (var conn = workspace.TargetTable.ParentDatabase.GetConnection())
             {
                 _currentCommand = conn.CreateCommand();
-                _currentCommand.CommandText = string.Format("select * from {0}", workspace.TargetTable.QueryNameWithSchema);
+                _currentCommand.CommandText = string.Format("select * from {0}", workspace.TargetTable.ObjectNameWithSchema);
                 conn.Open();
                 _currentReader = _currentCommand.ExecuteReader();
                 if (worker != null) worker.ReportProgress(0, string.Format("Populating {0} target table...", workspace.SourceTable.TableName));
@@ -189,21 +189,21 @@ namespace PaJaMa.Database.Library.Helpers
                     try
                     {
                         StringBuilder sbUpdate = new StringBuilder(string.Format("update {0} set ",
-                            workspace.TargetTable.QueryNameWithSchema));
+                            workspace.TargetTable.ObjectNameWithSchema));
 
                         StringBuilder sbInsert = new StringBuilder();
                         if (workspace.TargetTable.ParentDatabase.IsSQLServer)
                             sbInsert.AppendLine(string.Format("SET IDENTITY_INSERT {0} ON",
-                                        workspace.TargetTable.QueryNameWithSchema));
+                                        workspace.TargetTable.ObjectNameWithSchema));
                         sbInsert.AppendLine(string.Format("insert into {0} ({1}) values ({2})",
-                            workspace.TargetTable.QueryNameWithSchema,
+                            workspace.TargetTable.ObjectNameWithSchema,
                             string.Join(", ", workspace.SourceTable.Columns.Select(c => c.QueryObjectName)),
                             string.Join(", ", workspace.SourceTable.Columns.Select(c => string.Format("@{0}", c.ColumnName)))
                             ));
 
                         if (workspace.TargetTable.ParentDatabase.IsSQLServer)
                             sbInsert.AppendLine(string.Format("SET IDENTITY_INSERT {0} OFF",
-                                    workspace.TargetTable.QueryNameWithSchema));
+                                    workspace.TargetTable.ObjectNameWithSchema));
 
                         var firstIn = true;
                         foreach (var col in workspace.SourceTable.Columns)
@@ -240,7 +240,7 @@ namespace PaJaMa.Database.Library.Helpers
                                 }
 
                                 _currentCommand.CommandText = string.Format("delete from {0} {2}",
-                                    workspace.TargetTable.QueryNameWithSchema,
+                                    workspace.TargetTable.ObjectNameWithSchema,
                                     where);
                             }
                             else

@@ -48,6 +48,22 @@ namespace PaJaMa.Database.Library.Helpers
 			int totalProgress = 0;
 			bool ignorePrompt = false;
 
+			// for drops remove fks first
+			var dropTables = from ws in workspaces.OfType<DropWorkspace>()
+							 where ws.TargetObject is Table && (ws.TargetObject as Table).ForeignKeys.Any()
+							 select ws.TargetObject as Table;
+			if (dropTables.Any())
+			{
+				using (var cmd = trans.Connection.CreateCommand())
+				{
+					cmd.Transaction = trans;
+					foreach (var t in dropTables)
+					{
+						t.RemoveForeignKeys(cmd);
+					}
+				}
+			}
+
 			// create tables first
 			List<SynchronizationItem> foreignKeys = new List<SynchronizationItem>();
 
@@ -115,7 +131,7 @@ namespace PaJaMa.Database.Library.Helpers
 							if (!ignorePrompt)
 							{
 								var args = new DialogEventArgs("Failed to synchronize \"" + (kvp.Key is WorkspaceWithSourceBase && kvp.Key.TargetObject == null ? (kvp.Key as WorkspaceWithSourceBase).SourceObject.ObjectName : kvp.Key.TargetObject.ObjectName)
-									+ "\": " + ex.Message + ". Would you like to continue?");
+									+ "\": " + ex.Message + "\r\n\r\n" + script + ".\r\n\r\nWould you like to continue?");
 								Prompt(this, args);
 								switch (args.Result)
 								{

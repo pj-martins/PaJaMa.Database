@@ -57,15 +57,14 @@ namespace PaJaMa.Database.Library.Synchronization
 			var schema = DriverHelper.GetConvertedSchemaName(targetDatabase, databaseObject.Schema.SchemaName);
 			schema = DriverHelper.GetConvertedObjectName(targetDatabase, schema);
 			var tbl = DriverHelper.GetConvertedObjectName(targetDatabase, databaseObject.TableName);
-			sb.AppendLineFormat("CREATE TABLE {0}(", string.Format("{0}{1}",
-				string.IsNullOrEmpty(schema) ? string.Empty : schema + ".", tbl));
+			sb.AppendLineFormat("CREATE TABLE {0}(", databaseObject.ObjectNameWithSchema);
 
 			sb.AppendLine(getColumnCreates().ToString());
 			foreach (var kc in databaseObject.KeyConstraints)
 			{
 				sb.AppendLine(", " + new KeyConstraintSynchronization(targetDatabase, kc).GetInnerCreateText());
 			}
-			sb.AppendLine(")");
+			sb.AppendLine(string.Format("){0}", targetDatabase.IsPostgreSQL ? ";" : ""));
 			return sb.ToString();
 		}
 
@@ -150,6 +149,13 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 					else if (!databaseObject.ForeignKeys.Any(k => k.ForeignKeyName.ToLower() == tk.ForeignKeyName.ToLower()))
 					{
+                        if (targetTable.ParentDatabase.IsPostgreSQL)
+                        {
+                            // column being dropped
+                            if (tk.Columns.Any(c => !databaseObject.Columns.Any(x => x.ColumnName == c.ChildColumn.ColumnName)))
+                                continue;
+                        }
+
 						items.AddRange(new ForeignKeySynchronization(targetDatabase, tk).GetDropItems());
 					}
 				}
@@ -552,7 +558,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("DROP TABLE [{0}].[{1}]", databaseObject.Schema.SchemaName, databaseObject.TableName));
+			return getStandardDropItems(string.Format("DROP TABLE {0}", databaseObject.ObjectNameWithSchema));
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,

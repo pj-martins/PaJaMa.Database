@@ -30,12 +30,12 @@ namespace PaJaMa.Database.Library.Helpers
                 typeof(System.Data.SqlClient.SqlConnection),
                 typeof(System.Data.OleDb.OleDbConnection),
                 typeof(System.Data.Odbc.OdbcConnection),
-				typeof(System.Data.SQLite.SQLiteConnection),
-				typeof(Npgsql.NpgsqlConnection),
+                typeof(System.Data.SQLite.SQLiteConnection),
+                typeof(Npgsql.NpgsqlConnection),
                 typeof(MySql.Data.MySqlClient.MySqlConnection)
             };
 
-            
+
             return types.ToArray();
         }
 
@@ -116,25 +116,31 @@ namespace PaJaMa.Database.Library.Helpers
             return columnDefault;
         }
 
+        public static string GetConvertedSQLServerColumnType(string columnType)
+        {
+            return columnType
+                .Replace("timestamp with time zone", "datetime")
+                .Replace("uuid", "uniqueidentifier")
+                .Replace("character varying", "nvarchar")
+                .Replace("jsonb", "text")
+                .Replace("integer", "int")
+            ;
+        }
+
         public static string GetConvertedColumnType(DatabaseObjects.Database targetDatabase, string columnType)
         {
             if (targetDatabase.IsSQLServer)
             {
-                return columnType
-                    .Replace("timestamp with time zone", "datetime")
-                    .Replace("uuid", "uniqueidentifier")
-                    .Replace("character varying", "nvarchar")
-                    .Replace("jsonb", "text")
-					.Replace("integer", "int")
+                return GetConvertedSQLServerColumnType(columnType);
                 ;
             }
             if (targetDatabase.IsSQLite)
-			{
-				return columnType
-					.Replace("int", "integer")
+            {
+                return columnType
+                    .Replace("int", "integer")
 
-				;
-			}
+                ;
+            }
 
             //if (targetDatabase.IsPostgreSQL)
             //    return columnType.Replace("getdate()", "now()").Replace("newid()", "uuid_generate_v4()");
@@ -144,8 +150,7 @@ namespace PaJaMa.Database.Library.Helpers
 
         public static string GetConvertedObjectName(DatabaseObjects.Database targetDatabase, string objectName)
         {
-			if (string.IsNullOrEmpty(objectName)) return objectName;
-
+            if (string.IsNullOrEmpty(objectName)) return objectName;
             var colFormat = "{0}";
             if (targetDatabase.IsPostgreSQL)
                 colFormat = "\"{0}\"";
@@ -154,20 +159,20 @@ namespace PaJaMa.Database.Library.Helpers
             return string.Format(colFormat, objectName);
         }
 
-		public static string GetSchemaTableName(DatabaseObjects.Database targetDatabase, Table table)
-		{
-			var schema = DriverHelper.GetConvertedSchemaName(targetDatabase, table.Schema.SchemaName);
-			schema = DriverHelper.GetConvertedObjectName(targetDatabase, schema);
-			var tbl = DriverHelper.GetConvertedObjectName(targetDatabase, table.TableName);
-			return string.Format("{0}{1}",
-				string.IsNullOrEmpty(schema) ? string.Empty : schema + ".", tbl);
-		}
+        public static string GetSchemaTableName(DatabaseObjects.Database targetDatabase, Table table)
+        {
+            var schema = DriverHelper.GetConvertedSchemaName(targetDatabase, table.Schema.SchemaName);
+            schema = DriverHelper.GetConvertedObjectName(targetDatabase, schema);
+            var tbl = DriverHelper.GetConvertedObjectName(targetDatabase, table.TableName);
+            return string.Format("{0}{1}",
+                string.IsNullOrEmpty(schema) ? string.Empty : schema + ".", tbl);
+        }
 
         public static string GetConvertedSchemaName(DatabaseObjects.Database targetDatabase, string schemaName)
         {
             if (targetDatabase.IsSQLServer && (schemaName == "public" || string.IsNullOrEmpty(schemaName))) return "dbo";
             if (targetDatabase.IsPostgreSQL && (schemaName == "dto" || string.IsNullOrEmpty(schemaName))) return "public";
-			if (targetDatabase.IsSQLite) return "";
+            if (targetDatabase.IsSQLite) return "";
             return schemaName;
         }
     }
