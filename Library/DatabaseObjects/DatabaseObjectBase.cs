@@ -16,81 +16,48 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public abstract string ObjectName { get; }
 
-        public abstract Database ParentDatabase { get; }
+		public Database ParentDatabase { get; }
 
-        [IgnoreCase]
-        public string Definition { get; set; }
+		[IgnoreCase]
+		public string Definition { get; set; }
 
-        public string Description
+		public string Description
 		{
 			get { return ToString() + " (" + ObjectType + ")"; }
 		}
 
-        public string QueryObjectName
-        {
-            get { return DriverHelper.GetConvertedObjectName(ParentDatabase, ObjectName); }
-        }
+		public Schema Schema { get; set; }
 
-        public virtual string ObjectType
+		public DatabaseObjectBase(Database database)
 		{
-			get { return this.GetType().Name; }
+			this.ParentDatabase = database;
 		}
 
-		public static void PopulateObjects(Database database, DbConnection connection, List<ExtendedProperty> extendedProperties, bool condensed, BackgroundWorker worker)
+		public virtual string ObjectType
 		{
-			if (worker != null) worker.ReportProgress(0, "Populating procedures, synonyms, permissions for " + connection.Database + "...");
-			RoutineSynonym.PopulateRoutinesSynonyms(database, connection, extendedProperties);
-
-			if (worker != null) worker.ReportProgress(0, "Populating views for " + connection.Database + "...");
-			View.PopulateViews(database, connection, extendedProperties);
-
-			if (!condensed)
-			{
-				try
-				{
-					if (worker != null) worker.ReportProgress(0, "Populating logins for " + connection.Database + "...");
-					ServerLogin.PopulateServerLogins(database, connection, extendedProperties);
-				}
-				catch
-				{
-					// TODO: still want to compare other stuff so ignore failures here
-				}
-
-				try
-				{
-					if (worker != null) worker.ReportProgress(0, "Populating principals for " + connection.Database + "...");
-					DatabasePrincipal.PopulatePrincipals(database, connection, extendedProperties);
-				}
-				catch
-				{
-					// TODO: still want to compare other stuff so ignore failures here
-				}
-
-				try
-				{
-					if (worker != null) worker.ReportProgress(0, "Populating permissions for " + connection.Database + "...");
-					Permission.PopulatePermissions(database, connection, extendedProperties);
-				}
-				catch
-				{
-					// TODO: still want to compare other stuff so ignore failures here
-				}
-
-				try
-				{
-					if (worker != null) worker.ReportProgress(0, "Populating credentials for " + connection.Database + "...");
-					Credential.PopulateCredentials(database, connection);
-				}
-				catch
-				{
-					// TODO: still want to compare other stuff so ignore failures here
-				}
-			}
+			get { return this.GetType().Name; }
 		}
 
 		public override string ToString()
 		{
 			return ObjectName;
+		}
+
+		internal abstract void setObjectProperties(DbDataReader reader);
+
+		public virtual string GetObjectNameWithSchema(DataSource server)
+		{
+			if (string.IsNullOrEmpty(server.DefaultSchemaName))
+				return server.GetConvertedObjectName(ObjectName);
+
+			return string.Format("{0}.{1}",
+				server.GetConvertedObjectName(server.DefaultSchemaName),
+				server.GetConvertedObjectName(ObjectName));
+		}
+
+		public string GetQueryObjectName(DataSource server)
+		{
+			return server.GetConvertedObjectName(ObjectName);
 		}
 	}
 
@@ -99,7 +66,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		public List<ExtendedProperty> ExtendedProperties { get; set; }
 
-		public DatabaseObjectWithExtendedProperties()
+		public DatabaseObjectWithExtendedProperties(Database database) : base(database)
 		{
 			ExtendedProperties = new List<ExtendedProperty>();
 		}

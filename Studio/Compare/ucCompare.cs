@@ -1,4 +1,5 @@
-﻿using PaJaMa.Database.Library.Helpers;
+﻿using PaJaMa.Database.Library.DatabaseObjects;
+using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Synchronization;
 using PaJaMa.Database.Library.Workspaces.Compare;
 using PaJaMa.Database.Studio.Classes;
@@ -51,8 +52,8 @@ namespace PaJaMa.Database.Studio.Compare
 
             Exception exception = null;
 
-            string fromDatabase = string.Empty;
-            string toDatabase = string.Empty;
+            DataSource fromDataSource = null;
+			DataSource toDataSource = null;
 
             var worker = new BackgroundWorker();
             worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
@@ -60,13 +61,7 @@ namespace PaJaMa.Database.Studio.Compare
                     _differencedTabs = new List<TabPage>();
                     try
                     {
-                        using (var fromConnection = Activator.CreateInstance(fromDriverType) as DbConnection)
-                        {
-                            fromConnection.ConnectionString = fromConnString;
-                            fromConnection.Open();
-                            fromDatabase = fromConnection.Database;
-                            fromConnection.Close();
-                        }
+						fromDataSource = DataSource.GetDataSource(fromDriverType, fromConnString);
                     }
                     catch (Exception ex)
                     {
@@ -76,21 +71,15 @@ namespace PaJaMa.Database.Studio.Compare
 
                     try
                     {
-                        using (var toConnection = Activator.CreateInstance(toDriverType) as DbConnection)
-                        {
-                            toConnection.ConnectionString = toConnString;
-                            toConnection.Open();
-                            toDatabase = toConnection.Database;
-                            toConnection.Close();
-                        }
-                    }
+						toDataSource = DataSource.GetDataSource(toDriverType, toConnString);
+					}
                     catch (Exception ex)
                     {
                         exception = new Exception("Error opening target connection: " + ex.Message);
                         return;
                     }
 
-                    _compareHelper = new CompareHelper(fromDriverType, toDriverType, fromConnString, toConnString, worker);
+                    _compareHelper = new CompareHelper(fromDataSource, toDataSource, worker);
 					_compareHelper.Prompt += delegate (object s3, Common.DialogEventArgs e3)
 					{
 						var dlgResult = PaJaMa.WinControls.YesNoMessageDialog.Show(e3.Message, "Error!", showNoToAll: false, showCancel: false);
@@ -131,33 +120,13 @@ namespace PaJaMa.Database.Studio.Compare
 
                 _lockDbChange = true;
                 cboSourceDatabase.Items.Clear();
-                using (var fromConnection = Activator.CreateInstance(fromDriverType) as DbConnection)
-                {
-                    fromConnection.ConnectionString = fromConnString;
-                    fromConnection.Open();
-                    var driverHelper = new DriverHelper(fromConnection);
-                    foreach (var db in driverHelper.GetDatabases())
-                    {
-                        cboSourceDatabase.Items.Add(db);
-                    }
-                    cboSourceDatabase.Text = fromDatabase;
-                    fromConnection.Close();
-                }
-
+				cboSourceDatabase.Items.AddRange(fromDataSource.Databases.ToArray());
+				cboSourceDatabase.SelectedItem = fromDataSource.CurrentDatabase;
 
                 cboTargetDatabase.Items.Clear();
-                using (var toConnection = Activator.CreateInstance(toDriverType) as DbConnection)
-                {
-                    toConnection.ConnectionString = toConnString;
-                    toConnection.Open();
-                    var driverHelper = new DriverHelper(toConnection);
-                    foreach (var db in driverHelper.GetDatabases())
-                    {
-                        cboTargetDatabase.Items.Add(db);
-                    }
-                    cboTargetDatabase.Text = toDatabase;
-                }
-                _lockDbChange = false;
+				cboTargetDatabase.Items.AddRange(toDataSource.Databases.ToArray());
+				cboTargetDatabase.SelectedItem = toDataSource.CurrentDatabase;
+				_lockDbChange = false;
 
                 btnConnect.Visible = btnRemoveSourceConnString.Visible = btnRemoveTargetConnString.Visible = false;
                 btnDisconnect.Visible = true;
@@ -205,7 +174,7 @@ namespace PaJaMa.Database.Studio.Compare
 
             TargetTable.Items.Clear();
             TargetTable.Items.Add(string.Empty);
-            var toTbls = from s in _compareHelper.ToDatabase.Schemas
+            var toTbls = from s in _compareHelper.ToDataSource.CurrentDatabase.Schemas
                          from t in s.Tables
                          select t;
             TargetTable.Items.AddRange(toTbls.OrderBy(t => t.TableName).ToArray());
@@ -246,7 +215,7 @@ namespace PaJaMa.Database.Studio.Compare
 
             TargetTable.Items.Clear();
             TargetTable.Items.Add(string.Empty);
-            var toTbls = from s in _compareHelper.ToDatabase.Schemas
+            var toTbls = from s in _compareHelper.ToDataSource.CurrentDatabase.Schemas
                          from t in s.Tables
                          select t;
             TargetTable.Items.AddRange(toTbls.OrderBy(t => t.TableName).ToArray());
@@ -357,8 +326,8 @@ namespace PaJaMa.Database.Studio.Compare
                 changes.Add("...");
             }
 
-            if (MessageBox.Show(string.Format("{0} - {1} will be changed:\r\n\r\n{2}\r\n\r\nContinue?", _compareHelper.ToDatabase.DataSource,
-                    _compareHelper.ToDatabase.DatabaseName,
+            if (MessageBox.Show(string.Format("{0} - {1} will be changed:\r\n\r\n{2}\r\n\r\nContinue?", _compareHelper.ToDataSource,
+                    _compareHelper.ToDataSource.CurrentDatabase.DatabaseName,
                 string.Join("\r\n", changes.ToArray())), "Proceed", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
                 return;
 
@@ -440,14 +409,14 @@ namespace PaJaMa.Database.Studio.Compare
         private void cboSourceDatabase_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_lockDbChange) return;
-            _compareHelper.FromDatabase.ChangeDatabase(cboSourceDatabase.Text);
+            _compareHelper.FromDataSource.ChangeDatabase(cboSourceDatabase.Text);
             refreshPage(true);
         }
 
         private void cboTargetDatabase_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_lockDbChange) return;
-            _compareHelper.ToDatabase.ChangeDatabase(cboTargetDatabase.Text);
+            _compareHelper.ToDataSource.ChangeDatabase(cboTargetDatabase.Text);
             refreshPage(true);
         }
 
@@ -794,22 +763,22 @@ namespace PaJaMa.Database.Studio.Compare
 
         private void btnSourceQuery_Click(object sender, EventArgs e)
         {
-            query(_compareHelper.FromDatabase);
+            query(_compareHelper.FromDataSource.CurrentDatabase);
         }
 
         private void btnTargetQuery_Click(object sender, EventArgs e)
         {
-            query(_compareHelper.ToDatabase);
+            query(_compareHelper.ToDataSource.CurrentDatabase);
         }
 
         private void selectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            query(_compareHelper.FromDatabase, 0);
+            query(_compareHelper.FromDataSource.CurrentDatabase, 0);
         }
 
         private void selectTop1000ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            query(_compareHelper.FromDatabase, 1000);
+            query(_compareHelper.FromDataSource.CurrentDatabase, 1000);
         }
 
         private void query(Library.DatabaseObjects.Database database, int? topN = null)
@@ -897,7 +866,7 @@ namespace PaJaMa.Database.Studio.Compare
                             {
                                 if (!string.IsNullOrEmpty(stw.TargetSchemaTableName))
                                 {
-                                    tw.TargetObject = (from s in _compareHelper.ToDatabase.Schemas
+                                    tw.TargetObject = (from s in _compareHelper.ToDataSource.CurrentDatabase.Schemas
                                                        from t in s.Tables
                                                        where t.ToString() == stw.TargetSchemaTableName
                                                        select t).FirstOrDefault();

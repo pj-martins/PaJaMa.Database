@@ -53,7 +53,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					target = selectedItems.Select(i => i.DatabaseObject).OfType<Schema>().FirstOrDefault(t => t.ObjectName == match.Groups[1].Value);
 
 				if (target == null)
-					return new List<DatabaseObjectBase>() { databaseObject.Database.Schemas.First(d => d.ObjectName == match.Groups[1].Value) };
+					return new List<DatabaseObjectBase>() { databaseObject.ParentDatabase.Schemas.First(d => d.ObjectName == match.Groups[1].Value) };
 			}
 			else
 			{

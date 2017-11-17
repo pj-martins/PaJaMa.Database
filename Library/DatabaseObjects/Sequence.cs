@@ -13,13 +13,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
     public class Sequence : DatabaseObjectBase
     {
-        public Schema Schema { get; set; }
-        public override string ObjectName
+		public Sequence(Database database) : base(database)
+		{
+		}
+
+		public override string ObjectName
         {
             get { return SequenceName; }
         }
-
-        public override Database ParentDatabase => Schema.ParentDatabase;
 
         public string SequenceName { get; set; }
         public string Increment { get; set; }
@@ -35,38 +36,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
             return Schema.SchemaName + "." + SequenceName;
         }
 
-        public static void PopulateSequences(Database database, DbConnection connection)
+		internal override void setObjectProperties(DbDataReader reader)
 		{
-            if (!database.IsPostgreSQL) return;
-
-            string qry = @"select 
-    sequence_schema, 
-    sequence_name as SequenceName,
-    increment,
-    minimum_value as MinValue,
-    maximum_value as MaxValue,
-    start_value as Start,
-    cycle_option as Cycle
-from INFORMATION_SCHEMA.SEQUENCES";
-
-            using (var cmd = connection.CreateCommand())
-            {
-                cmd.CommandText = qry;
-                using (var rdr = cmd.ExecuteReader())
-                {
-                    if (rdr.HasRows)
-                    {
-                        while (rdr.Read())
-                        {
-                            var sequence = rdr.ToObject<Sequence>();
-                            sequence.Schema = database.Schemas.First(s => s.SchemaName == rdr["sequence_schema"].ToString());
-
-                            sequence.Schema.Sequences.Add(sequence);
-                        }
-                    }
-                    rdr.Close();
-                }
-            }
-        }
+			this.Schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["sequence_schema"].ToString());
+			this.Schema.Sequences.Add(this);
+		}
 	}
 }

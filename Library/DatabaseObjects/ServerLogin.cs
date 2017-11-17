@@ -1,6 +1,7 @@
 ﻿using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
@@ -20,8 +21,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return LoginType.ToString(); }
 		}
 
-        private Database _database;
-        public override Database ParentDatabase => _database;
+		private Database _database;
+
+		public ServerLogin(Database database) : base(database)
+		{
+		}
 
 		public string LoginName { get; set; }
 		public LoginType LoginType { get; set; }
@@ -31,52 +35,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public bool IsExpirationChecked { get; set; }
 		public bool IsPolicyChecked { get; set; }
 
-		public static void PopulateServerLogins(Database database, DbConnection connection, List<ExtendedProperty> extendedProperties)
+		internal override void setObjectProperties(DbDataReader reader)
 		{
-			// TODO: 2000 or less
-			if (database.Is2000OrLess)
-				return;
-
-            // TODO:
-            if (database.IsPostgreSQL)
-                return;
-
-            // TODO:
-            if (database.IsSQLite) return;
-
-
-            string qry = @"
-select p.name as LoginName, 
-	p.default_database_name as DefaultDatabaseName,
-	p.default_language_name as DefaultLanguageName,
-	replace(p.type_desc, '_', '') as LoginType,
-	isnull(l.is_expiration_checked, 0) as IsExpirationChecked, 
-	isnull(l.is_disabled, 0) as IsDisabled, 
-	isnull(l.is_policy_checked, 0) as IsPolicyChecked
-from sys.server_principals p
-left join sys.sql_logins l on l.principal_id = p.principal_id
-where p.type in ('U', 'S') and p.name not in ('INFORMATION_SCHEMA', 'sys', 'guest', 'public', 'dbo')
--- and p.sid in (select sid from sys.database_principals)
-";
-			using (var cmd = connection.CreateCommand())
-			{
-				cmd.CommandText = qry;
-				using (var rdr = cmd.ExecuteReader())
-				{
-					if (rdr.HasRows)
-					{
-						while (rdr.Read())
-						{
-							var login = rdr.ToObject<ServerLogin>();
-							login.ExtendedProperties = extendedProperties.Where(ep => ep.ObjectType == LoginType.SQLLogin.ToString() &&
-								ep.Level1Object == login.LoginName).ToList();
-							login._database = database;
-							database.ServerLogins.Add(login);
-						}
-					}
-					rdr.Close();
-				}
-			}
+			this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.ObjectType == LoginType.SQLLogin.ToString() &&
+							ep.Level1Object == this.LoginName).ToList();
+			ParentDatabase.ServerLogins.Add(this);
 		}
 	}
 

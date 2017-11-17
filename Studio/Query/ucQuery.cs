@@ -110,5 +110,14 @@ namespace PaJaMa.Database.Studio.Query
 			tabMain.SelectedTab = tab;
 			uc.LoadFromIDatabase(args);
 		}
+
+		private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (tabMain.SelectedTab != null)
+			{
+				var workSpace = tabMain.SelectedTab.Controls[0] as ucWorkspace;
+				workSpace.CopyWorkspace(true);
+			}
+		}
 	}
 }

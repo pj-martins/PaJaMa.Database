@@ -60,7 +60,7 @@ namespace PaJaMa.Database.Studio.Query
 			}
 			else if (_queryEventArgs != null)
 			{
-				txtConnectionString.Text = _queryEventArgs.Database.ConnectionString;
+				txtConnectionString.Text = _queryEventArgs.Database.DataSource.ConnectionString;
 				cboServer.SelectedItem = typeof(SqlConnection);
 				btnConnect_Click(this, new EventArgs());
 				//if (cboDatabases.Items.Count > 0)
@@ -129,11 +129,13 @@ namespace PaJaMa.Database.Studio.Query
 			}
 
 			Type serverType = cboServer.SelectedItem as Type;
-			_currentConnection = Activator.CreateInstance(serverType) as DbConnection;
+			var server = DataSource.GetDataSource(serverType, txtConnectionString.Text);
+
+
+			_currentConnection = server.GetConnection();
 
 			try
 			{
-				_currentConnection.ConnectionString = txtConnectionString.Text;
 				if (chkUseDummyDA.Checked)
 				{
 					DbDataAdapter dummy;
@@ -153,8 +155,8 @@ namespace PaJaMa.Database.Studio.Query
 
 			var uc = new ucQueryOutput();
 			uc.Dock = DockStyle.Fill;
-            if (!uc.Connect(txtConnectionString.Text, _currentConnection, serverType, _currentConnection.Database, chkUseDummyDA.Checked))
-                return;
+			if (!uc.Connect(_currentConnection, DataSource.GetDataSource(serverType, txtConnectionString.Text), _currentConnection.Database, chkUseDummyDA.Checked))
+				return;
 
 			List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
 			if (!connStrings.Any(s => s == txtConnectionString.Text))
@@ -175,46 +177,35 @@ namespace PaJaMa.Database.Studio.Query
 			pnlConnect.Visible = false;
 			treeTables.Nodes.Clear();
 
-			if (!serverType.Equals(typeof(System.Data.SqlClient.SqlConnection)))
-			{
-				var tables = new List<Table>();
-				if (chkUseDummyDA.Checked)
-					tables = NonSqlServerSchemaHelper.GetTablesExistingConnection(_currentConnection);
-				else
-					tables = NonSqlServerSchemaHelper.GetTables(_currentConnection, txtConnectionString.Text);
-				foreach (var table in tables)
-				{
-					var node = treeTables.Nodes.Add(table.ToString());
-					foreach (var column in table.Columns)
-					{
-						var node2 = node.Nodes.Add(column.ColumnName + " (" + column.DataType + ", "
-											+ (column.IsNullable ? "null" : "not null") + ")");
-						node2.Tag = column;
-					}
-					node.Tag = table;
-				}
-			}
+			//if (!serverType.Equals(typeof(SqlConnection)) && !serverType.Equals(typeof(Npgsql.NpgsqlConnection)))
+			//{
+			//	var tables = new List<Table>();
+			//	if (chkUseDummyDA.Checked)
+			//		tables = NonSqlServerSchemaHelper.GetTablesExistingConnection(_currentConnection);
+			//	else
+			//		tables = NonSqlServerSchemaHelper.GetTables(_currentConnection, txtConnectionString.Text);
+			//	foreach (var table in tables)
+			//	{
+			//		var node = treeTables.Nodes.Add(table.ToString());
+			//		foreach (var column in table.Columns)
+			//		{
+			//			var node2 = node.Nodes.Add(column.ColumnName + " (" + column.DataType + ", "
+			//								+ (column.IsNullable ? "null" : "not null") + ")");
+			//			node2.Tag = column;
+			//		}
+			//		node.Tag = table;
+			//	}
+			//}
 
 			pnlControls.Visible = true;
 
 			splitMain.Panel1Collapsed = false;
 
-			if (serverType.Equals(typeof(SqlConnection)))
+			foreach (var db in server.Databases)
 			{
-				var dt = new DataTable();
-				using (var da = new SqlDataAdapter("select [name] from sys.databases order by [name]", (System.Data.SqlClient.SqlConnection)_currentConnection))
-				{
-					da.Fill(dt);
-					foreach (var dr in dt.Rows.OfType<DataRow>())
-					{
-						var connStringBuilder = new SqlConnectionStringBuilder(txtConnectionString.Text);
-						connStringBuilder.InitialCatalog = dr[0].ToString();
-						var db = new Library.DatabaseObjects.Database(typeof(SqlConnection), connStringBuilder.ConnectionString);
-						var node = treeTables.Nodes.Add(db.ToString());
-						node.Nodes.Add("__NONE__");
-						node.Tag = db;
-					}
-				}
+				var node = treeTables.Nodes.Add(db.ToString());
+				node.Nodes.Add("__NONE__");
+				node.Tag = db;
 
 				if (!string.IsNullOrEmpty(_currentConnection.Database))
 				{
@@ -222,18 +213,14 @@ namespace PaJaMa.Database.Studio.Query
 					treeNode.Expand();
 				}
 			}
-			else
-			{
-
-			}
 		}
 
 		private ucQueryOutput addQueryOutput(string initialDatabase)
 		{
 			var uc = new ucQueryOutput();
 			uc.Dock = DockStyle.Fill;
-            if (!uc.Connect(txtConnectionString.Text, _currentConnection, cboServer.SelectedItem as Type, initialDatabase, chkUseDummyDA.Checked))
-                return null;
+			if (!uc.Connect(_currentConnection, cboServer.SelectedItem as DataSource, initialDatabase, chkUseDummyDA.Checked))
+				return null;
 			var tabPage = new TabPage();
 			tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
 			tabPage.Controls.Add(uc);
@@ -386,16 +373,11 @@ namespace PaJaMa.Database.Studio.Query
 		private void selectToNew(int topN)
 		{
 			var uc = addQueryOutput(string.Empty);
-            if (uc == null) return;
+			if (uc == null) return;
 			uc.SelectTopN(topN, treeTables.SelectedNode);
 		}
 
-		private void btnCopyWorkspace_Click(object sender, EventArgs e)
-		{
-			copyWorkspace(true);
-		}
-
-		private ucWorkspace copyWorkspace(bool andText, string initialConnString = null)
+		public ucWorkspace CopyWorkspace(bool andText, string initialConnString = null)
 		{
 			var uc = new ucWorkspace();
 			if (string.IsNullOrEmpty(initialConnString))
@@ -478,13 +460,13 @@ namespace PaJaMa.Database.Studio.Query
 			if (inputBox.Result == DialogResult.OK && connString != inputBox.Text)
 			{
 				connString = inputBox.Text;
-				ws = copyWorkspace(false, connString);
+				ws = CopyWorkspace(false, connString);
 			}
 			else if (inputBox.Result == DialogResult.Cancel)
 				return;
 
 			var uc = ws.addQueryOutput(string.Empty);
-            if (uc == null) return;
+			if (uc == null) return;
 
 			if (treeTables.SelectedNode.Tag is Library.DatabaseObjects.Database)
 			{

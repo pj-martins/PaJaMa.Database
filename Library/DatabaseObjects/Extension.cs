@@ -13,6 +13,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
 	public class Extension : DatabaseObjectBase
 	{
+		public Extension(Database database) : base(database)
+		{
+		}
+
 		public override string ObjectName
 		{
 			get { return Name; }
@@ -20,39 +24,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public string Name { get; set; }
 
-        private Database _parentDatabase;
-        public override Database ParentDatabase
-        {
-            get { return _parentDatabase; }
-        }
-
-        public override string ToString()
+		public override string ToString()
 		{
 			return Name;
 		}
 
-		public static void PopulateExtensions(Database database, DbConnection connection)
+		internal override void setObjectProperties(DbDataReader reader)
 		{
-            if (!database.IsPostgreSQL) return;
-
-            string qry = "select * from pg_available_extensions where installed_version <> ''";
-
-            using (var cmd = connection.CreateCommand())
-			{
-				cmd.CommandText = qry;
-				using (var rdr = cmd.ExecuteReader())
-				{
-					if (rdr.HasRows)
-					{
-						while (rdr.Read())
-						{
-							var ext = rdr.ToObject<Extension>();
-                            ext._parentDatabase = database;
-                            database.Extensions.Add(ext);
-						}
-					}
-				}
-			}
+			ParentDatabase.Extensions.Add(this);
 		}
 	}
 }

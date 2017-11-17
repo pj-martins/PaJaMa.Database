@@ -1,6 +1,7 @@
 ﻿using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
@@ -16,69 +17,30 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public string PermissionName { get; set; }
 		public List<PermissionPrincipal> PermissionPrincipals { get; set; }
 
-        public Database Database { get; set; }
-        public override Database ParentDatabase => Database;
-
 		public override string ObjectName
 		{
 			get { return PermissionName; }
 		}
 
-		public Permission()
+		public Permission(Database database) : base(database)
 		{
 			PermissionPrincipals = new List<PermissionPrincipal>();
 		}
 
-		public static void PopulatePermissions(Database database, DbConnection connection, List<ExtendedProperty> extendedProperties)
+		internal override void setObjectProperties(DbDataReader reader)
 		{
-			// TODO: 2000 or less
-			if (database.Is2000OrLess)
-				return;
-
-            // TODO:
-            if (database.IsPostgreSQL)
-                return;
-
-            // TODO:
-            if (database.IsSQLite) return;
-
-
-            string qry = @"select s.name as SchemaName, s2.name as PermissionSchemaName,
-					coalesce(s2.name, o.name) as PermissionName, state_desc as GrantType, 
-					permission_name as PermissionType, class_desc as PermissionType, pr.Name as PrincipalName
-				from sys.database_permissions p
-				join sys.database_principals pr on pr.principal_id = p.grantee_principal_id
-				join sys.objects o on o.object_id = p.major_id
-				join sys.schemas s on s.schema_id = o.schema_id
-				left join sys.schemas s2 on s2.schema_id = p.major_id
-";
-			using (var cmd = connection.CreateCommand())
+			var permission = ParentDatabase.Permissions.FirstOrDefault(p => p.SchemaName == this.SchemaName
+							&& p.PermissionSchemaName == this.PermissionSchemaName && p.PermissionName == this.PermissionName);
+			if (permission == null)
 			{
-				cmd.CommandText = qry;
-				using (var rdr = cmd.ExecuteReader())
-				{
-					if (rdr.HasRows)
-					{
-						while (rdr.Read())
-						{
-							var tempPermission = rdr.ToObject<Permission>();
-							var permission = database.Permissions.FirstOrDefault(p => p.SchemaName == tempPermission.SchemaName
-								&& p.PermissionSchemaName == tempPermission.PermissionSchemaName && p.PermissionName == tempPermission.PermissionName);
-							if (permission == null)
-							{
-								permission = tempPermission;
-								permission.Database = database;
-								database.Permissions.Add(permission);
-							}
-
-							var permissionPrincipal = rdr.ToObject<PermissionPrincipal>();
-							permissionPrincipal.DatbasePrincipal = database.Principals.First(p => p.PrincipalName == rdr["PrincipalName"].ToString());
-							permissionPrincipal.Permission = permission;
-							permission.PermissionPrincipals.Add(permissionPrincipal);
-						}
-					}
-				}
+				permission = this;
+				ParentDatabase.Permissions.Add(permission);
 			}
+
+			var permissionPrincipal = reader.ToObject<PermissionPrincipal>();
+			permissionPrincipal.DatbasePrincipal = ParentDatabase.Principals.First(p => p.PrincipalName == reader["PrincipalName"].ToString());
+			permissionPrincipal.Permission = permission;
+			permission.PermissionPrincipals.Add(permissionPrincipal);
 		}
 	}
 

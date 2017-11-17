@@ -21,7 +21,7 @@ namespace PaJaMa.Database.Library.Helpers
 			TransferHelper transferHelper = null;
 			if (dataSpaces.Any())
 				transferHelper = new TransferHelper(worker);
-            using (var conn = compareHelper.ToDatabase.GetConnection())
+            using (var conn = compareHelper.ToDatabase.DataSource.GetConnection())
  			{
                 conn.Open();
 				using (var trans = conn.BeginTransaction())
@@ -55,7 +55,7 @@ namespace PaJaMa.Database.Library.Helpers
 								foreach (var table in truncDelete)
 								{
 									worker.ReportProgress(100 * i / truncDelete.Count, "Truncating/Deleting " + table.TargetTable.TableName);
-									table.TargetTable.TruncateDelete(cmd, table.Truncate);
+									table.TargetTable.TruncateDelete(table.TargetDatabase, cmd, table.Truncate);
 									i++;
 								}
 

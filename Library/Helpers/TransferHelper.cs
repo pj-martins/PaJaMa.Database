@@ -58,13 +58,13 @@ namespace PaJaMa.Database.Library.Helpers
 							i++;
 
 							_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0}",
-											table.SourceTable.ObjectNameWithSchema));
+											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)));
 
 							int rowCount = 0;
-							cmdSrc.CommandText = string.Format("select count(*) from {0}", table.SourceTable.ObjectNameWithSchema);
+							cmdSrc.CommandText = string.Format("select count(*) from {0}", table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource));
 							rowCount = Convert.ToInt32(cmdSrc.ExecuteScalar());
 
-							cmdSrc.CommandText = string.Format("select * from {0}", table.SourceTable.ObjectNameWithSchema);
+							cmdSrc.CommandText = string.Format("select * from {0}", table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource));
 							using (var rdr = cmdSrc.ExecuteReader())
 							{
 								if (trans.Connection is SqlConnection)
@@ -106,8 +106,8 @@ namespace PaJaMa.Database.Library.Helpers
 									var batchSize = table.TransferBatchSize == 0 ? TableWorkspace.DEFAULT_BATCH_SIZE : table.TransferBatchSize;
 									DataTable dt = new DataTable();
 									dt.Load(rdr);
-									var insertQry = $@"insert into {table.TargetTable.ObjectNameWithSchema} 
-            ({string.Join(", ", dt.Columns.OfType<DataColumn>().Select(dc => DriverHelper.GetConvertedObjectName(table.TargetObject.ParentDatabase, dc.ColumnName)).ToArray())}) values ";
+									var insertQry = $@"insert into {table.TargetTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)} 
+            ({string.Join(", ", dt.Columns.OfType<DataColumn>().Select(dc => table.TargetObject.ParentDatabase.DataSource.GetConvertedObjectName(dc.ColumnName)).ToArray())}) values ";
 									cmd.CommandText = insertQry;
 									bool firstIn = true;
 									int counter = 0;
@@ -118,7 +118,7 @@ namespace PaJaMa.Database.Library.Helpers
 										if (_worker.CancellationPending)
 											return false;
 										_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0} {1} of {2}",
-											table.SourceTable.ObjectNameWithSchema, rowsCopied, rowCount));
+											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount));
 
 										cmd.CommandText += (firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
 											dt.Columns.OfType<DataColumn>().Select(dc => dr[dc] == DBNull.Value ? "NULL" : "'" + dr[dc].ToString().Replace("'", "''") + "'").ToArray()) + ")";

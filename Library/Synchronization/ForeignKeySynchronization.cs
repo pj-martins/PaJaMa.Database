@@ -23,40 +23,39 @@ ALTER TABLE {0} {8}{7}{9} ADD CONSTRAINT {1} FOREIGN KEY({2})
 REFERENCES {3} ({4})
 ON DELETE {5}
 ON UPDATE {6}
-{10}
+;
 ",
-    databaseObject.ChildTable.ObjectNameWithSchema,
-    databaseObject.QueryObjectName,
-    string.Join(",", databaseObject.Columns.Select(c => c.ChildColumn.QueryObjectName).ToArray()),
-    databaseObject.ParentTable.ObjectNameWithSchema,
-    string.Join(",", databaseObject.Columns.Select(c => c.ParentColumn.QueryObjectName).ToArray()),
+    databaseObject.ChildTable.GetObjectNameWithSchema(targetDatabase.DataSource),
+    databaseObject.GetQueryObjectName(targetDatabase.DataSource),
+    string.Join(",", databaseObject.Columns.Select(c => c.ChildColumn.GetQueryObjectName(targetDatabase.DataSource)).ToArray()),
+    databaseObject.ParentTable.GetObjectNameWithSchema(targetDatabase.DataSource),
+    string.Join(",", databaseObject.Columns.Select(c => c.ParentColumn.GetQueryObjectName(targetDatabase.DataSource)).ToArray()),
     databaseObject.DeleteRule,
     databaseObject.UpdateRule,
-    databaseObject.ParentDatabase.IsSQLServer ? databaseObject.WithCheck : string.Empty,
-    databaseObject.ParentDatabase.IsSQLServer ? " WITH" : string.Empty,
-    databaseObject.ParentDatabase.IsSQLServer ? "CHECK" : string.Empty,
-    targetDatabase.IsPostgreSQL ? ";" : ""
+    databaseObject.ParentDatabase.DataSource.CheckForeignKeys ? databaseObject.WithCheck : string.Empty,
+    databaseObject.ParentDatabase.DataSource.CheckForeignKeys ? " WITH" : string.Empty,
+    databaseObject.ParentDatabase.DataSource.CheckForeignKeys ? "CHECK" : string.Empty
     );
-            if (databaseObject.ParentDatabase.IsSQLServer)
+            if (databaseObject.ParentDatabase.DataSource.CheckForeignKeys)
                 createString += string.Format(@"
 ALTER TABLE {0}
 CHECK CONSTRAINT {1}
-", databaseObject.ChildTable.ObjectNameWithSchema,
-    databaseObject.QueryObjectName);
+", databaseObject.ChildTable.GetObjectNameWithSchema(targetDatabase.DataSource),
+    databaseObject.GetQueryObjectName(targetDatabase.DataSource));
             return getStandardItems(createString, 7);
         }
 
         public override List<SynchronizationItem> GetDropItems()
         {
             return getStandardDropItems(string.Format(@"
-ALTER TABLE {0} DROP CONSTRAINT {1}{2}
-", databaseObject.ChildTable.ObjectNameWithSchema, databaseObject.QueryObjectName, targetDatabase.IsPostgreSQL ? ";" : ""));
+ALTER TABLE {0} DROP CONSTRAINT {1};
+", databaseObject.ChildTable.GetObjectNameWithSchema(targetDatabase.DataSource), databaseObject.GetQueryObjectName(targetDatabase.DataSource)));
         }
 
         public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
         {
             var diffs = GetPropertyDifferences(target);
-			if (targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite)
+			if (targetDatabase.DataSource.BypassForeignKeyRules || databaseObject.ParentDatabase.DataSource.BypassForeignKeyRules)
 			{
 				for (int i = diffs.Count - 1; i >= 0; i--)
 				{

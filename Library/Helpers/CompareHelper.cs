@@ -22,23 +22,21 @@ namespace PaJaMa.Database.Library.Helpers
 		public bool IsTo2000OrLess { get; private set; }
 		public List<TableWorkspace> TablesToSync { get; private set; }
 
-		public DatabaseObjects.Database FromDatabase { get; private set; }
-		public DatabaseObjects.Database ToDatabase { get; private set; }
+		public DatabaseObjects.DataSource FromDataSource { get; private set; }
+		public DatabaseObjects.DataSource ToDataSource { get; private set; }
 
-		public CompareHelper(Type fromDriverType, Type toDriverType, string fromConnectionString, string toConnectionString, BackgroundWorker worker)
+		public CompareHelper(DataSource fromDataSource, DataSource toDataSource, BackgroundWorker worker)
 		{
-			FromDatabase = new DatabaseObjects.Database(fromDriverType, fromConnectionString);
-			ToDatabase = new DatabaseObjects.Database(toDriverType, toConnectionString);
-			FromDatabase.PopulateChildren(false, worker);
-			ToDatabase.PopulateChildren(false, worker);
+			FromDataSource = fromDataSource;
+			ToDataSource = toDataSource;
+			FromDataSource.CurrentDatabase.PopulateChildren(false, worker);
+			ToDataSource.CurrentDatabase.PopulateChildren(false, worker);
 		}
 
 		public void Init(BackgroundWorker worker)
 		{
-			FromDatabase = new DatabaseObjects.Database(FromDatabase.ConnectionType, FromDatabase.ConnectionString);
-			ToDatabase = new DatabaseObjects.Database(ToDatabase.ConnectionType, ToDatabase.ConnectionString);
-			FromDatabase.PopulateChildren(false, worker);
-			ToDatabase.PopulateChildren(false, worker);
+			FromDataSource.CurrentDatabase.PopulateChildren(false, worker);
+			ToDataSource.CurrentDatabase.PopulateChildren(false, worker);
 		}
 
 		public bool Synchronize(BackgroundWorker worker, List<WorkspaceBase> workspaces, DbTransaction trans)
@@ -209,8 +207,8 @@ namespace PaJaMa.Database.Library.Helpers
 
 			checkedObjects.Add(parent);
 
-			var toObjects = ToDatabase.GetDatabaseObjects(false).ConvertAll(s => (DatabaseObjectBase)s);
-			toObjects.AddRange(from s in ToDatabase.Schemas
+			var toObjects = ToDataSource.CurrentDatabase.GetDatabaseObjects(false).ConvertAll(s => (DatabaseObjectBase)s);
+			toObjects.AddRange(from s in ToDataSource.CurrentDatabase.Schemas
 							   from t in s.Tables
 							   select t);
 

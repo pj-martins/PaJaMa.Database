@@ -32,12 +32,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public DatabasePrincipal Owner { get; set; }
 		public AuthenticationType AuthenticationType { get; set; }
 
-        private Database _database;
-		public override Database ParentDatabase
-        {
-            get { return _database; }
-        }
-
 		public string OwnerName
 		{
 			get { return Owner == null ? string.Empty : Owner.ObjectName; }
@@ -48,134 +42,90 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return PrincipalType.ToString(); }
 		}
 
-		public DatabasePrincipal()
+		public DatabasePrincipal(Database database) : base(database)
 		{
 			ChildMembers = new List<DatabasePrincipal>();
 			Ownings = new List<DatabaseObjectBase>();
 		}
 
-		public static void PopulatePrincipals(Database database, DbConnection connection, List<ExtendedProperty> extendedProperties)
+		internal override void setObjectProperties(DbDataReader reader)
 		{
-            // TODO:
-            if (database.IsPostgreSQL)
-                return;
+			this.ExtendedProperties = ExtendedProperties.Where(ep => ep.Level1Object == this.PrincipalName &&
+				ep.Level1Type == "USER").ToList();
+			//if (reader["OwningPrincipalID"] != DBNull.Value)
+			//	owners.Add(princ, Convert.ToInt16(rdr["OwningPrincipalID"]));
 
-            // TODO:
-            if (database.IsSQLite) return;
-
-
-
-            string qry = database.Is2000OrLess ? @"
-select uid as PrincipalID, altuid as OwningPrincipalID, name as PrincipalName, 
-	PrincipalType = case when issqlrole = 1 then 'DATABASEROLE', convert(bit, 0) as IsFixedRole
-	when isntuser = 1 then 'WINDOWSUSER'
-	else 'SQLUSER'
-	end
-from sysusers u
-
-" : @"
-select dp.principal_id as PrincipalID, dp.owning_principal_id as OwningPrincipalID, dp.name as PrincipalName, replace(dp.type_desc, '_', '') as PrincipalType, 
-	dp.default_schema_name as DefaultSchema, sp.name as LoginName, dp.is_fixed_role as IsFixedRole
-from sys.database_principals dp
-left join sys.server_principals sp on sp.sid = dp.sid
--- where dp.name not in ('INFORMATION_SCHEMA', 'sys', 'guest', 'public')
-";
-
-			Dictionary<DatabasePrincipal, int> owners = new Dictionary<DatabasePrincipal, int>();
-			using (var cmd = connection.CreateCommand())
+			if (string.IsNullOrEmpty(this.LoginName))
+				this.AuthenticationType = AuthenticationType.NONE;
+			else
 			{
-				cmd.CommandText = qry;
-				using (var rdr = cmd.ExecuteReader())
+				switch (this.PrincipalType)
 				{
-					if (rdr.HasRows)
-					{
-						while (rdr.Read())
-						{
-							var princ = rdr.ToObject<DatabasePrincipal>();
-							princ.ExtendedProperties = extendedProperties.Where(ep => ep.Level1Object == princ.PrincipalName &&
-								ep.Level1Type == "USER").ToList();
-							if (rdr["OwningPrincipalID"] != DBNull.Value)
-								owners.Add(princ, Convert.ToInt16(rdr["OwningPrincipalID"]));
-
-							if (string.IsNullOrEmpty(princ.LoginName))
-								princ.AuthenticationType = AuthenticationType.NONE;
-							else
-							{
-								switch (princ.PrincipalType)
-								{
-									case PrincipalType.SQLUser:
-										princ.AuthenticationType = AuthenticationType.INSTANCE;
-										break;
-									case PrincipalType.WindowsUser:
-										princ.AuthenticationType = AuthenticationType.WINDOWS;
-										break;
-								}
-							}
-
-							princ._database = database;
-							if (string.IsNullOrEmpty(princ.DefaultSchema))
-								princ.DefaultSchema = "dbo";
-							database.Principals.Add(princ);
-						}
-					}
-					rdr.Close();
+					case PrincipalType.SQLUser:
+						this.AuthenticationType = AuthenticationType.INSTANCE;
+						break;
+					case PrincipalType.WindowsUser:
+						this.AuthenticationType = AuthenticationType.WINDOWS;
+						break;
 				}
 			}
 
-			foreach (var owner in owners)
+			if (string.IsNullOrEmpty(this.DefaultSchema))
+				this.DefaultSchema = "dbo";
+			ParentDatabase.Principals.Add(this);
+
+			// TODO:
+			/*
+			 * foreach (var owner in owners)
 			{
-				owner.Key.Owner = database.Principals.First(p => p.PrincipalID == owner.Value);
+				owner.Key.Owner = principals.First(p => p.PrincipalID == owner.Value);
 				owner.Key.Owner.Ownings.Add(owner.Key);
 			}
 
-			if (database.Is2000OrLess)
+			if (_is2000OrLess)
 			{
-				using (var cmd = connection.CreateCommand())
+				foreach (var role in principals.Where(dp => dp.PrincipalType == PrincipalType.DatabaseRole))
 				{
-					foreach (var role in database.Principals.Where(dp => dp.PrincipalType == PrincipalType.DatabaseRole))
-					{
-						cmd.CommandText = string.Format("exec sp_helprolemember [{0}]", role.PrincipalName);
+					cmd.CommandText = string.Format("exec sp_helprolemember [{0}]", role.PrincipalName);
 
-						using (var rdr = cmd.ExecuteReader())
-						{
-							if (rdr.HasRows)
-							{
-								while (rdr.Read())
-								{
-									var child = database.Principals.FirstOrDefault(p => p.PrincipalName == rdr["MemberName"].ToString());
-									if (child == null) continue;
-									role.ChildMembers.Add(child);
-								}
-							}
-							rdr.Close();
-						}
-					}
-				}
-			}
-			else
-			{
-				using (var cmd = connection.CreateCommand())
-				{
-					cmd.CommandText = @"
-select drb.role_principal_id as RolePrincipalID, drb.member_principal_id as MemberPrincipalID
-from sys.database_role_members drb
-"; ;
 					using (var rdr = cmd.ExecuteReader())
 					{
 						if (rdr.HasRows)
 						{
 							while (rdr.Read())
 							{
-								var parent = database.Principals.FirstOrDefault(p => p.PrincipalID == (int)rdr["RolePrincipalID"]);
-								var child = database.Principals.FirstOrDefault(p => p.PrincipalID == (int)rdr["MemberPrincipalID"]);
-								if (child == null || parent == null) continue;
-								parent.ChildMembers.Add(child);
+								var child = principals.FirstOrDefault(p => p.PrincipalName == rdr["MemberName"].ToString());
+								if (child == null) continue;
+								role.ChildMembers.Add(child);
 							}
 						}
 						rdr.Close();
 					}
 				}
 			}
+			else
+			{
+				cmd.CommandText = @"
+select drb.role_principal_id as RolePrincipalID, drb.member_principal_id as MemberPrincipalID
+from sys.database_role_members drb
+"; ;
+				using (var rdr = cmd.ExecuteReader())
+				{
+					if (rdr.HasRows)
+					{
+						while (rdr.Read())
+						{
+							var parent = principals.FirstOrDefault(p => p.PrincipalID == (int)rdr["RolePrincipalID"]);
+							var child = principals.FirstOrDefault(p => p.PrincipalID == (int)rdr["MemberPrincipalID"]);
+							if (child == null || parent == null) continue;
+							parent.ChildMembers.Add(child);
+						}
+					}
+					rdr.Close();
+				}
+			}
+			return principals;
+			*/
 		}
 	}
 

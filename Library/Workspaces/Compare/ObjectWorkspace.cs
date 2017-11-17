@@ -67,7 +67,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			if (obj1.ObjectType != obj2.ObjectType) return false;
 			if (obj1.ObjectType == typeof(Schema).Name)
 			{
-				if (obj1.ObjectName == DriverHelper.GetConvertedSchemaName(obj1.ParentDatabase, obj2.ObjectName))
+				if (obj1.ObjectName == obj1.ParentDatabase.DataSource.DefaultSchemaName && obj2.ObjectName == obj2.ParentDatabase.DataSource.DefaultSchemaName)
 					return true;
 			}
 			return obj1.ToString() == obj2.ToString();
@@ -83,7 +83,8 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			foreach (var def in fromObjs)
 			{
 				if (def.ObjectType == typeof(Schema).Name && (
-					compareHelper.FromDatabase.IsSQLite || compareHelper.ToDatabase.IsSQLite))
+					!compareHelper.FromDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))
+					|| !compareHelper.ToDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))))
 					continue;
 
 				DatabaseObjectBase sourceDef = def;
@@ -95,14 +96,15 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			foreach (var def in toObjs
 				.Where(x => !fromObjs.Any(d => d.ToString() == x.ToString() && d.ObjectType == x.ObjectType)))
 			{
-				if (compareHelper.FromDatabase.IsSQLite)
-				{
-					if (def.ObjectType == typeof(Schema).Name) continue;
-					if (def.ObjectType == "WindowsUser") continue;
-					if (def.ObjectType == "SQLUser") continue;
-					if (def.ObjectType == "DatabaseRole") continue;
-					if (def.ObjectType == "SQLLogin") continue;
-				}
+				// TODO:
+				//if (compareHelper.FromDatabase.IsSQLite)
+				//{
+				//	if (def.ObjectType == typeof(Schema).Name) continue;
+				//	if (def.ObjectType == "WindowsUser") continue;
+				//	if (def.ObjectType == "SQLUser") continue;
+				//	if (def.ObjectType == "DatabaseRole") continue;
+				//	if (def.ObjectType == "SQLLogin") continue;
+				//}
 				lst.DropWorkspaces.Add(new DropWorkspace(def));
 			}
 

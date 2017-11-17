@@ -11,18 +11,18 @@ namespace PaJaMa.Database.Library.Helpers
 {
 	public class SearchHelper
 	{
-		public DatabaseObjects.Database Database { get; set; }
+		public DatabaseObjects.DataSource DataSource { get; set; }
 		public SearchHelper(Type driverType, string connectionString, BackgroundWorker worker)
 		{
-			Database = new DatabaseObjects.Database(driverType, connectionString);
-			Database.PopulateChildren(true, worker);
+			DataSource = DatabaseObjects.DataSource.GetDataSource(driverType, connectionString);
+			DataSource.CurrentDatabase.PopulateChildren(true, worker);
 		}
 
-		public void Init(BackgroundWorker worker)
-		{
-			Database = new DatabaseObjects.Database(Database.ConnectionType, Database.ConnectionString);
-			Database.PopulateChildren(true, worker);
-		}
+		//public void Init(BackgroundWorker worker)
+		//{
+		//	Database = new DatabaseObjects.Database(Database.ConnectionType, Database.ConnectionString);
+		//	Database.PopulateChildren(true, worker);
+		//}
 
 		public void Search(string searchFor, List<ColumnWorkspace> columns, BindingList<DataTable> outputTables)
 		{
@@ -33,7 +33,7 @@ namespace PaJaMa.Database.Library.Helpers
 							   group c by c.Column.Table into g
 							   select g;
 
-			using (var conn = Database.GetConnection())
+			using (var conn = DataSource.GetConnection())
 			{
 				conn.Open();
 				using (var cmd = conn.CreateCommand())

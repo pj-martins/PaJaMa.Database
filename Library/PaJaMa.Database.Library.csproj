@@ -60,6 +60,12 @@
     <Compile Include="DatabaseObjects\Database.cs" />
     <Compile Include="DatabaseObjects\DatabaseObjectBase.cs" />
     <Compile Include="DatabaseObjects\DatabasePrincipal.cs" />
+    <Compile Include="DatabaseObjects\DataSources\MySqlDataSource.cs" />
+    <Compile Include="DatabaseObjects\DataSources\OdbcDataSource.cs" />
+    <Compile Include="DatabaseObjects\DataSources\OleDbDataSource.cs" />
+    <Compile Include="DatabaseObjects\DataSources\PostgreSQLDataSource.cs" />
+    <Compile Include="DatabaseObjects\DataSources\SQLiteDataSource.cs" />
+    <Compile Include="DatabaseObjects\DataSources\SqlServerDataSource.cs" />
     <Compile Include="DatabaseObjects\DefaultConstraint.cs" />
     <Compile Include="DatabaseObjects\ExtendedProperty.cs" />
     <Compile Include="DatabaseObjects\Sequence.cs" />
@@ -70,6 +76,7 @@
     <Compile Include="DatabaseObjects\Extension.cs" />
     <Compile Include="DatabaseObjects\RoutineSynonym.cs" />
     <Compile Include="DatabaseObjects\Schema.cs" />
+    <Compile Include="DatabaseObjects\DataSource.cs" />
     <Compile Include="DatabaseObjects\ServerLogin.cs" />
     <Compile Include="DatabaseObjects\Table.cs" />
     <Compile Include="DatabaseObjects\Trigger.cs" />
@@ -78,8 +85,6 @@
     <Compile Include="DataContent\ContentHelper.cs" />
     <Compile Include="Helpers\CompareHelper.cs" />
     <Compile Include="Helpers\DataHelper.cs" />
-    <Compile Include="Helpers\DriverHelper.cs" />
-    <Compile Include="Helpers\NonSqlServerSchemaHelper.cs" />
     <Compile Include="Helpers\QueryBuilderHelper.cs" />
     <Compile Include="Helpers\SearchHelper.cs" />
     <Compile Include="Classes\DataTableWithSchema.cs">

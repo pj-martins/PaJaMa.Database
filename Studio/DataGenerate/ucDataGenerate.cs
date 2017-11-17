@@ -129,7 +129,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 				var worker = new BackgroundWorker();
 				worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
 				{
-					_generatorHelper.Init(worker);
+					_generatorHelper.DataSource.CurrentDatabase.PopulateChildren(true, worker);
 				};
 				WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
 			}
@@ -185,8 +185,8 @@ namespace PaJaMa.Database.Studio.DataGenerate
 				changes.Add("...");
 			}
 
-			if (MessageBox.Show(string.Format("{0} - {1} will be populated:\r\n\r\n{2}\r\n\r\nContinue?", _generatorHelper.Database.DataSource,
-					_generatorHelper.Database.DatabaseName,
+			if (MessageBox.Show(string.Format("{0} - {1} will be populated:\r\n\r\n{2}\r\n\r\nContinue?", _generatorHelper.DataSource.DataSourceName,
+					_generatorHelper.DataSource.CurrentDatabase.DatabaseName,
 				string.Join("\r\n", changes.ToArray())), "Proceed", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
 				return;
 
@@ -259,7 +259,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		private void cboDatabase_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (_lockDbChange) return;
-			_generatorHelper.Database.ChangeDatabase(cboDatabase.Text);
+			_generatorHelper.DataSource.ChangeDatabase(cboDatabase.Text);
 			refreshPage(true);
 		}
 
@@ -373,10 +373,10 @@ namespace PaJaMa.Database.Studio.DataGenerate
 
 		private void query(int? topN = null)
 		{
-			if (_generatorHelper.Database != null)
+			if (_generatorHelper.DataSource.CurrentDatabase != null)
 			{
 				var args = new QueryEventArgs();
-				args.Database = _generatorHelper.Database;
+				args.Database = _generatorHelper.DataSource.CurrentDatabase;
 				if (topN != null)
 				{
 					var selectedItem = gridTables.SelectedRows[0].DataBoundItem as TableWorkspace;

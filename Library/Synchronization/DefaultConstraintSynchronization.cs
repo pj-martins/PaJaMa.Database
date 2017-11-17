@@ -19,18 +19,18 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-            if (targetDatabase.IsPostgreSQL)
+            if (targetDatabase.DataSource.BypassKeyConstraints)
             {
                 if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
                     return new List<SynchronizationItem>();
             }
-			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1}{2}", databaseObject.Table.ObjectNameWithSchema,
-				databaseObject.QueryObjectName, targetDatabase.IsPostgreSQL ? ";" : ""));
+			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};", databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
+				databaseObject.GetQueryObjectName(targetDatabase.DataSource)));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-            if (targetDatabase.IsPostgreSQL)
+            if (targetDatabase.DataSource.BypassKeyConstraints)
             {
                 if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
                     return new List<SynchronizationItem>();
@@ -40,9 +40,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (!string.IsNullOrEmpty(def) && def.StartsWith("((") && def.EndsWith("))"))
 				def = def.Substring(1, def.Length - 2);
 
-			return getStandardItems(string.Format(@"ALTER TABLE {0} ADD  CONSTRAINT {1}  DEFAULT {2} FOR {3}{4}",
-				databaseObject.Table.ObjectNameWithSchema, databaseObject.QueryObjectName, def, databaseObject.Column.QueryObjectName,
-                targetDatabase.IsPostgreSQL ? ";" : ""), 7);
+			return getStandardItems(string.Format(@"ALTER TABLE {0} ADD  CONSTRAINT {1}  DEFAULT {2} FOR {3};",
+				databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource), databaseObject.GetQueryObjectName(targetDatabase.DataSource), def, databaseObject.Column.GetQueryObjectName(targetDatabase.DataSource)
+                ), 7);
 		}
 
 		//public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)

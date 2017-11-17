@@ -184,7 +184,7 @@ namespace PaJaMa.Database.Studio.Search
 		private void cboDatabase_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			if (_lockDbChange) return;
-			_searchHelper.Database.ChangeDatabase(cboDatabase.Text);
+			_searchHelper.DataSource.ChangeDatabase(cboDatabase.Text);
 			refreshPage(true);
 		}
 
@@ -212,7 +212,7 @@ namespace PaJaMa.Database.Studio.Search
 				var worker = new BackgroundWorker();
 				worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
 				{
-					_searchHelper.Init(worker);
+					_searchHelper.DataSource.CurrentDatabase.PopulateChildren(true, worker);
 				};
 				WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
 			}

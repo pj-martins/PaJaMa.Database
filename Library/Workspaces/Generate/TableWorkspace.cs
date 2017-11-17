@@ -77,7 +77,7 @@ namespace PaJaMa.Database.Library.Workspaces.Generate
 			_generatorHelper = generatorHelper;
 			Table = table;
 			var tables = new List<Table>();
-			using (var conn = new SqlConnection(generatorHelper.Database.ConnectionString))
+			using (var conn = new SqlConnection(generatorHelper.DataSource.ConnectionString))
 			{
 				using (var cmd = conn.CreateCommand())
 				{
@@ -109,7 +109,7 @@ namespace PaJaMa.Database.Library.Workspaces.Generate
 		{
 			var lst = new TableWorkspaceList();
 
-			var tbls = (from s in generatorHelper.Database.Schemas
+			var tbls = (from s in generatorHelper.DataSource.CurrentDatabase.Schemas
 						from t in s.Tables
 						select t).ToList();
 

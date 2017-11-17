@@ -17,17 +17,11 @@ namespace PaJaMa.Database.Library.Helpers
 	{
 		public event DialogEventHandler Prompt;
 
-		public DatabaseObjects.Database Database { get; set; }
+		public DatabaseObjects.DataSource DataSource { get; set; }
 		public GeneratorHelper(Type driverType, string connectionString, BackgroundWorker worker)
 		{
-			Database = new DatabaseObjects.Database(driverType, connectionString);
-			Database.PopulateChildren(true, worker);
-		}
-
-		public void Init(BackgroundWorker worker)
-		{
-			Database = new DatabaseObjects.Database(Database.ConnectionType, Database.ConnectionString);
-			Database.PopulateChildren(true, worker);
+			DataSource = DatabaseObjects.DataSource.GetDataSource(driverType, connectionString);
+			DataSource.CurrentDatabase.PopulateChildren(false, worker);
 		}
 
 		public Dictionary<Table, List<Table>> GetMissingDependencies(List<TableWorkspace> selectedWorkspaces)
@@ -88,7 +82,7 @@ namespace PaJaMa.Database.Library.Helpers
 
 		public bool Generate(BackgroundWorker worker, List<TableWorkspace> workspaces)
 		{
-			using (var conn = new SqlConnection(Database.ConnectionString))
+			using (var conn = new SqlConnection(DataSource.ConnectionString))
 			{
 				conn.Open();
 				using (var trans = conn.BeginTransaction())
@@ -113,7 +107,7 @@ namespace PaJaMa.Database.Library.Helpers
 						foreach (var table in truncDelete)
 						{
 							worker.ReportProgress(100 * curr / truncDelete.Count, "Truncating/Deleting " + table.Table.TableName);
-							table.Table.TruncateDelete(cmd, table.Truncate);
+							table.Table.TruncateDelete(table.Table.ParentDatabase, cmd, table.Truncate);
 							curr++;
 						}
 					}

@@ -41,8 +41,8 @@ namespace PaJaMa.Database.Library.Synchronization
 				string def = new ColumnSynchronization(targetDatabase, col).GetDefaultScript();
 
 				sb.AppendLine("\t" + (firstIn ? string.Empty : ",") + string.Format("{0} {1}{2} {3} {4}",
-					DriverHelper.GetConvertedObjectName(targetDatabase, col.ColumnName),
-					DriverHelper.GetConvertedColumnType(targetDatabase, col.DataType),
+					targetDatabase.DataSource.GetConvertedObjectName(col.ColumnName),
+					targetDatabase.DataSource.GetConvertedColumnType(col.DataType),
 					part2,
 					col.IsNullable ? "NULL" : "NOT NULL",
 					def));
@@ -54,17 +54,18 @@ namespace PaJaMa.Database.Library.Synchronization
 		private string getCreateScript()
 		{
 			var sb = new StringBuilder();
-			var schema = DriverHelper.GetConvertedSchemaName(targetDatabase, databaseObject.Schema.SchemaName);
-			schema = DriverHelper.GetConvertedObjectName(targetDatabase, schema);
-			var tbl = DriverHelper.GetConvertedObjectName(targetDatabase, databaseObject.TableName);
-			sb.AppendLineFormat("CREATE TABLE {0}(", databaseObject.ObjectNameWithSchema);
+			var tbl = targetDatabase.DataSource.GetConvertedObjectName(databaseObject.TableName);
+			sb.AppendLineFormat("CREATE TABLE {0}(", databaseObject.GetObjectNameWithSchema(targetDatabase.DataSource));
 
 			sb.AppendLine(getColumnCreates().ToString());
 			foreach (var kc in databaseObject.KeyConstraints)
 			{
 				sb.AppendLine(", " + new KeyConstraintSynchronization(targetDatabase, kc).GetInnerCreateText());
 			}
-			sb.AppendLine(string.Format("){0}", targetDatabase.IsPostgreSQL ? ";" : ""));
+			sb.AppendLine("){0};");
+			sb.AppendLine(targetDatabase.DataSource.GetPostTableCreateScript(databaseObject));
+			
+
 			return sb.ToString();
 		}
 
@@ -138,7 +139,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				foreach (var tk in targetTable.ForeignKeys)
 				{
-					if (databaseObject.ParentDatabase.IsSQLite || targetTable.ParentDatabase.IsSQLite)
+					if (databaseObject.ParentDatabase.DataSource.MatchForeignKeyTablesAndColumns || targetTable.ParentDatabase.DataSource.MatchForeignKeyTablesAndColumns)
 					{
 						if (!databaseObject.ForeignKeys.Any(k =>
 							k.ChildTable.ObjectName == tk.ChildTable.ObjectName
@@ -149,7 +150,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 					else if (!databaseObject.ForeignKeys.Any(k => k.ForeignKeyName.ToLower() == tk.ForeignKeyName.ToLower()))
 					{
-                        if (targetTable.ParentDatabase.IsPostgreSQL)
+                        if (targetTable.ParentDatabase.DataSource.ForeignKeyDropsWithColumns)
                         {
                             // column being dropped
                             if (tk.Columns.Any(c => !databaseObject.Columns.Any(x => x.ColumnName == c.ChildColumn.ColumnName)))
@@ -165,7 +166,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					var tk = targetTable.ForeignKeys.FirstOrDefault(x => x.ObjectName == fk.ObjectName);
 					if (tk == null)
 					{
-						if (targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite)
+						if (targetDatabase.DataSource.MatchForeignKeyTablesAndColumns || databaseObject.ParentDatabase.DataSource.MatchForeignKeyTablesAndColumns)
 						{
 							tk = targetTable.ForeignKeys.FirstOrDefault(x =>
 								x.ParentTable.TableName == fk.ParentTable.TableName
@@ -329,7 +330,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		private List<SynchronizationItem> getKeyConstraintUpdateItems(Table targetTable)
 		{
-			if (targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite) return new List<SynchronizationItem>();
+			if (targetDatabase.DataSource.BypassConstraints || databaseObject.ParentDatabase.DataSource.BypassConstraints) return new List<SynchronizationItem>();
 
 			var items = new List<SynchronizationItem>();
 
@@ -458,7 +459,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		private List<SynchronizationItem> getDefaultConstraintCreateUpdateItems(Table targetTable)
 		{
-			if (targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite)
+			if (targetDatabase.DataSource.BypassConstraints || databaseObject.ParentDatabase.DataSource.BypassConstraints)
 				return new List<SynchronizationItem>();
 
 			var skips = new List<string>();
@@ -475,14 +476,14 @@ namespace PaJaMa.Database.Library.Synchronization
 					if (fromConstraint == null)
 						drop = true;
 					else if (fromConstraint.Column.ColumnName != toConstraint.Column.ColumnName ||
-							DriverHelper.GetConvertedColumnDefault(targetDatabase, fromConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")")
-								!= DriverHelper.GetConvertedColumnDefault(targetDatabase, toConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")"))
+							targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")")
+								!= targetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")"))
 					{
 						diff = new Difference()
 						{
 							PropertyName = "ColumnDefault",
-							SourceValue = DriverHelper.GetConvertedColumnDefault(targetDatabase, fromConstraint.ColumnDefault),
-							TargetValue = DriverHelper.GetConvertedColumnDefault(targetDatabase, toConstraint.ColumnDefault)
+							SourceValue = targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ColumnDefault),
+							TargetValue = targetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.ColumnDefault)
 						};
 
 						var creates = new DefaultConstraintSynchronization(targetDatabase, fromConstraint).GetCreateItems();
@@ -558,7 +559,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("DROP TABLE {0}", databaseObject.ObjectNameWithSchema));
+			return getStandardDropItems(string.Format("DROP TABLE {0}", databaseObject.GetObjectNameWithSchema(targetDatabase.DataSource)));
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,

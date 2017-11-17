@@ -13,227 +13,166 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-    public class Table : DatabaseObjectWithExtendedProperties
-    {
-        //private DataTable _removedKeys;
+	public class Table : DatabaseObjectWithExtendedProperties
+	{
+		//private DataTable _removedKeys;
 
-        public Schema Schema { get; set; }
-        public string TableName { get; set; }
+		public string TableName { get; set; }
 
-        [Ignore]
-        public List<Column> Columns { get; private set; }
+		[Ignore]
+		public List<Column> Columns { get; private set; }
 
-        [Ignore]
-        public List<Index> Indexes { get; private set; }
+		[Ignore]
+		public List<Index> Indexes { get; private set; }
 
-        [Ignore]
-        public List<KeyConstraint> KeyConstraints { get; private set; }
+		[Ignore]
+		public List<KeyConstraint> KeyConstraints { get; private set; }
 
-        [Ignore]
-        public List<ForeignKey> ForeignKeys { get; private set; }
+		[Ignore]
+		public List<ForeignKey> ForeignKeys { get; private set; }
 
-        [Ignore]
-        public List<DefaultConstraint> DefaultConstraints { get; private set; }
+		[Ignore]
+		public List<DefaultConstraint> DefaultConstraints { get; private set; }
 
-        [Ignore]
-        public List<Trigger> Triggers { get; private set; }
+		[Ignore]
+		public List<Trigger> Triggers { get; private set; }
 
-        public override string ObjectName
-        {
-            get { return TableName; }
-        }
+		public override string ObjectName
+		{
+			get { return TableName; }
+		}
 
-        public string ObjectNameWithSchema
-        {
-            get
-            {
-                if (ParentDatabase.IsSQLite)
-                    return QueryObjectName;
+		public Table(Database database) : base(database)
+		{
+			Columns = new List<Column>();
+			Indexes = new List<Index>();
+			KeyConstraints = new List<KeyConstraint>();
+			ForeignKeys = new List<ForeignKey>();
+			DefaultConstraints = new List<DefaultConstraint>();
+			Triggers = new List<Trigger>();
+		}
 
-                return string.Format("{0}.{1}", Schema.QueryObjectName, QueryObjectName);
-            }
-        }
+		internal override void setObjectProperties(DbDataReader reader)
+		{
+			if (reader["Definition"] != DBNull.Value)
+				this.Definition = reader["Definition"].ToString();
+			this.Schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["TABLE_SCHEMA"].ToString());
+			this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == this.TableName && ep.ObjectSchema == this.Schema.SchemaName &&
+				string.IsNullOrEmpty(ep.Level2Object)).ToList();
+			this.Schema.Tables.Add(this);
+		}
 
-        public override Database ParentDatabase => Schema.ParentDatabase;
+		private List<ForeignKey> getForeignKeys()
+		{
+			var fks = this.ForeignKeys.ToList();
+			fks.AddRange(from s in this.Schema.ParentDatabase.Schemas
+						 from t in s.Tables
+						 where t.TableName != this.TableName
+						 from fk in t.ForeignKeys
+						 where fk.ParentTable.TableName == this.TableName
+						 select fk);
 
-        public Table()
-        {
-            Columns = new List<Column>();
-            Indexes = new List<Index>();
-            KeyConstraints = new List<KeyConstraint>();
-            ForeignKeys = new List<ForeignKey>();
-            DefaultConstraints = new List<DefaultConstraint>();
-            Triggers = new List<Trigger>();
-        }
+			return fks;
+		}
 
-        public static void PopulateTables(Database database, DbConnection connection, List<ExtendedProperty> allExtendedProperties,
-            BackgroundWorker worker)
-        {
-            if (worker != null) worker.ReportProgress(0, "Populating tables for " + connection.Database + "...");
-            string qry = database.IsSQLite ?
-                @"select name as TABLE_NAME, '' as TABLE_SCHEMA, sql as Definition
-from sqlite_master
-where type = 'table'
-" :
-            @"select TABLE_NAME, TABLE_SCHEMA, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
-            if (database.IsPostgreSQL)
-                qry += " and table_schema <> 'pg_catalog' and table_schema <> 'information_schema'";
-            var tables = new List<Table>();
-            using (var cmd = connection.CreateCommand())
-            {
-                cmd.CommandText = qry;
-                using (var rdr = cmd.ExecuteReader())
-                {
-                    if (rdr.HasRows)
-                    {
-                        while (rdr.Read())
-                        {
-                            string tableName = rdr["TABLE_NAME"].ToString();
-                            var table = new Table();
-                            if (rdr["Definition"] != DBNull.Value)
-                                table.Definition = rdr["Definition"].ToString();
-                            table.TableName = tableName;
-                            table.Schema = database.Schemas.First(s => s.SchemaName == rdr["TABLE_SCHEMA"].ToString());
-                            table.ExtendedProperties = allExtendedProperties.Where(ep => ep.Level1Object == table.TableName && ep.ObjectSchema == table.Schema.SchemaName &&
-                                string.IsNullOrEmpty(ep.Level2Object)).ToList();
-                            table.Schema.Tables.Add(table);
-                        }
-                    }
-                    rdr.Close();
-                }
-            }
+		public void ResetIndexes()
+		{
+			foreach (var ix in Indexes)
+			{
+				ix.HasBeenDropped = false;
+			}
+		}
 
+		public void RemoveIndexes(IDbCommand cmd)
+		{
+			foreach (var ix in Indexes)
+			{
+				cmd.CommandText = new IndexSynchronization(ParentDatabase, ix).GetRawDropText();
+				cmd.ExecuteNonQuery();
+				ix.HasBeenDropped = true;
+			}
+		}
 
-            if (worker != null) worker.ReportProgress(0, "Populating columns for " + connection.Database + "...");
-            Column.PopulateColumnsForTable(database, connection, allExtendedProperties);
+		public void AddIndexes(IDbCommand cmd)
+		{
+			foreach (var ix in Indexes)
+			{
+				if (!ix.HasBeenDropped)
+					continue;
 
-            if (worker != null) worker.ReportProgress(0, "Populating foreign keys for " + connection.Database + "...");
-            ForeignKey.PopulateKeys(database, connection);
+				var items = new IndexSynchronization(ParentDatabase, ix).GetCreateItems();
+				foreach (var item in items)
+				{
+					foreach (var script in item.Scripts.Where(s => s.Value.Length > 0).OrderBy(s => (int)s.Key))
+					{
+						cmd.CommandText = script.Value.ToString();
+						cmd.CommandTimeout = 1200;
+						cmd.ExecuteNonQuery();
+					}
+				}
+				ix.HasBeenDropped = false;
+			}
+		}
 
-            if (worker != null) worker.ReportProgress(0, "Populating primary keys for " + connection.Database + "...");
-            KeyConstraint.PopulateKeys(database, connection);
+		public void ResetForeignKeys()
+		{
+			foreach (var fk in getForeignKeys())
+			{
+				fk.HasBeenDropped = false;
+			}
+		}
 
-            if (worker != null) worker.ReportProgress(0, "Populating indexes for " + connection.Database + "...");
-            Index.PopulateIndexes(database, connection);
+		public void RemoveForeignKeys(IDbCommand cmd)
+		{
+			foreach (var fk in getForeignKeys())
+			{
+				if (fk.HasBeenDropped)
+					continue;
 
-            if (worker != null) worker.ReportProgress(0, "Populating constraints for " + connection.Database + "...");
-            DefaultConstraint.PopulateConstraints(database, connection);
+				cmd.CommandText = new ForeignKeySynchronization(ParentDatabase, fk).GetRawDropText();
+				cmd.ExecuteNonQuery();
+				fk.HasBeenDropped = true;
+			}
+		}
 
-            if (worker != null) worker.ReportProgress(0, "Populating triggers for " + connection.Database + "...");
-            Trigger.PopulateTriggers(database, connection);
-        }
+		public void AddForeignKeys(IDbCommand cmd)
+		{
+			foreach (var fk in getForeignKeys())
+			{
+				if (!fk.HasBeenDropped)
+					continue;
 
-        private List<ForeignKey> getForeignKeys()
-        {
-            var fks = this.ForeignKeys.ToList();
-            fks.AddRange(from s in this.Schema.ParentDatabase.Schemas
-                         from t in s.Tables
-                         where t.TableName != this.TableName
-                         from fk in t.ForeignKeys
-                         where fk.ParentTable.TableName == this.TableName
-                         select fk);
+				var items = new ForeignKeySynchronization(ParentDatabase, fk).GetCreateItems();
+				foreach (var item in items)
+				{
+					foreach (var script in item.Scripts.Where(s => s.Value.Length > 0).OrderBy(s => (int)s.Key))
+					{
+						cmd.CommandText = script.Value.ToString();
+						cmd.CommandTimeout = 1200;
+						cmd.ExecuteNonQuery();
+					}
+				}
+				fk.HasBeenDropped = false;
+			}
+		}
 
-            return fks;
-        }
+		public void TruncateDelete(Database targetDatabase, IDbCommand cmd, bool truncate)
+		{
+			if (truncate)
+			{
+				cmd.CommandText = string.Format("truncate table {0}.{1}", Schema.GetQueryObjectName(targetDatabase.DataSource), GetQueryObjectName(targetDatabase.DataSource));
+				cmd.ExecuteNonQuery();
+			}
+			else
+			{
+				cmd.CommandText = string.Format("delete from {0}.{1}", Schema.GetQueryObjectName(targetDatabase.DataSource), GetQueryObjectName(targetDatabase.DataSource));
+				cmd.ExecuteNonQuery();
+			}
+		}
 
-        public void ResetIndexes()
-        {
-            foreach (var ix in Indexes)
-            {
-                ix.HasBeenDropped = false;
-            }
-        }
-
-        public void RemoveIndexes(IDbCommand cmd)
-        {
-            foreach (var ix in Indexes)
-            {
-                cmd.CommandText = new IndexSynchronization(ParentDatabase, ix).GetRawDropText();
-                cmd.ExecuteNonQuery();
-                ix.HasBeenDropped = true;
-            }
-        }
-
-        public void AddIndexes(IDbCommand cmd)
-        {
-            foreach (var ix in Indexes)
-            {
-                if (!ix.HasBeenDropped)
-                    continue;
-
-                var items = new IndexSynchronization(ParentDatabase, ix).GetCreateItems();
-                foreach (var item in items)
-                {
-                    foreach (var script in item.Scripts.Where(s => s.Value.Length > 0).OrderBy(s => (int)s.Key))
-                    {
-                        cmd.CommandText = script.Value.ToString();
-                        cmd.CommandTimeout = 1200;
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                ix.HasBeenDropped = false;
-            }
-        }
-
-        public void ResetForeignKeys()
-        {
-            foreach (var fk in getForeignKeys())
-            {
-                fk.HasBeenDropped = false;
-            }
-        }
-
-        public void RemoveForeignKeys(IDbCommand cmd)
-        {
-            foreach (var fk in getForeignKeys())
-            {
-                if (fk.HasBeenDropped)
-                    continue;
-
-                cmd.CommandText = new ForeignKeySynchronization(ParentDatabase, fk).GetRawDropText();
-                cmd.ExecuteNonQuery();
-                fk.HasBeenDropped = true;
-            }
-        }
-
-        public void AddForeignKeys(IDbCommand cmd)
-        {
-            foreach (var fk in getForeignKeys())
-            {
-                if (!fk.HasBeenDropped)
-                    continue;
-
-                var items = new ForeignKeySynchronization(ParentDatabase, fk).GetCreateItems();
-                foreach (var item in items)
-                {
-                    foreach (var script in item.Scripts.Where(s => s.Value.Length > 0).OrderBy(s => (int)s.Key))
-                    {
-                        cmd.CommandText = script.Value.ToString();
-                        cmd.CommandTimeout = 1200;
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                fk.HasBeenDropped = false;
-            }
-        }
-
-        public void TruncateDelete(IDbCommand cmd, bool truncate)
-        {
-            if (truncate)
-            {
-                cmd.CommandText = string.Format("truncate table {0}.{1}", Schema.QueryObjectName, QueryObjectName);
-                cmd.ExecuteNonQuery();
-            }
-            else
-            {
-                cmd.CommandText = string.Format("delete from {0}.{1}", Schema.QueryObjectName, QueryObjectName);
-                cmd.ExecuteNonQuery();
-            }
-        }
-
-        public override string ToString()
-        {
-            return Schema == null || Schema.ParentDatabase.IsSQLite ? TableName : Schema.SchemaName + "." + TableName;
-        }
-    }
+		public override string ToString()
+		{
+			return Schema == null || string.IsNullOrEmpty(Schema.SchemaName) ? TableName : Schema.SchemaName + "." + TableName;
+		}
+	}
 }

@@ -2,6 +2,7 @@
 using PaJaMa.Database.Library.Helpers;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
@@ -13,6 +14,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
 	public class Column : DatabaseObjectWithExtendedProperties
 	{
+		public Column(Database database) : base(database)
+		{
+		}
+
 		public override string ObjectName
 		{
 			get { return ColumnName; }
@@ -20,11 +25,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		[Ignore]
 		public Table Table { get; set; }
-
-        public override Database ParentDatabase
-        {
-            get { return Table.ParentDatabase; }
-        }
 
 		public string ColumnName { get; set; }
 
@@ -41,127 +41,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public int? NumericScale { get; set; }
 		public decimal? Increment { get; set; }
 
-        [Ignore]
+		[Ignore]
 		public string ConstraintName { get; set; }
 
-		public static void PopulateColumnsForTable(Database database, DbConnection connection, List<ExtendedProperty> allExtendedProperties)
+		internal override void setObjectProperties(DbDataReader reader)
 		{
-            if (database.IsSQLite)
-            {
-                using (var cmd = connection.CreateCommand())
-                {
-                    foreach (var tbl in database.Schemas.First().Tables)
-                    {
-                        cmd.CommandText = $"pragma table_info({tbl.TableName})";
-                        using (var rdr = cmd.ExecuteReader())
-                        {
-                            if (rdr.HasRows)
-                            {
-                                while (rdr.Read())
-                                {
-                                    var col = new Column();
-                                    col.ColumnName = rdr["name"].ToString();
-                                    col.DataType = rdr["type"].ToString();
-									var m = Regex.Match(col.DataType, "(.*nvarchar)\\((\\d*)\\)");
-									if (m.Success)
-									{
-										col.DataType = m.Groups[1].Value;
-										col.CharacterMaximumLength = Convert.ToInt16(m.Groups[2].Value);
-									}
-
-                                    col.IsNullable = rdr["notnull"].ToString() == "0";
-                                    var def = rdr["dflt_value"];
-                                    if (def != DBNull.Value)
-                                        col.ColumnDefault = def.ToString();
-                                    col.IsIdentity = rdr["pk"].ToString() == "1";
-                                    col.Table = tbl;
-                                    tbl.Columns.Add(col);
-                                }
-                            }
-                            rdr.Close();
-                        }
-                    }
-                }
-                return;
-            }
-
-            string query = string.Empty;
-            if (connection is SqlConnection)
-            {
-                if (database.Is2000OrLess)
-                {
-                    query = @"select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
-	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
-    IsNullable = convert(bit, case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then 1 else 0 end), convert(bit, COLUMNPROPERTY(object_id(TABLE_NAME), COLUMN_NAME, 'IsIdentity')) as IsIdentity, d.name as ConstraintName,
-	COLUMN_DEFAULT as ColumnDefault, null as Formula, NUMERIC_PRECISION as NumericPrecision, NUMERIC_SCALE as NumericScale,
-	SchemaName = co.TABLE_SCHEMA, IDENT_INCR(co.TABLE_SCHEMA + '.' + TABLE_NAME) AS Increment
-from INFORMATION_SCHEMA.COLUMNS co
-join syscolumns c on c.name = co.column_name
-join sysobjects t on t.id = c.id
-	and t.name = co.TABLE_NAME
-left join
-(
-	select dc.colid, d.name, d.parent_obj
-	from sysconstraints dc
-	join sysobjects d on d.id = dc.constid
-) d
-on d.colid = c.colid and d.parent_obj = t.id
-where t.xtype = 'U'";
-                }
-                else
-                {
-                    query = @"select TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
-	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
-    IsNullable = convert(bit, case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then 1 else 0 end), convert(bit, COLUMNPROPERTY(object_id(co.TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME, 'IsIdentity')) as IsIdentity, d.name as ConstraintName,
-	isnull(d.definition, COLUMN_DEFAULT) as ColumnDefault, cm.definition as Formula, convert(int, NUMERIC_PRECISION) as NumericPrecision, NUMERIC_SCALE as NumericScale,
-	SchemaName = co.TABLE_SCHEMA, IDENT_INCR(co.TABLE_SCHEMA + '.' + TABLE_NAME) AS Increment
-from INFORMATION_SCHEMA.COLUMNS co
-join sys.all_columns c on c.name = co.column_name
-join sys.tables t on t.object_id = c.object_id
-	and t.name = co.TABLE_NAME
-join sys.schemas sc on sc.schema_id = t.schema_id
-	and sc.name = co.TABLE_SCHEMA
-left join sys.default_constraints d on d.object_id = c.default_object_id
-left join sys.computed_columns cm on cm.name = co.column_name and c.is_computed = 1 and cm.object_id = t.object_id";
-                }
-            }
-            else if (database.IsPostgreSQL)
-            {
-                query = @"
-select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
-	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
-    case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then true else false end as IsNullable, case when is_identity = 'NO' then false else true end as IsIdentity,
-	COLUMN_DEFAULT as ColumnDefault, null as Formula, NUMERIC_PRECISION as NumericPrecision, NUMERIC_SCALE as NumericScale,
-	co.TABLE_SCHEMA as SchemaName
-from INFORMATION_SCHEMA.COLUMNS co
-join INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME
-where t.TABLE_TYPE = 'BASE TABLE'
-and co.TABLE_SCHEMA <> 'pg_catalog' and co.TABLE_SCHEMA <> 'information_schema'";
-            }
-            else
-                throw new NotImplementedException();
-
-
-			using (var cmd = connection.CreateCommand())
-			{
-				cmd.CommandText = query;
-				using (var rdr = cmd.ExecuteReader())
-				{
-					if (rdr.HasRows)
-					{
-						while (rdr.Read())
-						{
-							var col = rdr.ToObject<Column>();
-							var schema = database.Schemas.First(s => s.SchemaName == rdr["SchemaName"].ToString());
-							col.Table = schema.Tables.First(t => t.TableName == rdr["TableName"].ToString());
-							col.Table.Columns.Add(col);
-							col.ExtendedProperties = allExtendedProperties.Where(ep => ep.Level1Object == col.Table.ObjectName && ep.ObjectSchema == col.Table.Schema.SchemaName &&
-								ep.Level2Object == col.ColumnName).ToList();
-						}
-					}
-					rdr.Close();
-				}
-			}
+			var schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			this.Table = schema.Tables.First(t => t.TableName == reader["TableName"].ToString());
+			this.Table.Columns.Add(this);
+			this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == this.Table.ObjectName 
+				&& ep.ObjectSchema == this.Table.Schema.SchemaName &&
+				ep.Level2Object == this.ColumnName).ToList();
 		}
 	}
 }
