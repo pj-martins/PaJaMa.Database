@@ -69,10 +69,19 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="Scripts\Compare\SQLite.db" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\Compare\MySQL.sql" />
+    <Content Include="Scripts\Compare\PostgreSQL.sql" />
+    <Content Include="Scripts\Compare\SQLServer.sql" />
     <Content Include="Scripts\SqlServer\DatabaseCreate.sql" />
     <Content Include="Scripts\SqlServer\TestDatabase.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
