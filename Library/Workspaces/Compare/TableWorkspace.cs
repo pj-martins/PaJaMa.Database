@@ -176,11 +176,11 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		{
 			var lst = new TableWorkspaceList();
 
-			var fromTbls = (from s in compareHelper.FromDataSource.CurrentDatabase.Schemas
+			var fromTbls = (from s in compareHelper.FromDataSource.GetNonSystemSchemas(compareHelper.FromDataSource.CurrentDatabase)
 							from t in s.Tables
 							select t).ToList();
 
-			var toTbls = (from s in compareHelper.ToDataSource.CurrentDatabase.Schemas
+			var toTbls = (from s in compareHelper.ToDataSource.GetNonSystemSchemas(compareHelper.ToDataSource.CurrentDatabase)
 						  from t in s.Tables
 						  select t).ToList();
 

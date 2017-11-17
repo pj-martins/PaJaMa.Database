@@ -49,7 +49,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			var schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
 			this.Table = schema.Tables.First(t => t.TableName == reader["TableName"].ToString());
 			this.Table.Columns.Add(this);
-			this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == this.Table.ObjectName 
+			if (ParentDatabase.ExtendedProperties != null)
+				this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == this.Table.ObjectName
 				&& ep.ObjectSchema == this.Table.Schema.SchemaName &&
 				ep.Level2Object == this.ColumnName).ToList();
 		}

@@ -37,10 +37,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 
 		internal override string DatabaseSQL => throw new NotImplementedException();
 
-		internal override string GetConvertedColumnType(string columnType)
-		{
-			throw new NotImplementedException();
-		}
+		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
 
 		public override string GetConvertedObjectName(string objectName)
 		{

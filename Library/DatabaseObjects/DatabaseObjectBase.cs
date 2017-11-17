@@ -47,11 +47,12 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public virtual string GetObjectNameWithSchema(DataSource server)
 		{
-			if (string.IsNullOrEmpty(server.DefaultSchemaName))
+			var schema = this.Schema == null ? server.DefaultSchemaName : this.Schema.SchemaName;
+			if (string.IsNullOrEmpty(schema))
 				return server.GetConvertedObjectName(ObjectName);
 
 			return string.Format("{0}.{1}",
-				server.GetConvertedObjectName(server.DefaultSchemaName),
+				server.GetConvertedObjectName(schema),
 				server.GetConvertedObjectName(ObjectName));
 		}
 

@@ -47,6 +47,8 @@ where type = 'table'
 
 		protected override Type connectionType => typeof(SQLiteConnection);
 
+		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
+
 		internal override bool PopulateColumns(Database database, DbCommand cmd, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating columns for {database.DatabaseName}...");
@@ -223,13 +225,6 @@ where type = 'table'
 		public override string GetConvertedObjectName(string objectName)
 		{
 			return string.Format("{0}", objectName);
-		}
-
-		internal override string GetConvertedColumnType(string columnType)
-		{
-			return columnType
-					.Replace("int", "integer")
-				;
 		}
 
 		public override string GetColumnSelectList(string[] columns)

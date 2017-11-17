@@ -42,7 +42,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				sb.AppendLine("\t" + (firstIn ? string.Empty : ",") + string.Format("{0} {1}{2} {3} {4}",
 					targetDatabase.DataSource.GetConvertedObjectName(col.ColumnName),
-					targetDatabase.DataSource.GetConvertedColumnType(col.DataType),
+					targetDatabase.DataSource.GetConvertedColumnType(databaseObject.ParentDatabase.DataSource, col.DataType),
 					part2,
 					col.IsNullable ? "NULL" : "NOT NULL",
 					def));
@@ -87,7 +87,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			items.AddRange(getTriggerUpdateItems(null));
 			foreach (var column in databaseObject.Columns)
 			{
-				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(column, null));
+				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(targetDatabase, column, null));
 			}
 
 			return items;
@@ -226,7 +226,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			items.AddRange(getTriggerUpdateItems(targetTable));
 			foreach (var column in databaseObject.Columns)
 			{
-				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(column, targetTable == null ? null : targetTable.Columns.FirstOrDefault(c => c.ColumnName == column.ColumnName)));
+				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(targetDatabase, column, targetTable == null ? null : targetTable.Columns.FirstOrDefault(c => c.ColumnName == column.ColumnName)));
 			}
 			return items;
 		}
@@ -476,14 +476,14 @@ namespace PaJaMa.Database.Library.Synchronization
 					if (fromConstraint == null)
 						drop = true;
 					else if (fromConstraint.Column.ColumnName != toConstraint.Column.ColumnName ||
-							targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")")
-								!= targetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")"))
+							targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, fromConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")")
+								!= targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, toConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")"))
 					{
 						diff = new Difference()
 						{
 							PropertyName = "ColumnDefault",
-							SourceValue = targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ColumnDefault),
-							TargetValue = targetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.ColumnDefault)
+							SourceValue = targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, fromConstraint.ColumnDefault),
+							TargetValue = targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, toConstraint.ColumnDefault)
 						};
 
 						var creates = new DefaultConstraintSynchronization(targetDatabase, fromConstraint).GetCreateItems();

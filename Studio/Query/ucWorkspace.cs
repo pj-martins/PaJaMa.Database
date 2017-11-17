@@ -20,11 +20,12 @@ namespace PaJaMa.Database.Studio.Query
 {
 	public partial class ucWorkspace : UserControl
 	{
-		private DbConnection _currentConnection;
+		const string NONE = "__NONE__";
 
+		private DbConnection _currentConnection;
 		private string _initialConnString;
-        private Type _initialDbType;
-        private DataSource _dataSource;
+		private Type _initialDbType;
+		private DataSource _dataSource;
 
 		private QueryEventArgs _queryEventArgs;
 
@@ -37,7 +38,7 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			cboServer.DataSource = DataSource.GetDataSourceTypes();
 
-            var settings = Properties.Settings.Default;
+			var settings = Properties.Settings.Default;
 
 			if (settings.ConnectionStrings == null)
 				settings.ConnectionStrings = string.Empty;
@@ -129,8 +130,8 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
-            _dataSource = Activator.CreateInstance(cboServer.SelectedItem as Type, new object[] { txtConnectionString.Text }) as DataSource;
-            _currentConnection = _dataSource.OpenConnection();
+			_dataSource = Activator.CreateInstance(cboServer.SelectedItem as Type, new object[] { txtConnectionString.Text }) as DataSource;
+			_currentConnection = _dataSource.OpenConnection();
 
 			try
 			{
@@ -174,26 +175,6 @@ namespace PaJaMa.Database.Studio.Query
 			pnlConnect.Visible = false;
 			treeTables.Nodes.Clear();
 
-			//if (!serverType.Equals(typeof(SqlConnection)) && !serverType.Equals(typeof(Npgsql.NpgsqlConnection)))
-			//{
-			//	var tables = new List<Table>();
-			//	if (chkUseDummyDA.Checked)
-			//		tables = NonSqlServerSchemaHelper.GetTablesExistingConnection(_currentConnection);
-			//	else
-			//		tables = NonSqlServerSchemaHelper.GetTables(_currentConnection, txtConnectionString.Text);
-			//	foreach (var table in tables)
-			//	{
-			//		var node = treeTables.Nodes.Add(table.ToString());
-			//		foreach (var column in table.Columns)
-			//		{
-			//			var node2 = node.Nodes.Add(column.ColumnName + " (" + column.DataType + ", "
-			//								+ (column.IsNullable ? "null" : "not null") + ")");
-			//			node2.Tag = column;
-			//		}
-			//		node.Tag = table;
-			//	}
-			//}
-
 			pnlControls.Visible = true;
 
 			splitMain.Panel1Collapsed = false;
@@ -201,22 +182,22 @@ namespace PaJaMa.Database.Studio.Query
 			foreach (var db in _dataSource.Databases)
 			{
 				var node = treeTables.Nodes.Add(db.DatabaseName);
-				node.Nodes.Add("__NONE__");
+				node.Nodes.Add(NONE);
 				node.Tag = db;
 			}
 
-            if (!string.IsNullOrEmpty(_currentConnection.Database))
-            {
-                var treeNode = treeTables.Nodes.OfType<TreeNode>().First(n => n.Text == _currentConnection.Database);
-                treeNode.Expand();
-            }
-        }
+			if (!string.IsNullOrEmpty(_currentConnection.Database))
+			{
+				var treeNode = treeTables.Nodes.OfType<TreeNode>().First(n => n.Text == _currentConnection.Database);
+				treeNode.Expand();
+			}
+		}
 
 		private ucQueryOutput addQueryOutput(string initialDatabase)
 		{
 			var uc = new ucQueryOutput();
 			uc.Dock = DockStyle.Fill;
-            if (!uc.Connect(_currentConnection, _dataSource, initialDatabase, chkUseDummyDA.Checked))
+			if (!uc.Connect(_currentConnection, _dataSource, initialDatabase, chkUseDummyDA.Checked))
 				return null;
 			var tabPage = new TabPage();
 			tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
@@ -305,39 +286,61 @@ namespace PaJaMa.Database.Studio.Query
 		private void treeTables_BeforeExpand(object sender, TreeViewCancelEventArgs e)
 		{
 			var node = e.Node;
-			if (node.Tag is Library.DatabaseObjects.Database)
+			if (node.Nodes.Count == 1 && node.Nodes[0].Text == NONE)
 			{
-				var db = node.Tag as Library.DatabaseObjects.Database;
-				db.PopulateChildren(true, null);
 				node.Nodes.Clear();
-				var node2 = node.Nodes.Add("Table");
-				foreach (var table in from s in db.Schemas
-									  from t in s.Tables
-									  orderby t.TableName
-									  orderby t.Schema.SchemaName
-									  select t)
+				if (node.Tag is Library.DatabaseObjects.Database)
 				{
-					var node3 = node2.Nodes.Add(table.ToString());
-					foreach (var column in table.Columns)
+					var db = node.Tag as Library.DatabaseObjects.Database;
+					db.PopulateSchemas();
+					foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
 					{
-						node3.Nodes.Add(column.ToString());
-					}
-					node3.Tag = table;
-				}
+						var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);
 
-				node2 = node.Nodes.Add("Views");
-				foreach (var view in from s in db.Schemas
-									 from v in s.Views
-									 orderby v.ViewName
-									 orderby v.Schema.SchemaName
-									 select v)
-				{
-					var node3 = node2.Nodes.Add(view.ToString());
-					foreach (var column in view.Columns)
-					{
-						node3.Nodes.Add(column.ToString());
+						var node3 = node2.Nodes.Add("Tables");
+						node3.Nodes.Add(NONE);
+						node3.Tag = schema;
+
+						node3 = node2.Nodes.Add("Views");
+						node3.Nodes.Add(NONE);
+						node3.Tag = schema;
 					}
-					node3.Tag = view;
+				}
+				else if (node.Tag is Schema)
+				{
+					var schema = node.Tag as Schema;
+					if (node.Text == "Tables")
+					{
+						schema.ParentDatabase.PopulateTables(schema);
+						foreach (var table in from t in schema.Tables
+											  orderby t.TableName
+											  select t)
+						{
+							var node4 = node.Nodes.Add(table.TableName);
+							foreach (var column in table.Columns)
+							{
+								node4.Nodes.Add(column.ColumnName + " (" + column.DataType + ", "
+											+ (column.IsNullable ? "null" : "not null") + ")");
+							}
+							node4.Tag = table;
+						}
+					}
+					else if (node.Text == "Views")
+					{
+						schema.ParentDatabase.PopulateViews(schema);
+						foreach (var view in from v in schema.Views
+											 orderby v.ViewName
+											 select v)
+						{
+							var node4 = node.Nodes.Add(view.ViewName);
+							foreach (var column in view.Columns)
+							{
+								node4.Nodes.Add(column.ColumnName + " (" + column.DataType + ", "
+											+ (column.IsNullable ? "null" : "not null") + ")");
+							}
+							node4.Tag = view;
+						}
+					}
 				}
 			}
 		}
@@ -504,5 +507,5 @@ namespace PaJaMa.Database.Studio.Query
 				MessageBox.Show("Only SQL connections supported.");
 			}
 		}
-    }
+	}
 }

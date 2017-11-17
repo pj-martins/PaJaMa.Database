@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public static List<SynchronizationItem> GetExtendedProperties(DatabaseObjectWithExtendedProperties sourceObject, DatabaseObjectWithExtendedProperties targetObject)
+		public static List<SynchronizationItem> GetExtendedProperties(DatabaseObjects.Database targetDatabase, DatabaseObjectWithExtendedProperties sourceObject, DatabaseObjectWithExtendedProperties targetObject)
 		{
 			var items = new List<SynchronizationItem>();
 			var skips = new List<string>();
@@ -46,7 +46,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				if (skips.Contains(fromProperty.PropName))
 					continue;
 
-				items.AddRange(new ExtendedPropertySynchronization(targetObject.ParentDatabase, fromProperty).GetCreateItems());
+				items.AddRange(new ExtendedPropertySynchronization(targetDatabase, fromProperty).GetCreateItems());
 			}
 
 			return items;

@@ -27,10 +27,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 			{
 				if (_is2000OrLess)
 					return "select distinct TABLE_SCHEMA as SchemaName, TABLE_SCHEMA as SchemaOwner from INFORMATION_SCHEMA.TABLES";
-				return @"select s.name as SchemaName, p.name as SchemaOwner
-				 from sys.schemas s
-				join sys.database_principals p on p.principal_id = s.principal_id
-				";
+				return @"select distinct TABLE_SCHEMA as SchemaName, p.name as SchemaOwner 
+from INFORMATION_SCHEMA.TABLES t
+join sys.schemas s on s.name = t.TABLE_SCHEMA
+join sys.database_principals p on p.principal_id = s.principal_id";
 			}
 		}
 
@@ -53,7 +53,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 
 		internal override string ViewSQL => _is2000OrLess ?
 					@"select 
-	VIEW_SCHEMA as ObjectSchema,
+	VIEW_SCHEMA as SchemaName,
 	vcu.VIEW_NAME as ViewName,
 	vcu.COLUMN_NAME as ColumnName,
 	convert(bit, 0) as IsIdentity,
@@ -66,7 +66,7 @@ join INFORMATION_SCHEMA.COLUMNS c on c.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 	and c.TABLE_NAME = c.TABLE_NAME and c.COLUMN_NAME = vcu.COLUMN_NAME
 join INFORMATION_SCHEMA.VIEWS v on v.TABLE_NAME = vcu.VIEW_NAME and v.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 " : @"select
-	s.name as ObjectSchema,
+	s.name as SchemaName,
 	v.name as ViewName,
 	vc.name as ColumnName,
 	is_identity as IsIdentity,
@@ -105,7 +105,7 @@ where p.type in ('U', 'S') and p.name not in ('INFORMATION_SCHEMA', 'sys', 'gues
 
 		internal override string CredentialSQL => "select name as CredentialName, credential_identity as CredentialIdentity from sys.credentials";
 
-		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
+		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
 
 		internal override string ColumnSQL => _is2000OrLess ?
 					@"select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
@@ -344,7 +344,24 @@ left join sys.server_principals sp on sp.sid = dp.sid
 		#endregion
 
 		protected override Type connectionType => typeof(SqlConnection);
-		
+
+		private List<ColumnType> _columnTypes;
+		internal override List<ColumnType> ColumnTypes
+		{
+			get
+			{
+				if (_columnTypes == null)
+				{
+					_columnTypes = new List<ColumnType>();
+					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, typeof(Guid), "newid()"));
+					_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, typeof(DateTime), "getdate()"));
+					_columnTypes.Add(new ColumnType("nvarchar", DataType.VaryingChar, typeof(string), "''"));
+					_columnTypes.Add(new ColumnType("int", DataType.Integer, typeof(int), "0"));
+				}
+				return _columnTypes;
+			}
+		}
+
 		protected override void DatabaseInitializing(DbConnection conn)
 		{
 			base.DatabaseInitializing(conn);
@@ -353,26 +370,9 @@ left join sys.server_principals sp on sp.sid = dp.sid
 				_is2000OrLess = true;
 		}
 
-		internal override string GetConvertedColumnType(string columnType)
-		{
-			return columnType
-				.Replace("timestamp with time zone", "datetime")
-				.Replace("uuid", "uniqueidentifier")
-				.Replace("character varying", "nvarchar")
-				.Replace("jsonb", "text")
-				.Replace("integer", "int")
-			;
-		}
-
 		public override string GetConvertedObjectName(string objectName)
 		{
 			return string.Format("[{0}]", objectName);
-		}
-
-		internal override string GetConvertedColumnDefault(string columnDefault)
-		{
-            if (string.IsNullOrEmpty(columnDefault)) return string.Empty;
-			return columnDefault.Replace("now", "getdate").Replace("uuid_generate_v4", "newid");
 		}
 
 		public override string GetPreTopN(int topN)

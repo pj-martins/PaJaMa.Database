@@ -189,7 +189,7 @@ namespace PaJaMa.Database.Studio.Query
 								{
 									// int existingCount = dt.Columns.OfType<DataColumn>().Count(c => c.ColumnName == row["ColumnName"].ToString());
 									var colType = Type.GetType(row["DataType"].ToString());
-									if (colType.Equals(typeof(byte[])))
+									if (colType == null || colType.Equals(typeof(byte[])))
 										colType = typeof(string);
 									string colName = row["ColumnName"].ToString();
 									int curr = 1;
@@ -252,7 +252,14 @@ namespace PaJaMa.Database.Studio.Query
 									var cols = dt.Columns.OfType<DataColumn>();
 									for (int j = 0; j < cols.Count(); j++)
 									{
-										row[j] = dr[j] is byte[] ? Convert.ToBase64String(dr[j] as byte[]) : dr[j];
+										try
+										{
+											row[j] = dr[j] is byte[] ? Convert.ToBase64String(dr[j] as byte[]) : dr[j];
+										}
+										catch (Exception ex)
+										{
+											row[j] = "ERR! " + ex.Message;
+										}
 									}
 
 									dt.Rows.Add(row);
@@ -389,7 +396,14 @@ namespace PaJaMa.Database.Studio.Query
 			}
 
 			if (selectedNode.Parent != null && _currentConnection.Database != selectedNode.Parent.Parent.Text)
-				_currentConnection.ChangeDatabase(selectedNode.Parent.Parent.Text);
+			{
+				var node = selectedNode.Parent;
+				while (!(node.Tag is Database.Library.DatabaseObjects.Database))
+				{
+					node = node.Parent;
+				}
+				_currentConnection.ChangeDatabase(node.Text);
+			}
 
 			string objName = string.Empty;
             var dbName = string.Empty;

@@ -54,7 +54,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			SynchronizationItems.AddRange(syncItem.GetSynchronizationItems(TargetObject));
 
 			if (SourceObject is DatabaseObjectWithExtendedProperties)
-				SynchronizationItems.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(SourceObject as DatabaseObjectWithExtendedProperties, 
+				SynchronizationItems.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(TargetDatabase, SourceObject as DatabaseObjectWithExtendedProperties, 
 					TargetObject as DatabaseObjectWithExtendedProperties));
 		}
 

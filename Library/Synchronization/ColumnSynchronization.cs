@@ -62,7 +62,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			//else if (fromCol["COLUMN_DEFAULT"] != DBNull.Value)
 			//	def = "DEFAULT(" + fromCol["COLUMN_DEFAULT"] + ")";
 
-			string colDef = targetDatabase.DataSource.GetConvertedColumnDefault(databaseObject.ColumnDefault);
+			string colDef = targetDatabase.DataSource.GetConvertedColumnDefault(databaseObject.ParentDatabase.DataSource, databaseObject.ColumnDefault);
 			if (!string.IsNullOrEmpty(colDef) && colDef.StartsWith("((") && colDef.EndsWith("))"))
 				colDef = colDef.Substring(1, colDef.Length - 2);
 
@@ -110,13 +110,13 @@ namespace PaJaMa.Database.Library.Synchronization
 				var diff = differences[i];
 				if (diff.PropertyName == "DataType")
 				{
-					if (diff.TargetValue == targetDatabase.DataSource.GetConvertedColumnType(diff.SourceValue))
+					if (diff.TargetValue == targetDatabase.DataSource.GetConvertedColumnType(databaseObject.ParentDatabase.DataSource, diff.SourceValue))
 						differences.RemoveAt(i);
 				}
 				else if (diff.PropertyName == "ColumnDefault")
 				{
 					if (diff.TargetValue.Replace("(", "").Replace(")", "") ==
-						targetDatabase.DataSource.GetConvertedColumnDefault(diff.SourceValue.Replace("(", "").Replace(")", "")))
+						targetDatabase.DataSource.GetConvertedColumnDefault(databaseObject.ParentDatabase.DataSource, diff.SourceValue.Replace("(", "").Replace(")", "")))
 						differences.RemoveAt(i);
 				}
 				// TODO:
@@ -160,14 +160,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				if (!databaseObject.IsNullable && !databaseObject.IsIdentity && string.IsNullOrEmpty(def) && databaseObject.DataType != "timestamp")
 				{
-					// added columns to existing tables must have default so we must add a temporary one for now
-					var sqlDbType = (System.Data.SqlDbType)Enum.Parse(typeof(System.Data.SqlDbType),
-						databaseObject.DataType == "numeric" ? "decimal" : targetDatabase.DataSource.GetConvertedColumnType(databaseObject.DataType)
-						, true);
-
-					var clrType = Common.DataHelper.GetClrType(sqlDbType);
-
-					clrType = clrType.GetGenericArguments().FirstOrDefault() ?? clrType;
+					var clrType = databaseObject.ParentDatabase.DataSource.ColumnTypes.First(c => c.TypeName == databaseObject.DataType).ClrType;
 
 					tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");
 

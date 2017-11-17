@@ -26,13 +26,13 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			this.DataSource = dataSource;
 			this.DatabaseName = databaseName;
 		}
-		
+
 		private void populateObjects<TDatabaseObject>(DbCommand cmd, string query, BackgroundWorker worker)
 			where TDatabaseObject : DatabaseObjectBase
 		{
-            if (string.IsNullOrEmpty(query)) return;
+			if (string.IsNullOrEmpty(query)) return;
 
-			if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()} for {DatabaseName}...");
+			if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {DatabaseName}...");
 
 			var objs = new List<TDatabaseObject>();
 			cmd.CommandText = query;
@@ -56,9 +56,55 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			return DataSource.OpenConnection(this.DatabaseName);
 		}
 
+		public void PopulateSchemas()
+		{
+			Schemas = new List<Schema>();
+			if (string.IsNullOrEmpty(this.DataSource.SchemaSQL))
+				Schemas.Add(new Schema(this) { SchemaName = "" });
+			else
+			{
+				using (var conn = OpenConnection())
+				{
+					using (var cmd = conn.CreateCommand())
+					{
+						populateObjects<Schema>(cmd, this.DataSource.SchemaSQL, null);
+					}
+				}
+			}
+		}
+
+		public void PopulateTables(Schema schema)
+		{
+			using (var conn = OpenConnection())
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					var qry = "select * from ({0}) z where SchemaName = '" + schema.SchemaName + "'";
+
+					populateObjects<Table>(cmd, string.Format(qry, this.DataSource.TableSQL), null);
+					if (!DataSource.PopulateColumns(this, cmd, null)) 
+						populateObjects<Column>(cmd, string.Format(qry, this.DataSource.ColumnSQL), null);
+				}
+				conn.Close();
+			}
+		}
+
+		public void PopulateViews(Schema schema)
+		{
+			using (var conn = OpenConnection())
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					var qry = "select * from ({0}) z where SchemaName = '" + schema.SchemaName + "'";
+					populateObjects<View>(cmd, string.Format(qry, this.DataSource.ViewSQL), null);
+				}
+				conn.Close();
+			}
+		}
+
 		public void PopulateChildren(bool condensed, BackgroundWorker worker)
 		{
-            ExtendedProperties = new List<ExtendedProperty>();
+			ExtendedProperties = new List<ExtendedProperty>();
 			Schemas = new List<Schema>();
 			ServerLogins = new List<ServerLogin>();
 			Principals = new List<DatabasePrincipal>();
@@ -72,14 +118,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				{
 					populateObjects<ExtendedProperty>(cmd, this.DataSource.ExtendedPropertySQL, worker);
 					populateObjects<DatabasePrincipal>(cmd, this.DataSource.DatabasePrincipalSQL, worker);
-                    foreach (var dp in this.Principals)
-                    {
-                        if (dp.OwningPrincipalID > 0)
-                        {
-                            dp.Owner = this.Principals.First(p => p.PrincipalID == dp.OwningPrincipalID);
-                            dp.Owner.Ownings.Add(dp);
-                        }
-                    }
+					foreach (var dp in this.Principals)
+					{
+						if (dp.OwningPrincipalID > 0)
+						{
+							dp.Owner = this.Principals.First(p => p.PrincipalID == dp.OwningPrincipalID);
+							dp.Owner.Ownings.Add(dp);
+						}
+					}
 					if (string.IsNullOrEmpty(this.DataSource.SchemaSQL))
 						Schemas.Add(new Schema(this) { SchemaName = "" });
 					else

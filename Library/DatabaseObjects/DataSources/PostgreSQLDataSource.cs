@@ -20,7 +20,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 
 		#region SQLS
 		internal override string SchemaSQL => @"select schema_name as SchemaName, schema_owner as SchemaOwner from information_schema.schemata
-where schema_name <> 'pg_catalog' and schema_name <> 'information_schema'";
+";
 
 		internal override string RoutineSynonymSQL => @"
 select 
@@ -29,11 +29,10 @@ select
 	ROUTINE_TYPE as Type,
 	ROUTINE_DEFINITION as Definition
 from INFORMATION_SCHEMA.ROUTINES
-where ROUTINE_SCHEMA <> 'pg_catalog' and ROUTINE_SCHEMA <> 'information_schema'
 ";
 
-		internal override string ViewSQL => @"select 
-	VIEW_SCHEMA as ObjectSchema,
+		internal override string ViewSQL => @"select distinct
+	VIEW_SCHEMA as SchemaName,
 	vcu.VIEW_NAME as ViewName,
 	vcu.COLUMN_NAME as ColumnName,
 	false as IsIdentity,
@@ -45,9 +44,9 @@ from INFORMATION_SCHEMA.VIEW_COLUMN_USAGE vcu
 join INFORMATION_SCHEMA.COLUMNS c on c.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 	and c.TABLE_NAME = c.TABLE_NAME and c.COLUMN_NAME = vcu.COLUMN_NAME
 join INFORMATION_SCHEMA.VIEWS v on v.TABLE_NAME = vcu.VIEW_NAME and v.TABLE_SCHEMA = vcu.VIEW_SCHEMA
-where VIEW_SCHEMA <> 'pg_catalog' and VIEW_SCHEMA <> 'information_schema'";
-
-		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and table_schema <> 'pg_catalog' and table_schema <> 'information_schema'";
+";
+		internal override string TableSQL => @"select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES 
+where TABLE_TYPE = 'BASE TABLE'";
 
 		internal override string ColumnSQL => @"
 select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
@@ -58,7 +57,7 @@ select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION a
 from INFORMATION_SCHEMA.COLUMNS co
 join INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME
 where t.TABLE_TYPE = 'BASE TABLE'
-and co.TABLE_SCHEMA <> 'pg_catalog' and co.TABLE_SCHEMA <> 'information_schema'";
+";
 
 		internal override string ForeignKeySQL => @"
 SELECT distinct
@@ -146,12 +145,22 @@ from INFORMATION_SCHEMA.SEQUENCES";
 		#endregion
 
 		protected override Type connectionType => typeof(NpgsqlConnection);
-		
-		internal override string GetConvertedColumnType(string columnType)
+
+		private List<ColumnType> _columnTypes;
+		internal override List<ColumnType> ColumnTypes
 		{
-			return columnType
-					.Replace("nvarchar", "character varying")
-				;
+			get
+			{
+				if (_columnTypes == null)
+				{
+					_columnTypes = new List<ColumnType>();
+					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, typeof(Guid), "uuid_generate_v4()"));
+					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTimeZone, typeof(DateTime), "now()"));
+					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, typeof(string), "''"));
+					_columnTypes.Add(new ColumnType("integer", DataType.Integer, typeof(int), "0"));
+				}
+				return _columnTypes;
+			}
 		}
 
 		public override string GetConvertedObjectName(string objectName)
@@ -159,9 +168,9 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			return string.Format("\"{0}\"", objectName);
 		}
 
-		internal override string GetConvertedColumnDefault(string columnDefault)
+		public override List<Schema> GetNonSystemSchemas(Database database)
 		{
-			return columnDefault.Replace("getdate", "now").Replace("newid", "uuid_generate_v4");
+			return database.Schemas.Where(s => s.SchemaName != "pg_catalog" && s.SchemaName != "information_schema").ToList();
 		}
 
 		internal override string GetCreateIdentity(Column column)

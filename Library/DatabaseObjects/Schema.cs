@@ -53,12 +53,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			this.ExtendedProperties = ParentDatabase.ExtendedProperties
-							.Where(ep => ep.Level1Type == typeof(Schema).Name.ToUpper() && ep.Level1Object == this.SchemaName)
-							.ToList();
-			var owner = ParentDatabase.Principals.FirstOrDefault(p => SchemaOwner == p.ObjectName);
-			if (owner != null)
-				owner.Ownings.Add(this);
+			if (ParentDatabase.ExtendedProperties != null)
+				this.ExtendedProperties = ParentDatabase.ExtendedProperties
+								.Where(ep => ep.Level1Type == typeof(Schema).Name.ToUpper() && ep.Level1Object == this.SchemaName)
+								.ToList();
+			if (ParentDatabase.Principals != null)
+			{
+				var owner = ParentDatabase.Principals.FirstOrDefault(p => SchemaOwner == p.ObjectName);
+				if (owner != null)
+					owner.Ownings.Add(this);
+			}
 			ParentDatabase.Schemas.Add(this);
 		}
 	}

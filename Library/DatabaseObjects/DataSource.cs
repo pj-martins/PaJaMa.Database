@@ -26,11 +26,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
         internal abstract string SchemaSQL { get; }
         internal virtual string RoutineSynonymSQL => "";
         internal abstract string ViewSQL { get; }
-        internal virtual string ServerLoginSQL => "";
+		internal virtual string ServerLoginSQL => "";
         internal virtual string PermissionSQL => "";
         internal virtual string CredentialSQL => "";
         internal abstract string TableSQL { get; }
-        internal abstract string ColumnSQL { get; }
+		internal abstract string ColumnSQL { get; }
         internal abstract string ForeignKeySQL { get; }
         internal abstract string KeyConstraintSQL { get; }
         internal abstract string IndexSQL { get; }
@@ -39,8 +39,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
         internal virtual string SequenceSQL => "";
         internal virtual string ExtensionSQL => "";
         internal abstract string DatabaseSQL { get; }
-
-        internal abstract string GetConvertedColumnType(string columnType);
+        internal abstract List<ColumnType> ColumnTypes { get; }
 
         internal virtual bool BypassConstraints => false;
         internal virtual bool BypassKeyConstraints => false;
@@ -48,8 +47,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
         internal virtual bool ForeignKeyDropsWithColumns => false;
         internal virtual bool CheckForeignKeys => false;
         internal virtual bool BypassForeignKeyRules => false;
-
-        internal virtual string GetPostTableCreateScript(Table table) { return string.Empty; }
 
         public DataSource(string connectionString)
         {
@@ -59,12 +56,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
         protected virtual void DatabaseInitializing(DbConnection conn) { }
 
-        internal virtual string GetConvertedColumnDefault(string columnDefault)
-        {
-            return columnDefault;
-        }
+        internal virtual string GetPostTableCreateScript(Table table) { return string.Empty; }
 
-        protected List<Database> getDatabases()
+		protected List<Database> getDatabases()
         {
             var databases = new List<Database>();
             using (var conn = OpenConnection())
@@ -111,6 +105,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
         {
             CurrentDatabase = Databases.First(d => d.DatabaseName == newDatabase);
         }
+
+		public virtual List<Schema> GetNonSystemSchemas(Database database)
+		{
+			return database.Schemas;
+		}
 
         internal virtual bool PopulateColumns(Database database, DbCommand cmd, BackgroundWorker worker)
         {
@@ -176,7 +175,23 @@ namespace PaJaMa.Database.Library.DatabaseObjects
                    add ? "ADD" : "ALTER COLUMN");
         }
 
-        public static List<Type> GetDataSourceTypes()
+		internal string GetConvertedColumnDefault(DataSource source, string columnDefault)
+		{
+			if (string.IsNullOrEmpty(columnDefault)) return string.Empty;
+			var src = source.ColumnTypes.FirstOrDefault(c => c.DefaultValue == columnDefault);
+			return src != null ? this.ColumnTypes.First(t => t.DataType == src.DataType).DefaultValue
+				: columnDefault;
+		}
+
+		internal string GetConvertedColumnType(DataSource source, string columnType)
+		{
+			if (string.IsNullOrEmpty(columnType)) return string.Empty;
+			var src = source.ColumnTypes.FirstOrDefault(c => c.TypeName == columnType);
+			return src != null ? this.ColumnTypes.First(t => t.DataType == src.DataType).TypeName :
+				columnType;
+		}
+
+		public static List<Type> GetDataSourceTypes()
         {
             return typeof(DataSource).Assembly.GetTypes()
                 .Where(t => t.IsSubclassOf(typeof(DataSource)))
@@ -184,12 +199,27 @@ namespace PaJaMa.Database.Library.DatabaseObjects
         }
     }
 
-    public class ConnectionTypeAttribute : Attribute
-    {
-        public Type ConnectionType { get; private set; }
-        public ConnectionTypeAttribute(Type connectionType)
-        {
-            this.ConnectionType = connectionType;
-        }
-    }
+	public class ColumnType
+	{
+		public string TypeName { get; private set; }
+		public DataType DataType { get; private set; }
+		public string DefaultValue { get; private set; }
+		public Type ClrType { get; private set; }
+
+		public ColumnType(string typeName, DataType dataType, Type clrType, string defaultValue)
+		{
+			this.TypeName = typeName;
+			this.DataType = dataType;
+			this.ClrType = clrType;
+			this.DefaultValue = defaultValue;
+		}
+	}
+
+	public enum DataType
+	{
+		UniqueIdentifier,
+		DateTimeZone,
+		VaryingChar,
+		Integer,
+	}
 }

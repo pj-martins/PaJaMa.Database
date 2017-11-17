@@ -37,10 +37,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.Servers
 
 		protected override Type connectionType => typeof(OleDbConnection);
 
-		internal override string GetConvertedColumnType(string columnType)
-		{
-			throw new NotImplementedException();
-		}
+		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
 
 		public override string GetConvertedObjectName(string objectName)
 		{
