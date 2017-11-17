@@ -47,7 +47,7 @@ join INFORMATION_SCHEMA.COLUMNS c on c.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 join INFORMATION_SCHEMA.VIEWS v on v.TABLE_NAME = vcu.VIEW_NAME and v.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 where VIEW_SCHEMA <> 'pg_catalog' and VIEW_SCHEMA <> 'information_schema'";
 
-		internal override string TableSQL => "select TABLE_NAME, TABLE_SCHEMA, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and table_schema <> 'pg_catalog' and table_schema <> 'information_schema'";
+		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and table_schema <> 'pg_catalog' and table_schema <> 'information_schema'";
 
 		internal override string ColumnSQL => @"
 select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
@@ -141,7 +141,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 
 		internal override string ExtensionSQL => "select * from pg_available_extensions where installed_version <> ''";
 
-		internal override string DatabaseSQL => throw new NotImplementedException();
+		internal override string DatabaseSQL => "select \"datname\" as DatabaseName from \"pg_database\"";
 
 		#endregion
 

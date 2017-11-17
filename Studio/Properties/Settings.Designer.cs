@@ -277,26 +277,44 @@ namespace PaJaMa.Database.Studio.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastCompareSourceDriver {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UpgradeRequired {
             get {
-                return ((string)(this["LastCompareSourceDriver"]));
+                return ((bool)(this["UpgradeRequired"]));
             }
             set {
-                this["LastCompareSourceDriver"] = value;
+                this["UpgradeRequired"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastCompareTargetDriver {
-            get {
-                return ((string)(this["LastCompareTargetDriver"]));
-            }
-            set {
-                this["LastCompareTargetDriver"] = value;
-            }
-        }
-    }
+
+		[global::System.Configuration.UserScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("")]
+		public string LastCompareSourceDriver
+		{
+			get
+			{
+				return ((string)(this["LastCompareSourceDriver"]));
+			}
+			set
+			{
+				this["LastCompareSourceDriver"] = value;
+			}
+		}
+
+		[global::System.Configuration.UserScopedSettingAttribute()]
+		[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+		[global::System.Configuration.DefaultSettingValueAttribute("")]
+		public string LastCompareTargetDriver
+		{
+			get
+			{
+				return ((string)(this["LastCompareTargetDriver"]));
+			}
+			set
+			{
+				this["LastCompareTargetDriver"] = value;
+			}
+		}
+	}
 }
