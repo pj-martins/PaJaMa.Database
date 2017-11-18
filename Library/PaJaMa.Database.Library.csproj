@@ -65,6 +65,7 @@
     <Compile Include="DataSources\OleDbDataSource.cs" />
     <Compile Include="DataSources\PostgreSQLDataSource.cs" />
     <Compile Include="DataSources\SQLiteDataSource.cs" />
+    <Compile Include="DataSources\LegacySqlServerDataSource.cs" />
     <Compile Include="DataSources\SqlServerDataSource.cs" />
     <Compile Include="DatabaseObjects\DefaultConstraint.cs" />
     <Compile Include="DatabaseObjects\ExtendedProperty.cs" />

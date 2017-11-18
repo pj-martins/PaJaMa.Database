@@ -58,8 +58,6 @@ namespace PaJaMa.Database.Library.DataSources
 			Databases = getDatabases();
 		}
 
-		protected virtual void DatabaseInitializing(DbConnection conn) { }
-
 		internal virtual string GetPreTableCreateScript(Table table) { return string.Empty; }
 
 		protected List<DatabaseObjects.Database> getDatabases()
@@ -228,6 +226,7 @@ namespace PaJaMa.Database.Library.DataSources
 		{
 			return typeof(DataSource).Assembly.GetTypes()
 				.Where(t => t.IsSubclassOf(typeof(DataSource)))
+				.OrderBy(d => d.Name)
 				.ToList();
 		}
 	}
