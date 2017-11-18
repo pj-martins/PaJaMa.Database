@@ -22,9 +22,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			var diffs = GetPropertyDifferences(target, ignoreCase);
 			if (diffs.Any())
 			{
-				var createAlter = databaseObject.Definition;
+				var createAlter = DatabaseObject.Definition;
 				createAlter = Regex.Replace(createAlter, "CREATE VIEW", "ALTER VIEW", RegexOptions.IgnoreCase);
-				items.AddRange(getStandardItems(createAlter, propertyName: Difference.ALTER));
+				items.AddRange(getStandardItems(createAlter, difference: getDifference(DifferenceType.Alter, DatabaseObject, target)));
 			}
 
 			return items;
@@ -32,18 +32,18 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return getStandardItems(databaseObject.Definition);
+			return getStandardItems(DatabaseObject.Definition);
 		}
 
 		public override string ToString()
 		{
-			return databaseObject.Schema.SchemaName + "." + databaseObject.ViewName;
+			return DatabaseObject.Schema.SchemaName + "." + DatabaseObject.ViewName;
 		}
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("DROP {0} [{1}].[{2}]", databaseObject.ObjectType.ToString().ToUpper(),
-				databaseObject.Schema.SchemaName, databaseObject.ObjectName));
+			return getStandardDropItems(string.Format("DROP {0} [{1}].[{2}]", DatabaseObject.ObjectType.ToString().ToUpper(),
+				DatabaseObject.Schema.SchemaName, DatabaseObject.ObjectName));
 		}
 	}
 }

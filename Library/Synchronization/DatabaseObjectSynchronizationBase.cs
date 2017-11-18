@@ -11,14 +11,14 @@ namespace PaJaMa.Database.Library.Synchronization
 {
 	public abstract class DatabaseObjectSynchronizationBase
 	{
-		protected DatabaseObjectBase databaseObject { get; private set; }
+		protected DatabaseObjectBase DatabaseObject { get; private set; }
 
-        protected DatabaseObjects.Database targetDatabase { get; private set; }
+		protected DatabaseObjects.Database TargetDatabase { get; private set; }
 
 		public DatabaseObjectSynchronizationBase(DatabaseObjects.Database targetDb, DatabaseObjectBase obj)
 		{
-            targetDatabase = targetDb;
-			databaseObject = obj;
+			TargetDatabase = targetDb;
+			DatabaseObject = obj;
 		}
 
 		public virtual List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
@@ -31,7 +31,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public virtual List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("DROP {0} [{1}]", databaseObject.ObjectType.ToString(), databaseObject.ObjectName));
+			return getStandardDropItems(string.Format("DROP {0} [{1}]", DatabaseObject.ObjectType.ToString(), DatabaseObject.ObjectName));
 		}
 
 		public abstract List<SynchronizationItem> GetCreateItems();
@@ -41,12 +41,12 @@ namespace PaJaMa.Database.Library.Synchronization
 			var dropItem = items.FirstOrDefault();
 			if (dropItem == null)
 			{
-				dropItem = new SynchronizationItem(databaseObject);
+				dropItem = new SynchronizationItem(DatabaseObject);
 				items.Insert(0, dropItem);
 			}
 
 			var diff = dropItem.Differences.FirstOrDefault();
-			if (diff != null && diff.PropertyName == Difference.CREATE)
+			if (diff != null && diff.DifferenceType == DifferenceType.Create)
 				dropItem.Differences.Remove(diff);
 
 			dropItem.Differences.AddRange(GetPropertyDifferences(target, ignoreCase));
@@ -56,11 +56,16 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public List<Difference> GetPropertyDifferences(DatabaseObjectBase target, bool caseInsensitive)
 		{
-			if (target == null)
-				return new List<Difference>() { new Difference() { PropertyName = Difference.CREATE } };
-
 			var diff = new List<Difference>();
-			foreach (var propInf in databaseObject.GetType().GetProperties())
+			if (target == null)
+			{
+				var d = getDifference(DifferenceType.Create, DatabaseObject);
+				if (d != null)
+					diff.Add(d);
+				return diff;
+			}
+
+			foreach (var propInf in DatabaseObject.GetType().GetProperties())
 			{
 				if (propInf.Name == "ObjectName" || propInf.Name == "QueryObjectName" || propInf.Name == "Description" || propInf.Name == "ObjectType") continue;
 
@@ -77,7 +82,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					continue;
 
 				var targetVal = propInf.GetValue(target, null);
-				var sourceVal = propInf.GetValue(databaseObject, null);
+				var sourceVal = propInf.GetValue(DatabaseObject, null);
 
 				if (targetVal is DatabaseObjectBase)
 					targetVal = (targetVal as DatabaseObjectBase).ObjectName;
@@ -100,26 +105,26 @@ namespace PaJaMa.Database.Library.Synchronization
 						continue;
 				}
 
-				diff.Add(new Difference()
-				{
-					PropertyName = propInf.Name,
-					SourceValue = sourceVal == null ? string.Empty : sourceVal.ToString(),
-					TargetValue = targetVal == null ? string.Empty : targetVal.ToString()
-				});
+				var d = getDifference(DifferenceType.Alter, DatabaseObject, target,
+					propInf.Name, sourceVal == null ? string.Empty : sourceVal.ToString(), targetVal == null ? string.Empty : targetVal.ToString());
+				if (d != null)
+					diff.Add(d);
 			}
-
 			return diff;
 		}
 
-		protected List<SynchronizationItem> getStandardDropItems(string script, int level = 0, string propertyName = Difference.DROP)
+		protected List<SynchronizationItem> getStandardDropItems(string script, int level = 0)
 		{
-			return getStandardItems(script, level, propertyName);
+			return getStandardItems(script, level, getDifference(DifferenceType.Drop, DatabaseObject));
 		}
 
-		protected List<SynchronizationItem> getStandardItems(string script, int level = 4, string propertyName = Difference.CREATE)
+		protected List<SynchronizationItem> getStandardItems(string script, int level = 4, Difference difference = null)
 		{
-			var item = new SynchronizationItem(databaseObject);
-			item.Differences.Add(new Difference() { PropertyName = propertyName });
+			if (difference == null)
+				difference = getDifference(DifferenceType.Create, DatabaseObject);
+			if (difference == null) return new List<SynchronizationItem>();
+			var item = new SynchronizationItem(DatabaseObject);
+			item.Differences.Add(difference);
 			item.AddScript(level, script);
 			return new List<SynchronizationItem>() { item };
 		}
@@ -138,11 +143,11 @@ namespace PaJaMa.Database.Library.Synchronization
 																				 orderby (int)kvp.Key
 																				 select kvp.Value);
 
-			if (databaseObject is DatabaseObjectWithExtendedProperties)
+			if (DatabaseObject is DatabaseObjectWithExtendedProperties)
 			{
-				foreach (var ep in (databaseObject as DatabaseObjectWithExtendedProperties).ExtendedProperties)
+				foreach (var ep in (DatabaseObject as DatabaseObjectWithExtendedProperties).ExtendedProperties)
 				{
-					rawText += (insertGo ? "\r\nGO\r\n\r\n" : "\r\n") + new ExtendedPropertySynchronization(targetDatabase, ep).GetRawCreateText();
+					rawText += (insertGo ? "\r\nGO\r\n\r\n" : "\r\n") + new ExtendedPropertySynchronization(TargetDatabase, ep).GetRawCreateText();
 				}
 			}
 
@@ -169,18 +174,44 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			return Activator.CreateInstance(type, targetDatabase, forObject) as DatabaseObjectSynchronizationBase;
 		}
+
+		protected Difference getDifference(DifferenceType differenceType, DatabaseObjectBase fromObject, DatabaseObjectBase toObject = null, string propertyName = null, string sourceValue = null, string targetValue = null)
+		{
+			var diff = new Difference(differenceType,
+				string.IsNullOrEmpty(propertyName) ? differenceType.ToString() : propertyName,
+				sourceValue,
+				targetValue
+			);
+
+			if (TargetDatabase.DataSource.GetType().FullName != DatabaseObject.Database.DataSource.GetType().FullName)
+			{
+				if (TargetDatabase.DataSource.IgnoreDifference(diff, fromObject, toObject))
+					return null;
+				if (toObject != null && DatabaseObject.Database.DataSource.IgnoreDifference(diff, toObject, fromObject))
+					return null;
+			}
+			return diff;
+		}
 	}
 
 	public abstract class DatabaseObjectSynchronizationBase<TDatabaseObject> : DatabaseObjectSynchronizationBase
 		where TDatabaseObject : DatabaseObjectBase
 	{
-		protected new TDatabaseObject databaseObject { get; private set; }
-        
+		protected new TDatabaseObject DatabaseObject { get; private set; }
+
 		public DatabaseObjectSynchronizationBase(DatabaseObjects.Database targetDb, TDatabaseObject obj)
 			: base(targetDb, obj)
 		{
 
-			databaseObject = obj;
+			DatabaseObject = obj;
+		}
+
+		protected bool DataSourcesAreDifferent
+		{
+			get
+			{
+				return base.DatabaseObject.Database.DataSource.GetType().FullName != TargetDatabase.DataSource.GetType().FullName;
+			}
 		}
 	}
 }

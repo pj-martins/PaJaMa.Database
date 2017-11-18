@@ -21,8 +21,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return LoginType.ToString(); }
 		}
 
-		private Database _database;
-
 		public ServerLogin(Database database) : base(database)
 		{
 		}

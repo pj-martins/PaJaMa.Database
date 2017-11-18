@@ -24,25 +24,33 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetCreateItems()
 		{
             var items = new List<SynchronizationItem>();
-            var item = new SynchronizationItem(databaseObject);
-            items.Add(item);
-            item.Differences.Add(new Difference() { PropertyName = Difference.CREATE });
-            item.AddScript(0, string.Format("CREATE EXTENSION IF NOT EXISTS \"{0}\"", databaseObject.Name));
+			var diff = getDifference(DifferenceType.Create, DatabaseObject);
+			if (diff != null)
+			{
+				var item = new SynchronizationItem(DatabaseObject);
+				items.Add(item);
+				item.Differences.Add(diff);
+				item.AddScript(0, string.Format("CREATE EXTENSION IF NOT EXISTS \"{0}\"", DatabaseObject.Name));
+			}
             return items;
         }
 
 		public override string ToString()
 		{
-			return databaseObject.Database.DatabaseName + "." + databaseObject.Name;
+			return DatabaseObject.Database.DatabaseName + "." + DatabaseObject.Name;
 		}
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
             var items = new List<SynchronizationItem>();
-            var item = new SynchronizationItem(databaseObject);
-            items.Add(item);
-            item.Differences.Add(new Difference() { PropertyName = Difference.CREATE });
-            item.AddScript(0, string.Format("DROP EXTENSION \"{0}\"", databaseObject.Name));
+			var diff = getDifference(DifferenceType.Create, DatabaseObject);
+			if (diff != null)
+			{
+				var item = new SynchronizationItem(DatabaseObject);
+				items.Add(item);
+				item.Differences.Add(diff);
+				item.AddScript(0, string.Format("DROP EXTENSION \"{0}\"", DatabaseObject.Name));
+			}
             return items;
         }
 	}

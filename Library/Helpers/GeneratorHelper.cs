@@ -1,6 +1,7 @@
 ﻿using PaJaMa.Common;
 using PaJaMa.Database.DataGenerate.Content;
 using PaJaMa.Database.Library.DatabaseObjects;
+using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Workspaces.Generate;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,10 @@ namespace PaJaMa.Database.Library.Helpers
 	{
 		public event DialogEventHandler Prompt;
 
-		public DatabaseObjects.DataSource DataSource { get; set; }
+		public DataSource DataSource { get; set; }
 		public GeneratorHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
 		{
-			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DatabaseObjects.DataSource;
+			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DataSource;
             DataSource.CurrentDatabase.PopulateChildren(false, false, worker);
 		}
 

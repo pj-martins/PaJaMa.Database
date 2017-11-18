@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PaJaMa.Database.Library.DatabaseObjects;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,7 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
+namespace PaJaMa.Database.Library.DataSources
 {
 	public class SQLiteDataSource : DataSource
 	{
@@ -41,15 +42,14 @@ where type = 'table'
 
 		internal override string DefaultConstraintSQL => throw new NotImplementedException();
 
-		internal override bool BypassConstraints => true;
-		internal override bool MatchForeignKeyTablesAndColumns => true;
+		internal override bool MatchConstraintsByColumns => true;
 		internal override bool BypassForeignKeyRules => true;
 
 		protected override Type connectionType => typeof(SQLiteConnection);
 
 		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
 
-		internal override bool PopulateColumns(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override bool PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating columns for {database.DatabaseName}...");
 
@@ -88,7 +88,7 @@ where type = 'table'
 			return true;
 		}
 
-		internal override bool PopulateForeignKeys(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override bool PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating foreign keys for {database.DatabaseName}...");
 
@@ -120,7 +120,7 @@ where type = 'table'
 			return true;
 		}
 
-		internal override bool PopulateKeyConstraints(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override bool PopulateKeyConstraints(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating key constraints for {database.DatabaseName}...");
 
@@ -154,7 +154,7 @@ where type = 'table'
 			return true;
 		}
 
-		internal override bool PopulateIndexes(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override bool PopulateIndexes(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, "Populating indexes for " + database.DatabaseName + "...");
 			

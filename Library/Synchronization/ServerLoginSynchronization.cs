@@ -18,21 +18,21 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			if (databaseObject.LoginType == LoginType.SQLLogin)
+			if (DatabaseObject.LoginType == LoginType.SQLLogin)
 			{
-				return getStandardDropItems(string.Format("DROP LOGIN [{0}]", databaseObject.ObjectName));
+				return getStandardDropItems(string.Format("DROP LOGIN [{0}]", DatabaseObject.ObjectName));
 			}
-			return getStandardDropItems(string.Format("DROP USER [{0}]", databaseObject.ObjectName));
+			return getStandardDropItems(string.Format("DROP USER [{0}]", DatabaseObject.ObjectName));
 		}
 
 		private string getLoginScript(bool create)
 		{
 			string script = (create ? "CREATE " : "ALTER ")
 				+ string.Format("LOGIN [{0}]{1} WITH PASSWORD=N'p@ssw0rd', DEFAULT_DATABASE=[{2}], DEFAULT_LANGUAGE=[{3}]",
-				databaseObject.LoginName, databaseObject.LoginType == LoginType.WindowsLogin ? " FROM WINDOWS" : "", databaseObject.DefaultDatabaseName, databaseObject.DefaultLanguageName);
+				DatabaseObject.LoginName, DatabaseObject.LoginType == LoginType.WindowsLogin ? " FROM WINDOWS" : "", DatabaseObject.DefaultDatabaseName, DatabaseObject.DefaultLanguageName);
 
-			script += string.Format(", CHECK_EXPIRATION={0}", databaseObject.IsExpirationChecked ? "ON" : "OFF");
-			script += string.Format(", CHECK_POLICY={0}", databaseObject.IsPolicyChecked ? "ON" : "OFF");
+			script += string.Format(", CHECK_EXPIRATION={0}", DatabaseObject.IsExpirationChecked ? "ON" : "OFF");
+			script += string.Format(", CHECK_POLICY={0}", DatabaseObject.IsPolicyChecked ? "ON" : "OFF");
 
 			return script;
 		}
@@ -40,12 +40,16 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetCreateItems()
 		{
 			var items = getStandardItems(getLoginScript(true));
-			if (databaseObject.IsDisabled)
+			if (DatabaseObject.IsDisabled)
 			{
-				var item = new SynchronizationItem(databaseObject);
-				item.Differences.Add(new Difference() { PropertyName = "Disabled" });
-				item.AddScript(7, string.Format("\r\nALTER LOGIN [{0}] DISABLE", databaseObject.LoginName));
-				items.Add(item);
+				var diff = getDifference(DifferenceType.Alter, DatabaseObject, null, "Disabled");
+				if (diff != null)
+				{
+					var item = new SynchronizationItem(DatabaseObject);
+					item.Differences.Add(diff);
+					item.AddScript(7, string.Format("\r\nALTER LOGIN [{0}] DISABLE", DatabaseObject.LoginName));
+					items.Add(item);
+				}
 			}
 			return items;
 		}
@@ -55,10 +59,14 @@ namespace PaJaMa.Database.Library.Synchronization
 			var diff = GetPropertyDifferences(target, ignoreCase);
 			if (diff.Count == 1 && diff[0].PropertyName == "IsDisabled")
 			{
-				var item = new SynchronizationItem(databaseObject);
-				item.Differences.Add(new Difference() { PropertyName = "Disabled" });
-				item.AddScript(7, string.Format("\r\nALTER LOGIN [{0}] {1}", databaseObject.LoginName, databaseObject.IsDisabled ? "DISABLE" : "ENABLE"));
-				return new List<SynchronizationItem>() { item };
+				var d = getDifference(DifferenceType.Alter, DatabaseObject, target, "Disabled");
+				if (d != null)
+				{
+					var item = new SynchronizationItem(DatabaseObject);
+					item.Differences.Add(d);
+					item.AddScript(7, string.Format("\r\nALTER LOGIN [{0}] {1}", DatabaseObject.LoginName, DatabaseObject.IsDisabled ? "DISABLE" : "ENABLE"));
+					return new List<SynchronizationItem>() { item };
+				}
 			}
 			return new List<SynchronizationItem>();
 		}

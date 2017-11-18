@@ -1,4 +1,5 @@
 ﻿using PaJaMa.Database.Library.DatabaseObjects;
+using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Synchronization;
 using PaJaMa.Database.Library.Workspaces.Compare;
@@ -10,6 +11,7 @@ using System.Data;
 using System.Data.Common;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -65,7 +67,8 @@ namespace PaJaMa.Database.Studio.Compare
 					}
 					catch (Exception ex)
 					{
-						exception = new Exception("Error opening source connection: " + ex.Message);
+						exception = new Exception("Error opening source connection: " + 
+							(ex is TargetInvocationException && ex.InnerException != null ? ex.InnerException.Message : ex.Message));
 						return;
 					}
 

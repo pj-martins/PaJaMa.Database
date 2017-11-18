@@ -6,8 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PaJaMa.Database.Library.Synchronization;
+using PaJaMa.Database.Library.DatabaseObjects;
 
-namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
+namespace PaJaMa.Database.Library.DataSources
 {
 	public class PostgreSQLDataSource : DataSource
 	{
@@ -19,7 +20,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 		internal override bool BypassKeyConstraints => true;
 		internal override bool ForeignKeyDropsWithColumns => true;
 		internal override bool BypassClusteredNonClustered => true;
-		internal override bool BypassIdentityColumn => true;
+		internal override bool MatchConstraintsByColumns => true;
+
+		internal override string Max => "";
 		internal override List<string> SystemSchemaNames => new List<string>() { "pg_catalog", "information_schema" };
 
 		#region SQLS
@@ -56,10 +59,24 @@ where TABLE_TYPE = 'BASE TABLE'";
 select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
 	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
     case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then true else false end as IsNullable, case when is_identity = 'NO' then false else true end as IsIdentity,
-	COLUMN_DEFAULT as ColumnDefault, null as Formula, NUMERIC_PRECISION as NumericPrecision, NUMERIC_SCALE as NumericScale,
+	COLUMN_DEFAULT as ColumnDefault, ConstraintName, null as Formula, NUMERIC_PRECISION as NumericPrecision, NUMERIC_SCALE as NumericScale,
 	co.TABLE_SCHEMA as SchemaName
 from INFORMATION_SCHEMA.COLUMNS co
 join INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME
+left join
+(
+	select 
+		t.relname as TableName,
+		coalesce(c.conname, 'DF_' || t.relname || '_' || a.attname) as ConstraintName,
+		a.attname as ColumnName,
+		d.adsrc as ColumnDefault,
+		n.nspname as SchemaName
+	from pg_constraint c
+	join pg_class t on t.oid = c.conrelid
+	join pg_attribute a on a.attrelid = c.conrelid and ARRAY[attnum] <@ c.conkey
+	join pg_attrdef d on d.adnum = a.attnum and d.adrelid = t.oid
+	join pg_catalog.pg_namespace n on n.oid = t.relnamespace
+) dc on dc.tablename = co.table_name and dc.columnname = co.column_name and dc.schemaname = co.table_schema and dc.columndefault = co.column_default
 where t.TABLE_TYPE = 'BASE TABLE'
 ";
 
@@ -177,6 +194,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, typeof(Guid), "uuid_generate_v4()"));
 					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTimeZone, typeof(DateTime), "now()"));
+					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, typeof(DateTime), "now()"));
 					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, typeof(string), "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("character varying", DataType.NVaryingChar, typeof(string), "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("integer", DataType.Integer, typeof(int), "0"));
@@ -243,13 +261,16 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			return sb.ToString();
 		}
 
-		internal override bool IgnoreColumnDifference(Difference difference, Column column)
+		internal override bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
 		{
-			if (column.Database.DataSource.GetType().FullName != this.GetType().FullName)
+			if (base.IgnoreDifference(difference, fromObject, toObject)) return true;
+
+			if (fromObject is Column)
 			{
+				var column = fromObject as Column;
 				if (difference.PropertyName == "ColumnDefault")
 				{
-					if (difference.TargetValue.StartsWith("nextval"))
+					if (difference.TargetValue.StartsWith("nextval") || difference.SourceValue.StartsWith("nextval"))
 						return true;
 				}
 				else if (difference.PropertyName == "NumericPrecision" || difference.PropertyName == "IsIdentity")
@@ -257,7 +278,10 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					return true;
 				}
 			}
-			return base.IgnoreColumnDifference(difference, column);
+			else if (fromObject is ForeignKey && difference.PropertyName == "WithCheck")
+				return true;
+
+			return false;
 		}
 
 		public override string GetColumnSelectList(string[] columns)

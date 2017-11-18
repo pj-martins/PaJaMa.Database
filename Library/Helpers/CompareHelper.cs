@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PaJaMa.Database.Library.Synchronization;
+using PaJaMa.Database.Library.DataSources;
 
 namespace PaJaMa.Database.Library.Helpers
 {
@@ -22,8 +23,8 @@ namespace PaJaMa.Database.Library.Helpers
 		public bool IsTo2000OrLess { get; private set; }
 		public List<TableWorkspace> TablesToSync { get; private set; }
 
-		public DatabaseObjects.DataSource FromDataSource { get; private set; }
-		public DatabaseObjects.DataSource ToDataSource { get; private set; }
+		public DataSource FromDataSource { get; private set; }
+		public DataSource ToDataSource { get; private set; }
 		
 		public bool IgnoreCase { get; set; }
 

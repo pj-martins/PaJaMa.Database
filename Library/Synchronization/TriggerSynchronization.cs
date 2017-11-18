@@ -18,23 +18,27 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		private int getIndex()
 		{
-			return databaseObject.Table.Triggers.IndexOf(databaseObject) + 1;
+			return DatabaseObject.Table.Triggers.IndexOf(DatabaseObject) + 1;
 		}
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("DROP TRIGGER [{0}].[{1}]", databaseObject.Table.Schema.SchemaName, databaseObject.TriggerName), level: 11 * getIndex());
+			return getStandardDropItems(string.Format("DROP TRIGGER [{0}].[{1}]", DatabaseObject.Table.Schema.SchemaName, DatabaseObject.TriggerName), level: 11 * getIndex());
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			var items = getStandardItems(databaseObject.Definition.Trim(), level: 10 * getIndex());
-			if (databaseObject.Disabled)
+			var items = getStandardItems(DatabaseObject.Definition.Trim(), level: 10 * getIndex());
+			if (DatabaseObject.Disabled)
 			{
-				var item = new SynchronizationItem(databaseObject);
-				item.Differences.Add(new Difference() { PropertyName = "Disabled" });
-				item.AddScript(11 * getIndex(), string.Format("DISABLE TRIGGER [{0}] ON [{1}]", databaseObject.TriggerName, databaseObject.Table.TableName));
-				items.Add(item);
+				var diff = getDifference(DifferenceType.Alter, DatabaseObject, null, "Disabled");
+				if (diff != null)
+				{
+					var item = new SynchronizationItem(DatabaseObject);
+					item.Differences.Add(diff);
+					item.AddScript(11 * getIndex(), string.Format("DISABLE TRIGGER [{0}] ON [{1}]", DatabaseObject.TriggerName, DatabaseObject.Table.TableName));
+					items.Add(item);
+				}
 			}
 			return items;
 		}
@@ -44,61 +48,63 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (target == null)
 				return base.GetSynchronizationItems(target, ignoreCase);
 
-			if (GetRawCreateText().ToLower() == new TriggerSynchronization(targetDatabase, target as Trigger).GetRawCreateText().ToLower()) return new List<SynchronizationItem>();
-
-			// TODO:?
-			if (databaseObject.Database.DataSource.GetType().FullName !=
-				targetDatabase.DataSource.GetType().FullName)
-				return new List<SynchronizationItem>();
+			if (GetRawCreateText().ToLower() == new TriggerSynchronization(TargetDatabase, target as Trigger).GetRawCreateText().ToLower()) return new List<SynchronizationItem>();
 
 			var targetTrigger = target as Trigger;
 
-			if (targetTrigger.Table.TableName != databaseObject.Table.TableName)
+			if (targetTrigger.Table.TableName != DatabaseObject.Table.TableName)
 				return base.GetSynchronizationItems(target, ignoreCase);
 
 			var items = new List<SynchronizationItem>();
 
-			var item = new SynchronizationItem(databaseObject);
-			item.Differences.Add(new Difference() { PropertyName = target == null ? Difference.CREATE : Difference.ALTER });
-
-			var createAlter = databaseObject.Definition.Trim();
-			if (target != null)
+			var diff = getDifference(target == null ? DifferenceType.Create : DifferenceType.Alter, DatabaseObject, target);
+			if (diff != null)
 			{
-				var targetDef = targetTrigger.Definition.Trim();
+				var item = new SynchronizationItem(DatabaseObject);
+				item.Differences.Add(diff);
 
-				// it was only disabled
-				if (targetDef.ToLower() == createAlter.ToLower())
-					createAlter = string.Empty;
-				else
-					createAlter = Regex.Replace(createAlter, "CREATE TRIGGER", "ALTER TRIGGER", RegexOptions.IgnoreCase);
-			}
-
-			if (!string.IsNullOrEmpty(createAlter))
-			{
-				item.AddScript(10 * getIndex(), createAlter);
-				items.Add(item);
-			}
-
-			if (databaseObject.Disabled)
-			{
-				item = new SynchronizationItem(databaseObject);
-				item.Differences.Add(new Difference() { PropertyName = "Disabled", SourceValue = "false", TargetValue = "true" });
-				item.AddScript(11 * getIndex(), string.Format("DISABLE TRIGGER [{0}] ON [{1}]", databaseObject.TriggerName, databaseObject.Table.TableName));
-				items.Add(item);
-			}
-			else if (target != null && databaseObject.Disabled != (target as Trigger).Disabled)
-			{
-				item = new SynchronizationItem(databaseObject);
-				item.Differences.Add(new Difference()
+				var createAlter = DatabaseObject.Definition.Trim();
+				if (target != null)
 				{
-					PropertyName = "Disabled",
-					SourceValue = databaseObject.Disabled.ToString(),
-					TargetValue = (target as Trigger).Disabled.ToString()
-				});
-				item.AddScript(11 * getIndex(), string.Format("{2} TRIGGER [{0}] ON [{1}]", databaseObject.TriggerName, databaseObject.Table.TableName, databaseObject.Disabled ? "DISABLE" : "ENABLE"));
-				items.Add(item);
-			}
+					var targetDef = targetTrigger.Definition.Trim();
 
+					// it was only disabled
+					if (targetDef.ToLower() == createAlter.ToLower())
+						createAlter = string.Empty;
+					else
+						createAlter = Regex.Replace(createAlter, "CREATE TRIGGER", "ALTER TRIGGER", RegexOptions.IgnoreCase);
+				}
+
+				if (!string.IsNullOrEmpty(createAlter))
+				{
+					item.AddScript(10 * getIndex(), createAlter);
+					items.Add(item);
+				}
+
+				if (DatabaseObject.Disabled)
+				{
+					diff = getDifference(DifferenceType.Alter, DatabaseObject, target, "Disabled", "false", "true");
+					if (diff != null)
+					{
+						item = new SynchronizationItem(DatabaseObject);
+						item.Differences.Add(diff);
+						item.AddScript(11 * getIndex(), string.Format("DISABLE TRIGGER [{0}] ON [{1}]", DatabaseObject.TriggerName, DatabaseObject.Table.TableName));
+						items.Add(item);
+					}
+				}
+				else if (target != null && DatabaseObject.Disabled != (target as Trigger).Disabled)
+				{
+					diff = getDifference(DifferenceType.Alter, DatabaseObject, target, "Disabled",
+						DatabaseObject.Disabled.ToString(), (target as Trigger).Disabled.ToString());
+					if (diff != null)
+					{
+						item = new SynchronizationItem(DatabaseObject);
+						item.Differences.Add(diff);
+						item.AddScript(11 * getIndex(), string.Format("{2} TRIGGER [{0}] ON [{1}]", DatabaseObject.TriggerName, DatabaseObject.Table.TableName, DatabaseObject.Disabled ? "DISABLE" : "ENABLE"));
+					}
+					items.Add(item);
+				}
+			}
 			return items;
 		}
 

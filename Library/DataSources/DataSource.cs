@@ -1,4 +1,5 @@
 ﻿using PaJaMa.Common;
+using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.Synchronization;
 using System;
 using System.Collections.Generic;
@@ -8,12 +9,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaJaMa.Database.Library.DatabaseObjects
+namespace PaJaMa.Database.Library.DataSources
 {
 	public abstract class DataSource
 	{
-		public List<Database> Databases { get; private set; }
-		public Database CurrentDatabase { get; private set; }
+		public List<DatabaseObjects.Database> Databases { get; private set; }
+		public DatabaseObjects.Database CurrentDatabase { get; private set; }
 		public string DataSourceName { get; private set; }
 
 		public string ConnectionString { get; private set; }
@@ -39,18 +40,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		internal abstract string TriggerSQL { get; }
 		internal virtual string SequenceSQL => "";
 		internal virtual string ExtensionSQL => "";
+		internal virtual string Max => "max";
 		internal virtual List<string> SystemSchemaNames => new List<string>();
 		internal abstract string DatabaseSQL { get; }
 		internal abstract List<ColumnType> ColumnTypes { get; }
 
-		internal virtual bool BypassConstraints => false;
 		internal virtual bool BypassKeyConstraints => false;
-		internal virtual bool MatchForeignKeyTablesAndColumns => false;
+		internal virtual bool MatchConstraintsByColumns => false;
 		internal virtual bool ForeignKeyDropsWithColumns => false;
 		internal virtual bool CheckForeignKeys => false;
 		internal virtual bool BypassForeignKeyRules => false;
 		internal virtual bool BypassClusteredNonClustered => false;
-		internal virtual bool BypassIdentityColumn => false;
 
 		public DataSource(string connectionString)
 		{
@@ -62,9 +62,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal virtual string GetPreTableCreateScript(Table table) { return string.Empty; }
 
-		protected List<Database> getDatabases()
+		protected List<DatabaseObjects.Database> getDatabases()
 		{
-			var databases = new List<Database>();
+			var databases = new List<DatabaseObjects.Database>();
 			using (var conn = OpenConnection())
 			{
 				this.DataSourceName = conn.DataSource;
@@ -77,14 +77,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 						{
 							while (rdr.Read())
 							{
-								databases.Add(new Database(this, rdr["DatabaseName"].ToString()));
+								databases.Add(new DatabaseObjects.Database(this, rdr["DatabaseName"].ToString()));
 							}
 						}
 						rdr.Close();
 					}
 					conn.Close();
 				}
-				this.CurrentDatabase = databases.First(d => d.DatabaseName == conn.Database);
+				if (string.IsNullOrEmpty(conn.Database))
+					this.CurrentDatabase = databases.First();
+				else
+					this.CurrentDatabase = databases.First(d => d.DatabaseName == conn.Database);
 			}
 			return databases;
 		}
@@ -110,22 +113,22 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			CurrentDatabase = Databases.First(d => d.DatabaseName == newDatabase);
 		}
 
-		internal virtual bool PopulateColumns(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal virtual bool PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			return false;
 		}
 
-		internal virtual bool PopulateForeignKeys(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal virtual bool PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			return false;
 		}
 
-		internal virtual bool PopulateKeyConstraints(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal virtual bool PopulateKeyConstraints(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			return false;
 		}
 
-		internal virtual bool PopulateIndexes(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal virtual bool PopulateIndexes(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			return false;
 		}
@@ -191,23 +194,33 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				this.ColumnTypes.First(t => t.DataType == src.DataType).TypeName;
 		}
 
-		internal virtual bool IgnoreColumnDifference(Difference difference, Column column)
+		internal virtual bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
 		{
-			if (difference.PropertyName == "DataType")
+			if (fromObject is Column)
 			{
-				if (difference.TargetValue == this.GetConvertedColumnType(column.Database.DataSource, difference.SourceValue, false))
-					return true;
+				if (difference.PropertyName == "CharacterMaximumLength")
+				{
+					if (difference.TargetValue == "-1" && string.IsNullOrEmpty(difference.SourceValue))
+						return true;
+					if (difference.SourceValue == "-1" && string.IsNullOrEmpty(difference.TargetValue))
+						return true;
+				}
+				else if (difference.PropertyName == "DataType")
+				{
+					if (difference.TargetValue == this.GetConvertedColumnType(fromObject.Database.DataSource, difference.SourceValue, false))
+						return true;
+				}
+				else if (difference.PropertyName == "ColumnDefault")
+				{
+					var srcDefault = this.GetConvertedColumnDefault(fromObject as Column, difference.SourceValue);
+					var targDefault = difference.TargetValue;
+					if (srcDefault.Replace("(", "").Replace(")", "") == targDefault.Replace("(", "").Replace(")", ""))
+						return true;
+				}
+				// TODO:
+				//else if ((targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite) && (diff.PropertyName == "NumericScale" || diff.PropertyName == "NumericPrecision"))
+				//	differences.RemoveAt(i);
 			}
-			else if (difference.PropertyName == "ColumnDefault")
-			{
-				var srcDefault = this.GetConvertedColumnDefault(column, difference.SourceValue);
-				var targDefault = difference.TargetValue;
-				if (srcDefault.Replace("(", "").Replace(")", "") == targDefault.Replace("(", "").Replace(")", ""))
-					return true;
-			}
-			// TODO:
-			//else if ((targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite) && (diff.PropertyName == "NumericScale" || diff.PropertyName == "NumericPrecision"))
-			//	differences.RemoveAt(i);
 			return false;
 		}
 
@@ -241,6 +254,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 	{
 		UniqueIdentifier,
 		DateTimeZone,
+		SmallDateTime,
 		NVaryingChar,
 		VaryingChar,
 		Integer,

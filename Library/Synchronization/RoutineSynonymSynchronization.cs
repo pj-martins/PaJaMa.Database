@@ -22,10 +22,10 @@ namespace PaJaMa.Database.Library.Synchronization
 			var propDifferences = GetPropertyDifferences(target, ignoreCase);
 			if (propDifferences.Any())
 			{
-				var createAlter = databaseObject.Definition;
-				if (databaseObject.Type == PaJaMa.Database.Library.DatabaseObjects.RoutineSynonym.RoutineSynonymType.Synonym)
+				var createAlter = DatabaseObject.Definition;
+				if (DatabaseObject.Type == PaJaMa.Database.Library.DatabaseObjects.RoutineSynonym.RoutineSynonymType.Synonym)
 				{
-					createAlter = createAlter.Insert(0, new RoutineSynonymSynchronization(targetDatabase, target as RoutineSynonym).GetRawDropText() + "\r\n");
+					createAlter = createAlter.Insert(0, new RoutineSynonymSynchronization(TargetDatabase, target as RoutineSynonym).GetRawDropText() + "\r\n");
 				}
 				else
 				{
@@ -33,7 +33,9 @@ namespace PaJaMa.Database.Library.Synchronization
 					createAlter = Regex.Replace(createAlter, "CREATE FUNCTION", "ALTER FUNCTION", RegexOptions.IgnoreCase);
 					createAlter = Regex.Replace(createAlter, "CREATE VIEW", "ALTER VIEW", RegexOptions.IgnoreCase);
 				}
-				items.AddRange(getStandardItems(createAlter, propertyName: Difference.ALTER));
+				var diff = getDifference(DifferenceType.Alter, DatabaseObject, target);
+				if (diff != null)
+					items.AddRange(getStandardItems(createAlter, difference: diff));
 			}
 
 			return items;
@@ -41,18 +43,18 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return getStandardItems(databaseObject.Definition);
+			return getStandardItems(DatabaseObject.Definition);
 		}
 
 		public override string ToString()
 		{
-			return databaseObject.Schema.SchemaName + "." + databaseObject.Name;
+			return DatabaseObject.Schema.SchemaName + "." + DatabaseObject.Name;
 		}
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			return getStandardDropItems(string.Format("DROP {0} [{1}].[{2}]", databaseObject.ObjectType.ToString().ToUpper(), 
-				databaseObject.Schema.SchemaName, databaseObject.ObjectName));
+			return getStandardDropItems(string.Format("DROP {0} [{1}].[{2}]", DatabaseObject.ObjectType.ToString().ToUpper(),
+				DatabaseObject.Schema.SchemaName, DatabaseObject.ObjectName));
 		}
 	}
 }

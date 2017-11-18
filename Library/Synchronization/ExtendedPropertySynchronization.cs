@@ -61,7 +61,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			var differences = base.GetPropertyDifferences(target, ignoreCase);
-			if (databaseObject.IgnoreSchema)
+			if (DatabaseObject.IgnoreSchema)
 			{
 				var schemDiff = differences.FirstOrDefault(d => d.PropertyName == "SchemaName");
 				if (schemDiff != null)
@@ -70,7 +70,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			if (differences.Any())
 			{
-				var syncItem = new SynchronizationItem(databaseObject);
+				var syncItem = new SynchronizationItem(DatabaseObject);
 				syncItem.Differences.AddRange(differences);
 				syncItem.AddScript(0, GetRawDropText());
 				syncItem.AddScript(1, GetRawCreateText());
@@ -84,39 +84,40 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 			var items = base.GetSynchronizationItems(target, ignoreCase);
 			var ext = target as ExtendedProperty;
-			if ((ext.PropValue != null && databaseObject.PropValue == null) || (ext.PropValue == null && databaseObject.PropValue != null) ||
-				(ext.PropValue != null && databaseObject.PropValue != null && ext.PropValue.ToString().Trim() != databaseObject.PropValue.ToString().Trim()))
+			if ((ext.PropValue != null && DatabaseObject.PropValue == null) || (ext.PropValue == null && DatabaseObject.PropValue != null) ||
+				(ext.PropValue != null && DatabaseObject.PropValue != null && ext.PropValue.ToString().Trim() != DatabaseObject.PropValue.ToString().Trim()))
 			{
-				var item = items.FirstOrDefault();
-				if (item == null)
+				var diff = getDifference(DifferenceType.Alter, DatabaseObject, ext, DatabaseObject.ObjectName,
+					ext.PropValue == null ? string.Empty : DatabaseObject.PropValue.ToString(),
+					DatabaseObject.PropValue == null ? string.Empty : ext.PropValue.ToString());
+				if (diff != null)
 				{
-					item = new SynchronizationItem(ext);
-					items.Add(item);
+					var item = items.FirstOrDefault();
+					if (item == null)
+					{
+						item = new SynchronizationItem(ext);
+						items.Add(item);
+					}
+					item.Differences.Add(diff);
+					item.AddScript(1, new ExtendedPropertySynchronization(TargetDatabase, DatabaseObject).GetRawDropText());
+					item.AddScript(7, getAddScript());
 				}
-				item.Differences.Add(new Difference()
-				{
-					PropertyName = databaseObject.ObjectName,
-					SourceValue = ext.PropValue == null ? string.Empty : databaseObject.PropValue.ToString(),
-					TargetValue = databaseObject.PropValue == null ? string.Empty : ext.PropValue.ToString()
-				});
-				item.AddScript(1, new ExtendedPropertySynchronization(targetDatabase, databaseObject).GetRawDropText());
-				item.AddScript(7, getAddScript());
 			}
 			return items;
 		}
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			string remove = string.Format("EXEC sp_dropextendedproperty N'{0}', ", databaseObject.PropName);
-			if (!databaseObject.IgnoreSchema)
-				remove += string.Format("'SCHEMA', N'{0}', ", databaseObject.SchemaName);
+			string remove = string.Format("EXEC sp_dropextendedproperty N'{0}', ", DatabaseObject.PropName);
+			if (!DatabaseObject.IgnoreSchema)
+				remove += string.Format("'SCHEMA', N'{0}', ", DatabaseObject.SchemaName);
 
 			remove += string.Format("N'{0}', '{1}', {2}, {3}",
-				databaseObject.Level1Type, databaseObject.Level1Object,
-							(string.IsNullOrEmpty(databaseObject.Level2Object) ? "NULL" : string.Format("'{0}'", databaseObject.Level2Type)),
-							(string.IsNullOrEmpty(databaseObject.Level2Object) ? "NULL" : string.Format("N'{0}'", databaseObject.Level2Object)));
+				DatabaseObject.Level1Type, DatabaseObject.Level1Object,
+							(string.IsNullOrEmpty(DatabaseObject.Level2Object) ? "NULL" : string.Format("'{0}'", DatabaseObject.Level2Type)),
+							(string.IsNullOrEmpty(DatabaseObject.Level2Object) ? "NULL" : string.Format("N'{0}'", DatabaseObject.Level2Object)));
 
-			if (databaseObject.IgnoreSchema)
+			if (DatabaseObject.IgnoreSchema)
 				remove += ", NULL, NULL";
 
 			return getStandardDropItems(remove);
@@ -124,16 +125,16 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		private string getAddScript()
 		{
-			string add = string.Format("EXEC sp_addextendedproperty N'{0}', N'{1}', ", databaseObject.PropName, databaseObject.PropValue.ToString().Replace("'", "''"));
-			if (!databaseObject.IgnoreSchema)
-				add += string.Format("'SCHEMA', N'{0}', ", databaseObject.SchemaName);
+			string add = string.Format("EXEC sp_addextendedproperty N'{0}', N'{1}', ", DatabaseObject.PropName, DatabaseObject.PropValue.ToString().Replace("'", "''"));
+			if (!DatabaseObject.IgnoreSchema)
+				add += string.Format("'SCHEMA', N'{0}', ", DatabaseObject.SchemaName);
 
 			add += string.Format("N'{0}', '{1}', {2}, {3}",
-				databaseObject.Level1Type, databaseObject.Level1Object,
-							(string.IsNullOrEmpty(databaseObject.Level2Object) ? "NULL" : string.Format("'{0}'", databaseObject.Level2Type)),
-							(string.IsNullOrEmpty(databaseObject.Level2Object) ? "NULL" : string.Format("N'{0}'", databaseObject.Level2Object)));
+				DatabaseObject.Level1Type, DatabaseObject.Level1Object,
+							(string.IsNullOrEmpty(DatabaseObject.Level2Object) ? "NULL" : string.Format("'{0}'", DatabaseObject.Level2Type)),
+							(string.IsNullOrEmpty(DatabaseObject.Level2Object) ? "NULL" : string.Format("N'{0}'", DatabaseObject.Level2Object)));
 
-			if (databaseObject.IgnoreSchema)
+			if (DatabaseObject.IgnoreSchema)
 				add += ", NULL, NULL";
 
 			return add;

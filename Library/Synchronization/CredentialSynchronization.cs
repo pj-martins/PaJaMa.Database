@@ -17,7 +17,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return getStandardItems(string.Format(@"CREATE CREDENTIAL [{0}] WITH IDENTITY = '{1}'", databaseObject.CredentialName, databaseObject.CredentialIdentity));
+			return getStandardItems(string.Format(@"CREATE CREDENTIAL [{0}] WITH IDENTITY = '{1}'", DatabaseObject.CredentialName, DatabaseObject.CredentialIdentity));
 		}
 
 		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
@@ -26,11 +26,11 @@ namespace PaJaMa.Database.Library.Synchronization
 				return base.GetSynchronizationItems(target, ignoreCase);
 
 			var targetCredential = target as Credential;
-			if (databaseObject.CredentialIdentity != targetCredential.CredentialIdentity)
+			if (DatabaseObject.CredentialIdentity != targetCredential.CredentialIdentity)
 			{
-				var item = new SynchronizationItem(databaseObject);
+				var item = new SynchronizationItem(DatabaseObject);
 				item.Differences.AddRange(GetPropertyDifferences(target, ignoreCase));
-				item.AddScript(7, string.Format(@"ALTER CREDENTIAL [{0}] WITH IDENTITY = '{1}'", databaseObject.CredentialName, databaseObject.CredentialIdentity));
+				item.AddScript(7, string.Format(@"ALTER CREDENTIAL [{0}] WITH IDENTITY = '{1}'", DatabaseObject.CredentialName, DatabaseObject.CredentialIdentity));
 
 				return new List<SynchronizationItem>() { item };
 			}

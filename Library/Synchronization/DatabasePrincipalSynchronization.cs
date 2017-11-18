@@ -19,37 +19,43 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			if (databaseObject.PrincipalType == PrincipalType.DatabaseRole)
+			if (DatabaseObject.PrincipalType == PrincipalType.DatabaseRole)
 			{
 				var items = new List<SynchronizationItem>();
 				SynchronizationItem item;
 				StringBuilder sb = new StringBuilder();
-				foreach (var child in databaseObject.ChildMembers)
+				foreach (var child in DatabaseObject.ChildMembers)
 				{
+					var diff = getDifference(DifferenceType.Drop, child, null, "Drop - " + child.ObjectName);
+					if (diff == null) continue;
 					item = new SynchronizationItem(child);
-					item.Differences.Add(new Difference() { PropertyName = "Drop - " + child.ObjectName });
-					item.AddScript(1, string.Format("ALTER ROLE [{0}] DROP MEMBER [{1}]", databaseObject.ObjectName, child.ObjectName));
+					item.Differences.Add(diff);
+					item.AddScript(1, string.Format("ALTER ROLE [{0}] DROP MEMBER [{1}]", DatabaseObject.ObjectName, child.ObjectName));
 					items.Add(item);
 				}
-				item = new SynchronizationItem(databaseObject);
-				item.Differences.Add(new Difference() { PropertyName = "Drop - " + databaseObject.ObjectName });
-				item.AddScript(2, string.Format("DROP ROLE [{0}]", databaseObject.ObjectName));
-				items.Add(item);
+				var d2 = getDifference(DifferenceType.Drop, DatabaseObject, null, "Drop - " + DatabaseObject.ObjectName);
+				if (d2 != null)
+				{
+					item = new SynchronizationItem(DatabaseObject);
+					item.Differences.Add(d2);
+					item.AddScript(2, string.Format("DROP ROLE [{0}]", DatabaseObject.ObjectName));
+					items.Add(item);
+				}
 				return items;
 			}
-			return getStandardDropItems(string.Format("DROP USER [{0}]", databaseObject.ObjectName));
+			return getStandardDropItems(string.Format("DROP USER [{0}]", DatabaseObject.ObjectName));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			if (databaseObject.PrincipalType == PrincipalType.DatabaseRole)
+			if (DatabaseObject.PrincipalType == PrincipalType.DatabaseRole)
 			{
 				var sb = new StringBuilder();
-				sb.AppendLineFormat(@"CREATE ROLE [{0}] {1}", databaseObject.PrincipalName, databaseObject.Owner == null ? string.Empty :
-					string.Format("AUTHORIZATION [{0}]", databaseObject.Owner.ObjectName));
-				foreach (var dp in databaseObject.ChildMembers)
+				sb.AppendLineFormat(@"CREATE ROLE [{0}] {1}", DatabaseObject.PrincipalName, DatabaseObject.Owner == null ? string.Empty :
+					string.Format("AUTHORIZATION [{0}]", DatabaseObject.Owner.ObjectName));
+				foreach (var dp in DatabaseObject.ChildMembers)
 				{
-					sb.AppendLineFormat("ALTER ROLE [{0}] ADD MEMBER [{1}]", databaseObject.ObjectName, dp.ObjectName);
+					sb.AppendLineFormat("ALTER ROLE [{0}] ADD MEMBER [{1}]", DatabaseObject.ObjectName, dp.ObjectName);
 				}
 
 				return getStandardItems(sb.ToString());
@@ -58,23 +64,20 @@ namespace PaJaMa.Database.Library.Synchronization
 			return getStandardItems(getLoginScript(true));
 		}
 
-		private string getLoginScript(bool create)
-		{
-			return create ?
+		private string getLoginScript(bool create) => create ?
 				string.Format(
-						(databaseObject.AuthenticationType == AuthenticationType.NONE ?
+						(DatabaseObject.AuthenticationType == AuthenticationType.NONE ?
 						@"CREATE USER [{0}] WITHOUT LOGIN WITH DEFAULT_SCHEMA=[{2}]" :
 						 @"CREATE USER [{0}] FOR LOGIN [{1}] WITH DEFAULT_SCHEMA=[{2}]")
-						, databaseObject.PrincipalName, databaseObject.LoginName, databaseObject.DefaultSchema) :
-						string.Format(@"ALTER USER [{0}] WITH LOGIN = [{1}], DEFAULT_SCHEMA=[{2}]", databaseObject.PrincipalName,
-						databaseObject.LoginName, databaseObject.DefaultSchema);
-		}
+						, DatabaseObject.PrincipalName, DatabaseObject.LoginName, DatabaseObject.DefaultSchema) :
+						string.Format(@"ALTER USER [{0}] WITH LOGIN = [{1}], DEFAULT_SCHEMA=[{2}]", DatabaseObject.PrincipalName,
+						DatabaseObject.LoginName, DatabaseObject.DefaultSchema);
 
 		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			var items = new List<SynchronizationItem>();
 
-			if (databaseObject.PrincipalType != PrincipalType.DatabaseRole)
+			if (DatabaseObject.PrincipalType != PrincipalType.DatabaseRole)
 			{
 				if (target == null)
 					return base.GetSynchronizationItems(target, ignoreCase);
@@ -82,20 +85,20 @@ namespace PaJaMa.Database.Library.Synchronization
 				var diffs = GetPropertyDifferences(target, ignoreCase);
 				if (diffs.Any())
 				{
-					if (target != null && databaseObject.PrincipalName == "dbo")
+					if (target != null && DatabaseObject.PrincipalName == "dbo")
 					{
-						var item = new SynchronizationItem(databaseObject);
+						var item = new SynchronizationItem(DatabaseObject);
 						item.Differences.AddRange(diffs);
-						item.AddScript(2, string.Format("sp_changedbowner '{0}'", databaseObject.LoginName));
+						item.AddScript(2, string.Format("sp_changedbowner '{0}'", DatabaseObject.LoginName));
 						return new List<SynchronizationItem>() { item };
 					}
 					else
 					{
-						var item = new SynchronizationItem(databaseObject);
+						var item = new SynchronizationItem(DatabaseObject);
 						item.Differences.AddRange(diffs);
-						item.AddScript(2, string.Format("ALTER USER [{0}] WITH DEFAULT_SCHEMA = [{1}]{2}", databaseObject.PrincipalName,
-							databaseObject.DefaultSchema, string.IsNullOrEmpty(databaseObject.LoginName) ?
-							string.Empty : string.Format(", LOGIN = [{0}]", databaseObject.LoginName)));
+						item.AddScript(2, string.Format("ALTER USER [{0}] WITH DEFAULT_SCHEMA = [{1}]{2}", DatabaseObject.PrincipalName,
+							DatabaseObject.DefaultSchema, string.IsNullOrEmpty(DatabaseObject.LoginName) ?
+							string.Empty : string.Format(", LOGIN = [{0}]", DatabaseObject.LoginName)));
 						return new List<SynchronizationItem>() { item };
 					}
 				}
@@ -106,74 +109,72 @@ namespace PaJaMa.Database.Library.Synchronization
 			var dp = target as DatabasePrincipal;
 			if (dp == null)
 			{
-				var item = new SynchronizationItem(databaseObject);
-				item.Differences.Add(new Difference() { PropertyName = Difference.CREATE });
+				var diff = getDifference(DifferenceType.Create, DatabaseObject);
+				if (diff != null)
+				{
+					var item = new SynchronizationItem(DatabaseObject);
+					item.Differences.Add(diff);
 
-				if (!item.Scripts.ContainsKey(7))
-					item.Scripts.Add(7, new StringBuilder());
+					if (!item.Scripts.ContainsKey(7))
+						item.Scripts.Add(7, new StringBuilder());
 
-				item.AddScript(7, string.Format(@"CREATE ROLE [{0}] {1}", databaseObject.PrincipalName, databaseObject.Owner == null ? string.Empty :
-						string.Format("AUTHORIZATION [{0}]", databaseObject.Owner.ObjectName)));
+					item.AddScript(7, string.Format(@"CREATE ROLE [{0}] {1}", DatabaseObject.PrincipalName, DatabaseObject.Owner == null ? string.Empty :
+							string.Format("AUTHORIZATION [{0}]", DatabaseObject.Owner.ObjectName)));
 
-				items.Add(item);
+					items.Add(item);
+				}
 			}
 			else
 			{
-				if (databaseObject.Owner.PrincipalName != dp.Owner.PrincipalName)
+				if (DatabaseObject.Owner.PrincipalName != dp.Owner.PrincipalName)
 				{
-					var item = new SynchronizationItem(databaseObject);
-
-					item.Differences.Add(new Difference()
+					var diff = getDifference(DifferenceType.Alter, DatabaseObject, dp, "Owner", DatabaseObject.Owner.PrincipalName, dp.Owner.PrincipalName);
+					if (diff != null)
 					{
-						PropertyName = "Owner",
-						SourceValue = databaseObject.Owner.PrincipalName,
-						TargetValue = dp.Owner.PrincipalName
-					});
+						var item = new SynchronizationItem(DatabaseObject);
+						item.Differences.Add(diff);
 
-					if (!item.Scripts.ContainsKey(7))
-						item.Scripts.Add(7, new StringBuilder());
+						if (!item.Scripts.ContainsKey(7))
+							item.Scripts.Add(7, new StringBuilder());
 
-					item.AddScript(7, string.Format("ALTER AUTHORIZATION ON ROLE::[{0}] TO [{1}]", databaseObject.ObjectName, databaseObject.Owner.PrincipalName));
-					items.Add(item);
+						item.AddScript(7, string.Format("ALTER AUTHORIZATION ON ROLE::[{0}] TO [{1}]", DatabaseObject.ObjectName, DatabaseObject.Owner.PrincipalName));
+						items.Add(item);
+					}
 				}
 
-				var drops = dp.ChildMembers.Where(m => !databaseObject.ChildMembers.Any(x => x.ObjectName == m.ObjectName));
+				var drops = dp.ChildMembers.Where(m => !DatabaseObject.ChildMembers.Any(x => x.ObjectName == m.ObjectName));
 				foreach (var drop in drops)
 				{
-					var item = new SynchronizationItem(databaseObject);
-
-					item.Differences.Add(new Difference()
+					var diff = getDifference(DifferenceType.Alter, drop, null, "Member", "Drop", drop.ObjectName);
+					if (diff != null)
 					{
-						PropertyName = "Member",
-						SourceValue = "Drop",
-						TargetValue = drop.ObjectName
-					});
+						var item = new SynchronizationItem(DatabaseObject);
+						item.Differences.Add(diff);
 
-					if (!item.Scripts.ContainsKey(7))
-						item.Scripts.Add(7, new StringBuilder());
+						if (!item.Scripts.ContainsKey(7))
+							item.Scripts.Add(7, new StringBuilder());
 
-					item.AddScript(7, string.Format("ALTER ROLE [{0}] DROP MEMBER [{1}]", databaseObject.ObjectName, drop.ObjectName));
-					items.Add(item);
+						item.AddScript(7, string.Format("ALTER ROLE [{0}] DROP MEMBER [{1}]", DatabaseObject.ObjectName, drop.ObjectName));
+						items.Add(item);
+					}
 				}
 			}
 
-			var creates = databaseObject.ChildMembers.Where(m => target == null || !dp.ChildMembers.Any(x => x.ObjectName == m.ObjectName));
+			var creates = DatabaseObject.ChildMembers.Where(m => target == null || !dp.ChildMembers.Any(x => x.ObjectName == m.ObjectName));
 			foreach (var create in creates)
 			{
-				var item = new SynchronizationItem(databaseObject);
-
-				item.Differences.Add(new Difference()
+				var diff = getDifference(DifferenceType.Alter, create, target, "Member", "Create", create.ObjectName);
+				if (diff != null)
 				{
-					PropertyName = "Member",
-					SourceValue = "Create",
-					TargetValue = create.ObjectName
-				});
+					var item = new SynchronizationItem(DatabaseObject);
+					item.Differences.Add(diff);
 
-				if (!item.Scripts.ContainsKey(7))
-					item.Scripts.Add(7, new StringBuilder());
+					if (!item.Scripts.ContainsKey(7))
+						item.Scripts.Add(7, new StringBuilder());
 
-				item.AddScript(7, string.Format("ALTER ROLE [{0}] ADD MEMBER [{1}]", databaseObject.ObjectName, create.ObjectName));
-				items.Add(item);
+					item.AddScript(7, string.Format("ALTER ROLE [{0}] ADD MEMBER [{1}]", DatabaseObject.ObjectName, create.ObjectName));
+					items.Add(item);
+				}
 			}
 
 			return items;
@@ -198,13 +199,13 @@ namespace PaJaMa.Database.Library.Synchronization
 			//}
 			//else
 			{
-				checks = databaseObject.ChildMembers.OfType<DatabaseObjectBase>().ToList();
-				if (databaseObject.Owner != null)
-					checks.Add(databaseObject.Owner);
+				checks = DatabaseObject.ChildMembers.OfType<DatabaseObjectBase>().ToList();
+				if (DatabaseObject.Owner != null)
+					checks.Add(DatabaseObject.Owner);
 
-				if (!string.IsNullOrEmpty(databaseObject.LoginName))
+				if (!string.IsNullOrEmpty(DatabaseObject.LoginName))
 				{
-					var slogin = databaseObject.Database.ServerLogins.FirstOrDefault(l => l.LoginName == databaseObject.LoginName);
+					var slogin = DatabaseObject.Database.ServerLogins.FirstOrDefault(l => l.LoginName == DatabaseObject.LoginName);
 					if (slogin != null)
 						checks.Add(slogin);
 				}

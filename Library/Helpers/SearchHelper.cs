@@ -1,4 +1,5 @@
-﻿using PaJaMa.Database.Library.Workspaces.Search;
+﻿using PaJaMa.Database.Library.DataSources;
+using PaJaMa.Database.Library.Workspaces.Search;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,10 +12,10 @@ namespace PaJaMa.Database.Library.Helpers
 {
 	public class SearchHelper
 	{
-		public DatabaseObjects.DataSource DataSource { get; set; }
+		public DataSource DataSource { get; set; }
 		public SearchHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
 		{
-			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DatabaseObjects.DataSource;
+			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DataSource;
 			DataSource.CurrentDatabase.PopulateChildren(true, false, worker);
 		}
 

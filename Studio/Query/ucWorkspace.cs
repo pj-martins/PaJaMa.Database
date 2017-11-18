@@ -1,4 +1,5 @@
 ﻿using PaJaMa.Database.Library.DatabaseObjects;
+using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Synchronization;
 using PaJaMa.Database.Library.Workspaces;
@@ -130,11 +131,10 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
-			_dataSource = Activator.CreateInstance(cboServer.SelectedItem as Type, new object[] { txtConnectionString.Text }) as DataSource;
-			_currentConnection = _dataSource.OpenConnection();
-
 			try
 			{
+				_dataSource = Activator.CreateInstance(cboServer.SelectedItem as Type, new object[] { txtConnectionString.Text }) as DataSource;
+				_currentConnection = _dataSource.OpenConnection();
 				if (chkUseDummyDA.Checked)
 				{
 					DbDataAdapter dummy;

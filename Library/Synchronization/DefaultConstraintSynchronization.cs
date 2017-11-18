@@ -19,29 +19,29 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-			if (targetDatabase.DataSource.BypassKeyConstraints)
+			if (TargetDatabase.DataSource.BypassKeyConstraints || DatabaseObject.Database.DataSource.BypassKeyConstraints)
 			{
-				if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
+				if (DatabaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == DatabaseObject.ObjectName))
 					return new List<SynchronizationItem>();
 			}
-			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};", databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
-				databaseObject.GetQueryObjectName(targetDatabase.DataSource)));
+			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+				DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			if (targetDatabase.DataSource.BypassKeyConstraints)
+			if (TargetDatabase.DataSource.BypassKeyConstraints || DatabaseObject.Database.DataSource.BypassKeyConstraints)
 			{
-				if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
+				if (DatabaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == DatabaseObject.ObjectName))
 					return new List<SynchronizationItem>();
 			}
 
-			string def = databaseObject.ColumnDefault;
+			string def = DatabaseObject.ColumnDefault;
 			if (!string.IsNullOrEmpty(def) && def.StartsWith("((") && def.EndsWith("))"))
 				def = def.Substring(1, def.Length - 2);
 
 			return getStandardItems(string.Format(@"ALTER TABLE {0} ADD  CONSTRAINT {1}  DEFAULT {2} FOR {3};",
-				databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource), databaseObject.GetQueryObjectName(targetDatabase.DataSource), def, databaseObject.Column.GetQueryObjectName(targetDatabase.DataSource)
+				DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource), def, DatabaseObject.Column.GetQueryObjectName(TargetDatabase.DataSource)
 				), 7);
 		}
 	}

@@ -20,10 +20,10 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetDropItems()
 		{
 			return getStandardItems(string.Format("ALTER TABLE {0} DROP COLUMN {1};",
-						databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
-						databaseObject.GetQueryObjectName(targetDatabase.DataSource)),
+						DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+						DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
 						level: 1,
-						propertyName: Difference.DROP);
+						difference: getDifference(DifferenceType.Drop, DatabaseObject));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
@@ -35,21 +35,23 @@ namespace PaJaMa.Database.Library.Synchronization
 		public string GetPostScript()
 		{
 			string part2 = string.Empty;
-			if ((databaseObject.DataType == "decimal" || databaseObject.DataType == "numeric") && databaseObject.NumericPrecision != null && databaseObject.NumericScale != null)
+			if ((DatabaseObject.DataType == "decimal" || DatabaseObject.DataType == "numeric") && DatabaseObject.NumericPrecision != null && DatabaseObject.NumericScale != null)
 			{
-				part2 = "(" + databaseObject.NumericPrecision.ToString() + ", " + databaseObject.NumericScale.ToString() + ")";
+				part2 = "(" + DatabaseObject.NumericPrecision.ToString() + ", " + DatabaseObject.NumericScale.ToString() + ")";
 			}
-			else if (databaseObject.CharacterMaximumLength != null && databaseObject.DataType != "text" && databaseObject.DataType != "image"
-				&& databaseObject.DataType != "ntext" && databaseObject.DataType != "xml")
+			else if (DatabaseObject.CharacterMaximumLength != null && DatabaseObject.DataType != "text" && DatabaseObject.DataType != "image"
+				&& DatabaseObject.DataType != "ntext" && DatabaseObject.DataType != "xml")
 			{
-				string max = databaseObject.CharacterMaximumLength.ToString();
+				string max = DatabaseObject.CharacterMaximumLength.ToString();
 				if (max == "-1")
-					max = "max";
-				part2 = "(" + max + ")";
+					max = TargetDatabase.DataSource.Max;
+				else
+					max = "(" + max + ")";
+				part2 = max;
 			}
 
-			if (databaseObject.IsIdentity)
-				part2 = targetDatabase.DataSource.GetCreateIdentity(databaseObject);
+			if (DatabaseObject.IsIdentity)
+				part2 = TargetDatabase.DataSource.GetCreateIdentity(DatabaseObject);
 
 			return part2;
 		}
@@ -57,12 +59,12 @@ namespace PaJaMa.Database.Library.Synchronization
 		public string GetDefaultScript()
 		{
 			string def = string.Empty;
-			string colDef = targetDatabase.DataSource.GetConvertedColumnDefault(databaseObject, databaseObject.ColumnDefault);
+			string colDef = TargetDatabase.DataSource.GetConvertedColumnDefault(DatabaseObject, DatabaseObject.ColumnDefault);
 			if (!string.IsNullOrEmpty(colDef) && colDef.StartsWith("((") && colDef.EndsWith("))"))
 				colDef = colDef.Substring(1, colDef.Length - 2);
 
-			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(databaseObject.ConstraintName))
-				def = "CONSTRAINT " + targetDatabase.DataSource.GetConvertedObjectName(databaseObject.ConstraintName) + " DEFAULT(" + colDef + ")";
+			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(DatabaseObject.ConstraintName))
+				def = "CONSTRAINT " + TargetDatabase.DataSource.GetConvertedObjectName(DatabaseObject.ConstraintName) + " DEFAULT(" + colDef + ")";
 			else if (!string.IsNullOrEmpty(colDef))
 				def = "DEFAULT(" + colDef + ")";
 			return def;
@@ -76,20 +78,23 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			var sb = new StringBuilder();
 
-			if (!string.IsNullOrEmpty(databaseObject.Formula))
+			if (!string.IsNullOrEmpty(DatabaseObject.Formula))
 			{
-				if (targetColumn == null || databaseObject.Formula != targetColumn.Formula)
+				if (targetColumn == null || DatabaseObject.Formula != targetColumn.Formula)
 				{
-					item = new SynchronizationItem(databaseObject);
-					item.Differences.Add(new Difference() { PropertyName = "Formula", SourceValue = databaseObject.Formula, TargetValue = targetColumn == null ? string.Empty : targetColumn.Formula });
+					var diff = getDifference(DifferenceType.Alter, DatabaseObject, targetColumn, "Formula",
+						DatabaseObject.Formula, targetColumn == null ? string.Empty : targetColumn.Formula);
+					if (diff == null) return new List<SynchronizationItem>();
+					item = new SynchronizationItem(DatabaseObject);
+					item.Differences.Add(diff);
 					if (targetColumn != null)
-						item.AddScript(1, string.Format("ALTER TABLE {0} DROP COLUMN {1};", databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
-							databaseObject.GetQueryObjectName(targetDatabase.DataSource)));
+						item.AddScript(1, string.Format("ALTER TABLE {0} DROP COLUMN {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+							DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)));
 
 					item.AddScript(3, string.Format("ALTER TABLE {0} ADD {1} AS {2}",
-						databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
-						databaseObject.GetQueryObjectName(targetDatabase.DataSource),
-						databaseObject.Formula));
+						DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+						DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource),
+						DatabaseObject.Formula));
 
 					items.Add(item);
 
@@ -97,34 +102,35 @@ namespace PaJaMa.Database.Library.Synchronization
 				}
 			}
 
-			var differences = targetColumn == null ? new List<Difference>() { new Difference() { PropertyName = Difference.CREATE } }
-				: base.GetPropertyDifferences(targetColumn, ignoreCase);
-
-			for (int i = differences.Count - 1; i >= 0; i--)
+			var differences = new List<Difference>();
+			if (targetColumn == null)
 			{
-				var diff = differences[i];
-				if (targetDatabase.DataSource.IgnoreColumnDifference(diff, databaseObject))
-					differences.RemoveAt(i);
+				var difference = getDifference(DifferenceType.Create, DatabaseObject);
+				if (difference != null)
+					differences.Add(difference);
 			}
+			else
+				differences = base.GetPropertyDifferences(targetColumn, ignoreCase);
 
 			// case mismatch
-			if (!ignoreCase && targetColumn != null && targetColumn.ColumnName != databaseObject.ColumnName)
+			if (!ignoreCase && targetColumn != null && targetColumn.ColumnName != DatabaseObject.ColumnName)
 			{
-				item = new SynchronizationItem(databaseObject);
+				item = new SynchronizationItem(DatabaseObject);
 				item.AddScript(2, string.Format("EXEC sp_rename '{0}.{1}.{2}', '{3}', 'COLUMN'",
 							targetColumn.Table.Schema.SchemaName,
 							targetColumn.Table.TableName,
 							targetColumn.ColumnName,
-							databaseObject.ColumnName));
-				item.Differences.Add(new Difference()
-				{
-					PropertyName = "ColumnName",
-					SourceValue = databaseObject.ColumnName,
-					TargetValue = targetColumn.ColumnName
-				});
-				items.Add(item);
-				var diff = differences.First(d => d.PropertyName == "ColumnName");
-				differences.Remove(diff);
+							DatabaseObject.ColumnName));
+				var diff = getDifference(DifferenceType.Alter, DatabaseObject, targetColumn,
+					"Column", DatabaseObject.ColumnName, targetColumn.ColumnName);
+				if (diff != null)
+					item.Differences.Add(diff);
+				if (item.Differences.Count > 0)
+					items.Add(item);
+
+				diff = differences.FirstOrDefault(d => d.PropertyName == "ColumnName");
+				if (diff != null)
+					differences.Remove(diff);
 			}
 
 			if (!differences.Any())
@@ -141,9 +147,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				def = GetDefaultScript();
 
-				if (!databaseObject.IsNullable && !databaseObject.IsIdentity && string.IsNullOrEmpty(def) && databaseObject.DataType != "timestamp")
+				if (!DatabaseObject.IsNullable && !DatabaseObject.IsIdentity && string.IsNullOrEmpty(def) && DatabaseObject.DataType != "timestamp")
 				{
-					var clrType = databaseObject.Database.DataSource.ColumnTypes.First(c => c.TypeName == databaseObject.DataType).ClrType;
+					var clrType = DatabaseObject.Database.DataSource.ColumnTypes.First(c => c.TypeName == DatabaseObject.DataType).ClrType;
 
 					tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");
 
@@ -166,30 +172,30 @@ namespace PaJaMa.Database.Library.Synchronization
 				}
 			}
 
-			sb.AppendLine(targetDatabase.DataSource.GetColumnAddAlterScript(databaseObject, targetColumn == null, part2, def));
+			sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn == null, part2, def));
 
 			if (!string.IsNullOrEmpty(tempConstraint))
-				sb.AppendLine(targetDatabase.DataSource.GetColumnAddAlterScript(databaseObject, false, part2, string.Empty));
+				sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, false, part2, string.Empty));
 
-			item = new SynchronizationItem(databaseObject);
+			item = new SynchronizationItem(DatabaseObject);
 			item.AddScript(2, sb.ToString());
 			item.Differences.AddRange(differences);
 			items.Add(item);
 
-			var kcs = databaseObject.Table.KeyConstraints.Where(k => !k.IsPrimaryKey && k.Columns.Any(ic => ic.ColumnName == databaseObject.ColumnName));
+			var kcs = DatabaseObject.Table.KeyConstraints.Where(k => !k.IsPrimaryKey && k.Columns.Any(ic => ic.ColumnName == DatabaseObject.ColumnName));
 			foreach (var kc in kcs)
 			{
-				var syncItem = new KeyConstraintSynchronization(targetDatabase, kc);
+				var syncItem = new KeyConstraintSynchronization(TargetDatabase, kc);
 				item.AddScript(0, syncItem.GetRawDropText());
 				item.AddScript(10, syncItem.GetRawCreateText());
 			}
 
-			if (targetColumn != null && !targetColumn.Database.DataSource.BypassConstraints)
+			if (targetColumn != null)
 			{
-				var dcs = databaseObject.Table.DefaultConstraints.Where(dc => dc.Column.ColumnName == databaseObject.ColumnName);
+				var dcs = DatabaseObject.Table.DefaultConstraints.Where(dc => dc.Column.ColumnName == DatabaseObject.ColumnName);
 				foreach (var dc in dcs)
 				{
-					var syncItem = new DefaultConstraintSynchronization(targetDatabase, dc);
+					var syncItem = new DefaultConstraintSynchronization(TargetDatabase, dc);
 					item.AddScript(0, syncItem.GetRawDropText());
 					item.AddScript(10, syncItem.GetRawCreateText());
 				}

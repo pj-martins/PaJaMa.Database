@@ -23,19 +23,19 @@ namespace PaJaMa.Database.Library.Synchronization
 			return string.Format(@"CONSTRAINT {0}
 {1}
 {2}
-({3})", databaseObject.GetQueryObjectName(targetDatabase.DataSource), databaseObject.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE", targetDatabase.DataSource.BypassClusteredNonClustered ? string.Empty : databaseObject.ClusteredNonClustered, string.Join(", ",
-	  databaseObject.Columns.OrderBy(c => c.Ordinal).Select(c => string.Format("{0} {1}", targetDatabase.DataSource.GetConvertedObjectName(c.ColumnName), (targetDatabase.DataSource.BypassKeyConstraints ? string.Empty : (c.Descending ? "DESC" : "ASC"))))));
+({3})", DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource), DatabaseObject.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE", TargetDatabase.DataSource.BypassClusteredNonClustered ? string.Empty : DatabaseObject.ClusteredNonClustered, string.Join(", ",
+	  DatabaseObject.Columns.OrderBy(c => c.Ordinal).Select(c => string.Format("{0} {1}", TargetDatabase.DataSource.GetConvertedObjectName(c.ColumnName), (TargetDatabase.DataSource.BypassKeyConstraints ? string.Empty : (c.Descending ? "DESC" : "ASC"))))));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			var items = getStandardItems(string.Format("ALTER TABLE {0} ADD {1};", databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource), GetInnerCreateText()));
+			var items = getStandardItems(string.Format("ALTER TABLE {0} ADD {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), GetInnerCreateText()));
 
-			if (targetDatabase.DataSource.BypassKeyConstraints)
+			if (TargetDatabase.DataSource.BypassKeyConstraints)
 			{
-				foreach (var col in databaseObject.Columns)
+				foreach (var col in DatabaseObject.Columns)
 				{
-					var tableCol = databaseObject.Table.Columns.FirstOrDefault(c => c.ColumnName == col.ColumnName);
+					var tableCol = DatabaseObject.Table.Columns.FirstOrDefault(c => c.ColumnName == col.ColumnName);
 					if (tableCol != null && !string.IsNullOrEmpty(tableCol.ColumnDefault))
 					{
 						string def = tableCol.ColumnDefault;
@@ -43,7 +43,7 @@ namespace PaJaMa.Database.Library.Synchronization
 							def = def.Substring(1, def.Length - 2);
 
 						items.AddRange(getStandardItems(string.Format("ALTER TABLE {0} ALTER COLUMN \"{1}\" SET DEFAULT {2};",
-							databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource), tableCol.ColumnName, def)));
+							DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), tableCol.ColumnName, def)));
 					}
 				}
 			}
@@ -54,8 +54,8 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetDropItems()
 		{
 			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};",
-				databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
-				databaseObject.ConstraintName));
+				DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+				DatabaseObject.ConstraintName));
 		}
 
 		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
@@ -64,13 +64,13 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (target != null)
 			{
 				var targetKey = target as KeyConstraint;
-				var childKeys = from t in databaseObject.Table.Schema.Tables
+				var childKeys = from t in DatabaseObject.Table.Schema.Tables
 								from fk in t.ForeignKeys
 								where fk.ParentTable.TableName == targetKey.Table.TableName
 								select fk;
 				foreach (var childKey in childKeys)
 				{
-					var childSync = new ForeignKeySynchronization(targetDatabase, childKey);
+					var childSync = new ForeignKeySynchronization(TargetDatabase, childKey);
 					var item = new SynchronizationItem(childKey);
 					foreach (var dropItem in childSync.GetDropItems())
 					{

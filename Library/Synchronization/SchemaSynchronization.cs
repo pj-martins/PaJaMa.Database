@@ -23,11 +23,11 @@ namespace PaJaMa.Database.Library.Synchronization
 				return base.GetSynchronizationItems(target, ignoreCase);
 
 			var targetSchema = target as Schema;
-			if (databaseObject.SchemaOwner != targetSchema.SchemaOwner)
+			if (DatabaseObject.SchemaOwner != targetSchema.SchemaOwner)
 			{
-				var item = new SynchronizationItem(databaseObject);
+				var item = new SynchronizationItem(DatabaseObject);
 				item.Differences.AddRange(GetPropertyDifferences(target, ignoreCase));
-				item.AddScript(7, string.Format(@"ALTER AUTHORIZATION ON SCHEMA::[{0}] TO [{1}]", databaseObject.SchemaName, databaseObject.SchemaOwner));
+				item.AddScript(7, string.Format(@"ALTER AUTHORIZATION ON SCHEMA::[{0}] TO [{1}]", DatabaseObject.SchemaName, DatabaseObject.SchemaOwner));
 
 				return new List<SynchronizationItem>() { item };
 			}
@@ -40,7 +40,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 			if (!isForDrop)
 			{
-				var princ = databaseObject.Database.Principals.FirstOrDefault(p => p.PrincipalName == databaseObject.SchemaOwner);
+				var princ = DatabaseObject.Database.Principals.FirstOrDefault(p => p.PrincipalName == DatabaseObject.SchemaOwner);
 				if (princ != null)
 				{
 					var targetPrinc = existingTargetObjects.OfType<DatabasePrincipal>().FirstOrDefault(p => p.PrincipalName == princ.PrincipalName);
@@ -56,8 +56,8 @@ namespace PaJaMa.Database.Library.Synchronization
 			}
 
 			var missing = new List<DatabaseObjectBase>();
-			var checks = databaseObject.Tables.ConvertAll(t => t as DatabaseObjectBase).ToList();
-			checks.AddRange(databaseObject.RoutinesSynonyms);
+			var checks = DatabaseObject.Tables.ConvertAll(t => t as DatabaseObjectBase).ToList();
+			checks.AddRange(DatabaseObject.RoutinesSynonyms);
 			foreach (var c in checks)
 			{
 				if (!selectedItems.Any(i => i.DatabaseObject.Equals(c)))
@@ -68,7 +68,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return getStandardItems(string.Format(@"CREATE SCHEMA [{0}] AUTHORIZATION [{1}]", databaseObject.SchemaName, databaseObject.SchemaOwner));
+			return getStandardItems(string.Format(@"CREATE SCHEMA [{0}] AUTHORIZATION [{1}]", DatabaseObject.SchemaName, DatabaseObject.SchemaOwner));
 		}
 	}
 }

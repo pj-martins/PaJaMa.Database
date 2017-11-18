@@ -12,6 +12,7 @@ using System.Data.SqlClient;
 using System.Threading;
 using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.Helpers;
+using PaJaMa.Database.Library.DataSources;
 
 namespace PaJaMa.Database.Studio.Query
 {

@@ -20,8 +20,8 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetDropItems()
 		{
 			return getStandardDropItems(string.Format("DROP INDEX {0}.{1}",
-				databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
-				databaseObject.GetQueryObjectName(targetDatabase.DataSource)));
+				DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+				DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
@@ -31,27 +31,27 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public StringBuilder GetCreateScript(bool hasTarget)
 		{
-			var indexCols = databaseObject.IndexColumns.Where(i => i.Ordinal != 0);
-			var includeCols = databaseObject.IndexColumns.Where(i => i.Ordinal == 0);
+			var indexCols = DatabaseObject.IndexColumns.Where(i => i.Ordinal != 0);
+			var includeCols = DatabaseObject.IndexColumns.Where(i => i.Ordinal == 0);
 			var sb = new StringBuilder();
 
 			sb.AppendLineFormat(@"CREATE {0} {1} INDEX {2} ON {3}
 (
 	{4}
 ){5};", 
-(bool)databaseObject.IsUnique ? "UNIQUE" : "",
-targetDatabase.DataSource.BypassClusteredNonClustered ? string.Empty : databaseObject.IndexType,
-targetDatabase.DataSource.GetConvertedObjectName(databaseObject.IndexName),
-databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
+(bool)DatabaseObject.IsUnique ? "UNIQUE" : "",
+TargetDatabase.DataSource.BypassClusteredNonClustered ? string.Empty : DatabaseObject.IndexType,
+TargetDatabase.DataSource.GetConvertedObjectName(DatabaseObject.IndexName),
+DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
 string.Join(",\r\n\t",
 indexCols.OrderBy(c => c.Ordinal).Select(c =>
-	string.Format("{0} {1}", targetDatabase.DataSource.GetConvertedObjectName(c.ColumnName), c.Descending ? "DESC" : "ASC")).ToArray()),
+	string.Format("{0} {1}", TargetDatabase.DataSource.GetConvertedObjectName(c.ColumnName), c.Descending ? "DESC" : "ASC")).ToArray()),
 	!includeCols.Any() ? string.Empty : string.Format(@"
 INCLUDE (
 	{0}
 )", string.Join(",\r\n\t",
 includeCols.Select(c =>
-	string.Format("{0}", targetDatabase.DataSource.GetConvertedObjectName(c.ColumnName)).ToString()))
+	string.Format("{0}", TargetDatabase.DataSource.GetConvertedObjectName(c.ColumnName)).ToString()))
 	));
 
 			return sb;

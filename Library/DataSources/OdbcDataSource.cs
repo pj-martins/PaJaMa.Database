@@ -1,21 +1,20 @@
-﻿using MySql.Data.MySqlClient;
+﻿using PaJaMa.Database.Library.DatabaseObjects;
 using System;
 using System.Collections.Generic;
+using System.Data.Odbc;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
+namespace PaJaMa.Database.Library.DataSources
 {
-	public class MySqlDataSource : DataSource
+	public class OdbcDataSource : DataSource
 	{
-		public MySqlDataSource(string connectionString) : base(connectionString)
+		public OdbcDataSource(string connectionString) : base(connectionString)
 		{
 		}
 
 		public override string DefaultSchemaName => throw new NotImplementedException();
-
-		protected override Type connectionType => typeof(MySqlConnection);
 
 		internal override string SchemaSQL => throw new NotImplementedException();
 
@@ -37,11 +36,23 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 
 		internal override string DatabaseSQL => throw new NotImplementedException();
 
+		protected override Type connectionType => typeof(OdbcConnection);
+
 		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
 
 		public override string GetConvertedObjectName(string objectName)
 		{
 			throw new NotImplementedException();
+		}
+
+		internal override string GetColumnAddAlterScript(Column column, bool add, string defaultValue, string postScript)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override string GetPreTopN(int topN)
+		{
+			return topN <= 0 ? string.Empty : string.Format("TOP {0}", topN);
 		}
 	}
 }

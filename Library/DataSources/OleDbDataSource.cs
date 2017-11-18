@@ -1,15 +1,16 @@
-﻿using System;
+﻿using PaJaMa.Database.Library.DatabaseObjects;
+using System;
 using System.Collections.Generic;
-using System.Data.Odbc;
+using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
+namespace PaJaMa.Database.Library.DataSources
 {
-	public class OdbcDataSource : DataSource
+	public class OleDbDataSource : DataSource
 	{
-		public OdbcDataSource(string connectionString) : base(connectionString)
+		public OleDbDataSource(string connectionString) : base(connectionString)
 		{
 		}
 
@@ -35,7 +36,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 
 		internal override string DatabaseSQL => throw new NotImplementedException();
 
-		protected override Type connectionType => typeof(OdbcConnection);
+		protected override Type connectionType => typeof(OleDbConnection);
 
 		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
 
@@ -53,5 +54,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 		{
 			return topN <= 0 ? string.Empty : string.Format("TOP {0}", topN);
 		}
+
+
 	}
 }

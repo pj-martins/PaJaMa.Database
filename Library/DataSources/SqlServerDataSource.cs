@@ -1,4 +1,5 @@
 ﻿using PaJaMa.Common;
+using PaJaMa.Database.Library.DatabaseObjects;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
+namespace PaJaMa.Database.Library.DataSources
 {
 	public class SqlServerDataSource : DataSource
 	{
@@ -269,7 +270,7 @@ join sys.tables o on o.object_id = t.parent_id
 join sys.schemas sc on sc.schema_id = o.schema_id
 ";
 
-		internal override string DatabaseSQL => "select [name] as DatabaseName from sys.databases order by [name]";
+		internal override string DatabaseSQL => "select [name] as DatabaseName from sys.databases where HAS_DBACCESS(name) = 1 order by [name]";
 
 		internal override string ExtendedPropertySQL => _is2000OrLess ? @"
 select name as PropName, value as PropValue, objtype as Level1Type, objname as Level1Object, null as Level2Type,
@@ -355,6 +356,7 @@ left join sys.server_principals sp on sp.sid = dp.sid
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, typeof(Guid), "(newid())"));
 					_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, typeof(DateTime), "(getdate())"));
+					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, typeof(DateTime), "(getdate())"));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, typeof(string), "''"));
 					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVaryingChar, typeof(string), "''"));
 					_columnTypes.Add(new ColumnType("int", DataType.Integer, typeof(int), "((0))"));

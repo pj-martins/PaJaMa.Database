@@ -60,10 +60,10 @@ namespace PaJaMa.Database.Library.Helpers
 											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)));
 
 							int rowCount = 0;
-							cmdSrc.CommandText = string.Format("select count(*) from {0}", table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource));
+							cmdSrc.CommandText = string.Format("select count(*) from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
 							rowCount = Convert.ToInt32(cmdSrc.ExecuteScalar());
 
-							cmdSrc.CommandText = string.Format("select * from {0}", table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource));
+							cmdSrc.CommandText = string.Format("select * from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
 							using (var rdr = cmdSrc.ExecuteReader())
 							{
 								if (trans.Connection is SqlConnection)

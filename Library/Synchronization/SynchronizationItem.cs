@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PaJaMa.Database.Library.DataSources;
 
 namespace PaJaMa.Database.Library.Synchronization
 {
@@ -58,11 +59,11 @@ namespace PaJaMa.Database.Library.Synchronization
 			Scripts[level].AppendLine(script);
 		}
 
-        public override string ToString()
-        {
-            return ObjectName;
-        }
-    }
+		public override string ToString()
+		{
+			return ObjectName;
+		}
+	}
 
 	public class SerializableSynchronizationItem
 	{
@@ -70,14 +71,26 @@ namespace PaJaMa.Database.Library.Synchronization
 		public string ObjectName { get; set; }
 	}
 
+	public enum DifferenceType
+	{
+		Create,
+		Alter,
+		Drop
+	}
+
 	public class Difference
 	{
-		public const string CREATE = "CREATE";
-		public const string ALTER = "ALTER";
-		public const string DROP = "DROP";
+		public DifferenceType DifferenceType { get; private set; }
+		public string PropertyName { get; private set; }
+		public string SourceValue { get; private set; }
+		public string TargetValue { get; private set; }
 
-		public string PropertyName { get; set; }
-		public string SourceValue { get; set; }
-		public string TargetValue { get; set; }
+		public Difference(DifferenceType differenceType, string propertyName, string sourceValue, string targetValue)
+		{
+			this.DifferenceType = differenceType;
+			this.PropertyName = propertyName;
+			this.SourceValue = sourceValue;
+			this.TargetValue = targetValue;
+		}
 	}
 }

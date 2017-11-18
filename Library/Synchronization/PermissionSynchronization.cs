@@ -19,7 +19,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetDropItems()
 		{
 			StringBuilder sb = new StringBuilder();
-			foreach (var princ in databaseObject.PermissionPrincipals)
+			foreach (var princ in DatabaseObject.PermissionPrincipals)
 			{
 				sb.AppendLine(princ.GetCreateRemoveScript(false));
 			}
@@ -29,7 +29,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		private string getCreateScript()
 		{
 			StringBuilder sb = new StringBuilder();
-			foreach (var princ in databaseObject.PermissionPrincipals)
+			foreach (var princ in DatabaseObject.PermissionPrincipals)
 			{
 				sb.AppendLine(princ.GetCreateRemoveScript(true));
 			}
@@ -53,13 +53,13 @@ namespace PaJaMa.Database.Library.Synchronization
 					target = selectedItems.Select(i => i.DatabaseObject).OfType<Schema>().FirstOrDefault(t => t.ObjectName == match.Groups[1].Value);
 
 				if (target == null)
-					return new List<DatabaseObjectBase>() { databaseObject.Database.Schemas.First(d => d.ObjectName == match.Groups[1].Value) };
+					return new List<DatabaseObjectBase>() { DatabaseObject.Database.Schemas.First(d => d.ObjectName == match.Groups[1].Value) };
 			}
 			else
 			{
 				var missingPrincipals = new List<DatabaseObjectBase>();
 
-				foreach (var pp in databaseObject.PermissionPrincipals)
+				foreach (var pp in DatabaseObject.PermissionPrincipals)
 				{
 					if (!existingTargetObjects.OfType<DatabasePrincipal>().Any(dp => dp.PrincipalName == pp.DatbasePrincipal.PrincipalName)
 						&& !selectedItems.Select(i => i.DatabaseObject).OfType<DatabasePrincipal>().Any(dp => dp.PrincipalName == pp.DatbasePrincipal.PrincipalName))
@@ -81,15 +81,19 @@ namespace PaJaMa.Database.Library.Synchronization
 			var items = new List<SynchronizationItem>();
 			var targetPermission = target as Permission;
 			List<PermissionPrincipal> skips = new List<PermissionPrincipal>();
-			foreach (var pp in databaseObject.PermissionPrincipals)
+			foreach (var pp in DatabaseObject.PermissionPrincipals)
 			{
 				var tpp = targetPermission.PermissionPrincipals.FirstOrDefault(p => pp.IsEqual(p));
 				if (tpp == null)
 				{
-					var item = new SynchronizationItem(databaseObject);
-					item.Differences.Add(new Difference() { PropertyName = Difference.CREATE });
-					item.AddScript(2, pp.GetCreateRemoveScript(true));
-					items.Add(item);
+					var diff = getDifference(DifferenceType.Create, DatabaseObject);
+					if (diff != null)
+					{
+						var item = new SynchronizationItem(DatabaseObject);
+						item.Differences.Add(diff);
+						item.AddScript(2, pp.GetCreateRemoveScript(true));
+						items.Add(item);
+					}
 					skips.Add(pp);
 				}
 			}
@@ -99,13 +103,17 @@ namespace PaJaMa.Database.Library.Synchronization
 				if (skips.Any(s => s.PermissionType == pp.PermissionType && s.DatbasePrincipal.PrincipalName == pp.DatbasePrincipal.PrincipalName))
 					continue;
 
-				var tpp = databaseObject.PermissionPrincipals.FirstOrDefault(p => pp.IsEqual(p));
+				var tpp = DatabaseObject.PermissionPrincipals.FirstOrDefault(p => pp.IsEqual(p));
 				if (tpp == null)
 				{
-					var item = new SynchronizationItem(databaseObject);
-					item.Differences.Add(new Difference() { PropertyName = Difference.DROP });
-					item.AddScript(2, pp.GetCreateRemoveScript(false));
-					items.Add(item);
+					var diff = getDifference(DifferenceType.Drop, DatabaseObject);
+					if (diff != null)
+					{
+						var item = new SynchronizationItem(DatabaseObject);
+						item.Differences.Add(diff);
+						item.AddScript(2, pp.GetCreateRemoveScript(false));
+						items.Add(item);
+					}
 				}
 			}
 
