@@ -106,7 +106,7 @@ namespace PaJaMa.Database.Library.Helpers
 									DataTable dt = new DataTable();
 									dt.Load(rdr);
 									var insertQry = $@"insert into {table.TargetTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)} 
-            ({string.Join(", ", dt.Columns.OfType<DataColumn>().Select(dc => table.TargetObject.ParentDatabase.DataSource.GetConvertedObjectName(dc.ColumnName)).ToArray())}) values ";
+            ({string.Join(", ", dt.Columns.OfType<DataColumn>().Select(dc => table.TargetObject.Database.DataSource.GetConvertedObjectName(dc.ColumnName)).ToArray())}) values ";
 									cmd.CommandText = insertQry;
 									bool firstIn = true;
 									int counter = 0;

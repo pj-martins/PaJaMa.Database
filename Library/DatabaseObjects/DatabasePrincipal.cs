@@ -73,7 +73,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 			if (string.IsNullOrEmpty(this.DefaultSchema))
 				this.DefaultSchema = "dbo";
-			ParentDatabase.Principals.Add(this);
+			Database.Principals.Add(this);
 
 			// TODO:
 			/*

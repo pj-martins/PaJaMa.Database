@@ -38,11 +38,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			var schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["ObjectSchema"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
 			this.Definition = string.IsNullOrEmpty(this.Definition) ? string.Empty : this.Definition.Trim();
 			this.Schema = schema;
-			this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == ObjectName
-							&& ep.ObjectSchema == Schema.SchemaName
+			this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == ObjectName
+							&& ep.SchemaName == Schema.SchemaName
 							&& ep.Level1Type.ToLower() == ObjectType.ToLower()).ToList();
 		}
 

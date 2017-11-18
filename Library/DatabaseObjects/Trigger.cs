@@ -35,7 +35,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			var schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
 			this.Table = (from t in schema.Tables
 						  where t.TableName == reader["TableName"].ToString()
 						  select t).First();

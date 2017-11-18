@@ -23,8 +23,8 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		public string Source { get { return SourceObject.ToString(); } }
 		public string Target { get { return TargetObject == null ? string.Empty : TargetObject.ToString(); } }
 
-		public ObjectWorkspace(CompareHelper compareHelper, DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject) 
-            : base(sourceObject, targetDatabase, targetObject)
+		public ObjectWorkspace(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject, bool ignoreCase) 
+            : base(sourceObject, targetDatabase, targetObject, ignoreCase)
 		{
 		}
 
@@ -67,7 +67,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			if (obj1.ObjectType != obj2.ObjectType) return false;
 			if (obj1.ObjectType == typeof(Schema).Name)
 			{
-				if (obj1.ObjectName == obj1.ParentDatabase.DataSource.DefaultSchemaName && obj2.ObjectName == obj2.ParentDatabase.DataSource.DefaultSchemaName)
+				if (obj1.ObjectName == obj1.Database.DataSource.DefaultSchemaName && obj2.ObjectName == obj2.Database.DataSource.DefaultSchemaName)
 					return true;
 			}
 			return obj1.ToString() == obj2.ToString();
@@ -89,7 +89,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 
 				DatabaseObjectBase sourceDef = def;
 				DatabaseObjectBase targetDef = toObjs.FirstOrDefault(t => objectsAreEqual(t, def));
-				lst.Workspaces.Add(new ObjectWorkspace(compareHelper, sourceDef, compareHelper.ToDataSource.CurrentDatabase, targetDef));
+				lst.Workspaces.Add(new ObjectWorkspace(sourceDef, compareHelper.ToDataSource.CurrentDatabase, targetDef, compareHelper.IgnoreCase));
 			}
 
 

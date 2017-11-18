@@ -15,7 +15,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public DatabaseSynchronization(DatabaseObjects.Database database)
 		{
 			_database = database;
-			_database.PopulateChildren(false, null);
+			_database.PopulateChildren(false, false, null);
 		}
 
 		private List<Table> getSortedTables()
@@ -86,7 +86,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			foreach (var obj in sorted)
 			{
-				var sync = DatabaseObjectSynchronizationBase.GetSynchronization(obj.ParentDatabase, obj);
+				var sync = DatabaseObjectSynchronizationBase.GetSynchronization(obj.Database, obj);
 				var rawText = sync.GetRawCreateText(true);
 				sb.AppendLine(rawText);
 				sb.AppendLine("GO\r\n\r\n");

@@ -26,7 +26,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			ParentDatabase.Credentials.Add(this);
+			Database.Credentials.Add(this);
 		}
 	}
 }

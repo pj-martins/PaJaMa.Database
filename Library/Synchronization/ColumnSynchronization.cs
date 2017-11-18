@@ -28,7 +28,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return GetAddAlterItems(null);
+			return GetAddAlterItems(null, false);
 		}
 
 
@@ -57,23 +57,18 @@ namespace PaJaMa.Database.Library.Synchronization
 		public string GetDefaultScript()
 		{
 			string def = string.Empty;
-			//if (fromCol["ColumnDefault"] != DBNull.Value && fromCol["ConstraintName"] != DBNull.Value)
-			//	def = "CONSTRAINT [" + fromCol["ConstraintName"].ToString() + "] DEFAULT(" + fromCol["ColumnDefault"] + ")";
-			//else if (fromCol["COLUMN_DEFAULT"] != DBNull.Value)
-			//	def = "DEFAULT(" + fromCol["COLUMN_DEFAULT"] + ")";
-
-			string colDef = targetDatabase.DataSource.GetConvertedColumnDefault(databaseObject.ParentDatabase.DataSource, databaseObject.ColumnDefault);
+			string colDef = targetDatabase.DataSource.GetConvertedColumnDefault(databaseObject, databaseObject.ColumnDefault);
 			if (!string.IsNullOrEmpty(colDef) && colDef.StartsWith("((") && colDef.EndsWith("))"))
 				colDef = colDef.Substring(1, colDef.Length - 2);
 
 			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(databaseObject.ConstraintName))
-				def = "CONSTRAINT [" + databaseObject.ConstraintName + "] DEFAULT(" + colDef + ")";
+				def = "CONSTRAINT " + targetDatabase.DataSource.GetConvertedObjectName(databaseObject.ConstraintName) + " DEFAULT(" + colDef + ")";
 			else if (!string.IsNullOrEmpty(colDef))
 				def = "DEFAULT(" + colDef + ")";
 			return def;
 		}
 
-		public List<SynchronizationItem> GetAddAlterItems(Column targetColumn)
+		public List<SynchronizationItem> GetAddAlterItems(Column targetColumn, bool ignoreCase)
 		{
 			var items = new List<SynchronizationItem>();
 
@@ -103,29 +98,17 @@ namespace PaJaMa.Database.Library.Synchronization
 			}
 
 			var differences = targetColumn == null ? new List<Difference>() { new Difference() { PropertyName = Difference.CREATE } }
-				: base.GetPropertyDifferences(targetColumn);
+				: base.GetPropertyDifferences(targetColumn, ignoreCase);
 
 			for (int i = differences.Count - 1; i >= 0; i--)
 			{
 				var diff = differences[i];
-				if (diff.PropertyName == "DataType")
-				{
-					if (diff.TargetValue == targetDatabase.DataSource.GetConvertedColumnType(databaseObject.ParentDatabase.DataSource, diff.SourceValue))
-						differences.RemoveAt(i);
-				}
-				else if (diff.PropertyName == "ColumnDefault")
-				{
-					if (diff.TargetValue.Replace("(", "").Replace(")", "") ==
-						targetDatabase.DataSource.GetConvertedColumnDefault(databaseObject.ParentDatabase.DataSource, diff.SourceValue.Replace("(", "").Replace(")", "")))
-						differences.RemoveAt(i);
-				}
-				// TODO:
-				//else if ((targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite) && (diff.PropertyName == "NumericScale" || diff.PropertyName == "NumericPrecision"))
-				//	differences.RemoveAt(i);
+				if (targetDatabase.DataSource.IgnoreColumnDifference(diff, databaseObject))
+					differences.RemoveAt(i);
 			}
 
 			// case mismatch
-			if (targetColumn != null && targetColumn.ColumnName != databaseObject.ColumnName)
+			if (!ignoreCase && targetColumn != null && targetColumn.ColumnName != databaseObject.ColumnName)
 			{
 				item = new SynchronizationItem(databaseObject);
 				item.AddScript(2, string.Format("EXEC sp_rename '{0}.{1}.{2}', '{3}', 'COLUMN'",
@@ -160,7 +143,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				if (!databaseObject.IsNullable && !databaseObject.IsIdentity && string.IsNullOrEmpty(def) && databaseObject.DataType != "timestamp")
 				{
-					var clrType = databaseObject.ParentDatabase.DataSource.ColumnTypes.First(c => c.TypeName == databaseObject.DataType).ClrType;
+					var clrType = databaseObject.Database.DataSource.ColumnTypes.First(c => c.TypeName == databaseObject.DataType).ClrType;
 
 					tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");
 
@@ -201,7 +184,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				item.AddScript(10, syncItem.GetRawCreateText());
 			}
 
-			if (targetColumn != null && !targetColumn.ParentDatabase.DataSource.BypassConstraints)
+			if (targetColumn != null && !targetColumn.Database.DataSource.BypassConstraints)
 			{
 				var dcs = databaseObject.Table.DefaultConstraints.Where(dc => dc.Column.ColumnName == databaseObject.ColumnName);
 				foreach (var dc in dcs)
@@ -215,9 +198,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
-			return GetAddAlterItems(target as Column);
+			return GetAddAlterItems(target as Column, ignoreCase);
 		}
 	}
 }

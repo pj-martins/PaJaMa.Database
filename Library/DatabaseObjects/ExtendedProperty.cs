@@ -22,7 +22,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		public object PropValue { get; set; }
 
-		public string ObjectSchema { get; set; }
+		public string SchemaName { get; set; }
 		public string Level1Type { get; set; }
 		public string Level1Object { get; set; }
 		public string Level2Type { get; set; }
@@ -36,7 +36,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			this.ParentDatabase.ExtendedProperties.Add(this);
+			this.Database.ExtendedProperties.Add(this);
 		}
 	}
 }

@@ -23,14 +23,14 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void frmStructureDetails_Load(object sender, EventArgs e)
 		{
-			var sync = DatabaseObjectSynchronizationBase.GetSynchronization(Workspace.SourceObject.ParentDatabase, Workspace.SourceObject);
+			var sync = DatabaseObjectSynchronizationBase.GetSynchronization(Workspace.SourceObject.Database, Workspace.SourceObject);
 
 			txtFromScript.Text = string.Join("\r\n\r\n", sync.GetRawCreateText());
 			if (Workspace.TargetObject == null)
 				txtToScript.Text = string.Empty;
 			else
 			{
-				sync = DatabaseObjectSynchronizationBase.GetSynchronization(Workspace.TargetObject.ParentDatabase, Workspace.TargetObject);
+				sync = DatabaseObjectSynchronizationBase.GetSynchronization(Workspace.TargetObject.Database, Workspace.TargetObject);
 				txtToScript.Text = sync.GetRawCreateText();
 			}
 			splitMain.Panel2Collapsed = Workspace.TargetObject == null;

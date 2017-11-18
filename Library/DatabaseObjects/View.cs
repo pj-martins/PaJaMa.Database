@@ -36,20 +36,20 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			var schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
 			var viewName = reader["ViewName"].ToString();
 			var currView = schema.Views.FirstOrDefault(v => v.ViewName == viewName && v.Schema.SchemaName == schema.SchemaName);
 			if (currView == null)
 			{
-				currView = reader.ToObject<View>(ParentDatabase);
+				currView = reader.ToObject<View>(Database);
 				currView.Schema = schema;
-				if (ParentDatabase.ExtendedProperties != null)
-					currView.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == currView.ViewName && ep.ObjectSchema == currView.Schema.SchemaName &&
+				if (Database.ExtendedProperties != null)
+					currView.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == currView.ViewName && ep.SchemaName == currView.Schema.SchemaName &&
 					string.IsNullOrEmpty(ep.Level2Object)).ToList();
 				schema.Views.Add(currView);
 			}
 
-			var col = reader.ToObject<Column>(ParentDatabase);
+			var col = reader.ToObject<Column>(Database);
 			if (!string.IsNullOrEmpty(col.ColumnName))
 				currView.Columns.Add(col);
 		}

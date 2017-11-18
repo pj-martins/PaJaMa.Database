@@ -412,15 +412,15 @@ namespace PaJaMa.Database.Studio.Query
 			if (selectedNode.Tag is Library.DatabaseObjects.View)
 			{
 				var view = selectedNode.Tag as Library.DatabaseObjects.View;
-                dbName = view.ParentDatabase.DataSource.GetConvertedObjectName(view.ParentDatabase.DatabaseName);
-                objName = view.GetObjectNameWithSchema(view.ParentDatabase.DataSource);
+                dbName = view.Database.DataSource.GetConvertedObjectName(view.Database.DatabaseName);
+                objName = view.GetObjectNameWithSchema(view.Database.DataSource);
 				columns = view.Columns.Select(c => c.ColumnName).ToArray();
 			}
 			else
 			{
 				var tbl = selectedNode.Tag as Table;
-                dbName = tbl.ParentDatabase.DataSource.GetConvertedObjectName(tbl.ParentDatabase.DatabaseName);
-                objName = tbl.GetObjectNameWithSchema(tbl.ParentDatabase.DataSource);
+                dbName = tbl.Database.DataSource.GetConvertedObjectName(tbl.Database.DatabaseName);
+                objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
 				columns = tbl.Columns.Select(c => c.ColumnName).ToArray();
 			}
 

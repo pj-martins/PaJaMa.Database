@@ -34,7 +34,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		internal override void setObjectProperties(DbDataReader reader)
 		{
 
-			var schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
 			var table = schema.Tables.FirstOrDefault(t => t.TableName == TableName);
 			if (table == null) return;
 			var index = table.Indexes.FirstOrDefault(i => i.IndexName == IndexName && i.Table.TableName == TableName && i.Table.Schema.SchemaName

@@ -42,7 +42,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,
-			bool isForDrop)
+			bool isForDrop, bool ignoreCase)
 		{
 			var match = Regex.Match(GetRawCreateText(), @"ON SCHEMA::\[(.*?)\]");
 			if (match.Success)
@@ -53,7 +53,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					target = selectedItems.Select(i => i.DatabaseObject).OfType<Schema>().FirstOrDefault(t => t.ObjectName == match.Groups[1].Value);
 
 				if (target == null)
-					return new List<DatabaseObjectBase>() { databaseObject.ParentDatabase.Schemas.First(d => d.ObjectName == match.Groups[1].Value) };
+					return new List<DatabaseObjectBase>() { databaseObject.Database.Schemas.First(d => d.ObjectName == match.Groups[1].Value) };
 			}
 			else
 			{
@@ -70,13 +70,13 @@ namespace PaJaMa.Database.Library.Synchronization
 					return missingPrincipals;
 			}
 
-			return base.GetMissingDependencies(existingTargetObjects, selectedItems, isForDrop);
+			return base.GetMissingDependencies(existingTargetObjects, selectedItems, isForDrop, ignoreCase);
 		}
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			if (target == null)
-				return base.GetSynchronizationItems(target);
+				return base.GetSynchronizationItems(target, ignoreCase);
 
 			var items = new List<SynchronizationItem>();
 			var targetPermission = target as Permission;

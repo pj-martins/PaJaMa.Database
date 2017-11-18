@@ -25,6 +25,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		public List<Sequence> Sequences { get; private set; }
 
+		public bool IsSystemSchema
+		{
+			get { return this.Database.DataSource.SystemSchemaNames.Contains(this.SchemaName); }
+		}
+
 		public override string ObjectName
 		{
 			get { return SchemaName; }
@@ -37,7 +42,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			get
 			{
-				if (SchemaName == ParentDatabase.DataSource.DefaultSchemaName)
+				if (SchemaName == Database.DataSource.DefaultSchemaName)
 					return "__DEFAULT__";
 				return SchemaName;
 			}
@@ -53,17 +58,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			if (ParentDatabase.ExtendedProperties != null)
-				this.ExtendedProperties = ParentDatabase.ExtendedProperties
+			if (Database.ExtendedProperties != null)
+				this.ExtendedProperties = Database.ExtendedProperties
 								.Where(ep => ep.Level1Type == typeof(Schema).Name.ToUpper() && ep.Level1Object == this.SchemaName)
 								.ToList();
-			if (ParentDatabase.Principals != null)
+			if (Database.Principals != null)
 			{
-				var owner = ParentDatabase.Principals.FirstOrDefault(p => SchemaOwner == p.ObjectName);
+				var owner = Database.Principals.FirstOrDefault(p => SchemaOwner == p.ObjectName);
 				if (owner != null)
 					owner.Ownings.Add(this);
 			}
-			ParentDatabase.Schemas.Add(this);
+			Database.Schemas.Add(this);
 		}
 	}
 }

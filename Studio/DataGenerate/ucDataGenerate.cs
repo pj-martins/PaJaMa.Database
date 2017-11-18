@@ -129,7 +129,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 				var worker = new BackgroundWorker();
 				worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
 				{
-					_generatorHelper.DataSource.CurrentDatabase.PopulateChildren(true, worker);
+					_generatorHelper.DataSource.CurrentDatabase.PopulateChildren(true, false, worker);
 				};
 				WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
 			}

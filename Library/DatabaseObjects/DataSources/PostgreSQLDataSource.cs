@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PaJaMa.Database.Library.Synchronization;
 
 namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 {
@@ -17,6 +18,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 		public override string DefaultSchemaName => "public";
 		internal override bool BypassKeyConstraints => true;
 		internal override bool ForeignKeyDropsWithColumns => true;
+		internal override bool BypassClusteredNonClustered => true;
+		internal override bool BypassIdentityColumn => true;
+		internal override List<string> SystemSchemaNames => new List<string>() { "pg_catalog", "information_schema" };
 
 		#region SQLS
 		internal override string SchemaSQL => @"select schema_name as SchemaName, schema_owner as SchemaOwner from information_schema.schemata
@@ -24,7 +28,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 
 		internal override string RoutineSynonymSQL => @"
 select 
-	ROUTINE_SCHEMA as ObjectSchema, 
+	ROUTINE_SCHEMA as SchemaName, 
 	ROUTINE_NAME as Name, 
 	ROUTINE_TYPE as Type,
 	ROUTINE_DEFINITION as Definition
@@ -63,7 +67,7 @@ where t.TABLE_TYPE = 'BASE TABLE'
 SELECT distinct
     tc.constraint_name as ForeignKeyName, tc.table_name as ChildTableName, kcu.column_name as ChildColumnName, 
     ccu.table_name AS ParentTableName, ccu.column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
-	tc.CONSTRAINT_SCHEMA as ParentTableSchema, tc.CONSTRAINT_SCHEMA as ChildTableSchema
+	tc.CONSTRAINT_SCHEMA as ParentTableSchema, tc.CONSTRAINT_SCHEMA as ChildTableSchema, tc.CONSTRAINT_SCHEMA as SchemaName
 FROM 
     information_schema.table_constraints AS tc 
 JOIN information_schema.key_column_usage AS kcu
@@ -91,30 +95,47 @@ select
 	i.relname as IndexName,
 	a.attname as ColumnName,
 	-- TODO: case when ix.indisclustered = true then 'CLUSTERED' else 'NONCLUSTERED' end as IndexType,
-    '' as IndexType,
+    	'' as IndexType,
 	ix.indisunique as IsUnique,
 	n.nspname as SchemaName,
+	x.Ordinal,
 	-- TODO:
-	1 as Ordinal,
 	false as Descending
-from pg_index ix
+from
+(
+	select indrelid, unnest(indkey) as Ordinal from pg_index
+) x
+join pg_index ix on ix.indrelid = x.indrelid
 join pg_class t on t.oid = ix.indrelid
 join pg_class i on i.oid = ix.indexrelid
-join pg_attribute a on a.attrelid = t.oid and a.attnum = ANY(ix.indkey)
+join pg_attribute a on a.attrelid = t.oid and a.attnum = x.Ordinal
 join pg_catalog.pg_namespace n on n.oid = t.relnamespace
-where t.relkind = 'r' and t.relname not like 'pg_%' and indisprimary = false";
+where t.relkind = 'r' and t.relname not like 'pg_%' and indisprimary = false
+and x.Ordinal > 1
+";
 
 		internal override string DefaultConstraintSQL => @"select 
-	t.relname as TableName,
-	c.conname as ConstraintName,
-	a.attname as ColumnName,
-	d.adsrc as ColumnDefault,
-	n.nspname as SchemaName
-from pg_constraint c
-join pg_class t on t.oid = c.conrelid
-join pg_attribute a on a.attrelid = c.conrelid and ARRAY[attnum] <@ c.conkey
-join pg_attrdef d on d.adnum = a.attnum and d.adrelid = t.oid
-join pg_catalog.pg_namespace n on n.oid = t.relnamespace
+	c.table_name as TableName,
+	coalesce(constraintname, 'DF_' || c.table_name || '_' || c.column_name) as ConstraintName, 
+	c.column_name as ColumnName, 
+	c.column_default as ColumnDefault, 
+	c.table_schema as SchemaName
+from INFORMATION_SCHEMA.COLUMNS c
+left join
+(
+	select 
+		t.relname as TableName,
+		c.conname as ConstraintName,
+		a.attname as ColumnName,
+		d.adsrc as ColumnDefault,
+		n.nspname as SchemaName
+	from pg_constraint c
+	join pg_class t on t.oid = c.conrelid
+	join pg_attribute a on a.attrelid = c.conrelid and ARRAY[attnum] <@ c.conkey
+	join pg_attrdef d on d.adnum = a.attnum and d.adrelid = t.oid
+	join pg_catalog.pg_namespace n on n.oid = t.relnamespace
+) co on co.tablename = c.table_name and co.columnname = c.column_name and co.schemaname = c.table_schema and co.columndefault = c.column_default
+where c.column_default is not null
 ";
 
 		internal override string TriggerSQL => @"
@@ -129,7 +150,7 @@ FROM information_schema.triggers
 ";
 
 		internal override string SequenceSQL => @"select 
-    sequence_schema, 
+    sequence_schema as SchemaName, 
     sequence_name as SequenceName,
     increment,
     minimum_value as MinValue,
@@ -138,7 +159,7 @@ FROM information_schema.triggers
     cycle_option as Cycle
 from INFORMATION_SCHEMA.SEQUENCES";
 
-		internal override string ExtensionSQL => "select * from pg_available_extensions where installed_version <> ''";
+		internal override string ExtensionSQL => "select *, ''::text as SchemaName from pg_available_extensions where installed_version <> ''";
 
 		internal override string DatabaseSQL => "select \"datname\" as DatabaseName from \"pg_database\"";
 
@@ -156,8 +177,11 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, typeof(Guid), "uuid_generate_v4()"));
 					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTimeZone, typeof(DateTime), "now()"));
-					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, typeof(string), "''"));
+					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, typeof(string), "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("character varying", DataType.NVaryingChar, typeof(string), "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("integer", DataType.Integer, typeof(int), "0"));
+					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanFalse, typeof(bool), "false"));
+					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanTrue, typeof(bool), "true"));
 				}
 				return _columnTypes;
 			}
@@ -168,25 +192,21 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			return string.Format("\"{0}\"", objectName);
 		}
 
-		public override List<Schema> GetNonSystemSchemas(Database database)
-		{
-			return database.Schemas.Where(s => s.SchemaName != "pg_catalog" && s.SchemaName != "information_schema").ToList();
-		}
-
 		internal override string GetCreateIdentity(Column column)
 		{
 			return string.Format(" DEFAULT NEXTVAL('{0}')", column.Table.TableName + "_" + column.ColumnName + "_seq");
 		}
 
-		internal override string GetColumnAddAlterScript(Column column, bool add, string defaultValue, string postScript)
+		internal override string GetColumnAddAlterScript(Column column, bool add, string postScript, string defaultValue)
 		{
+			var dataType = this.GetConvertedColumnType(column.Database.DataSource, column.DataType, true);
 			var sb = new StringBuilder();
 			if (add)
 			{
 				sb.AppendLineFormat("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
 				   column.Table.GetObjectNameWithSchema(this),
 				   column.GetQueryObjectName(this),
-				   column.DataType,
+				   dataType,
 				   postScript,
 				   column.IsNullable ? "NULL" : "NOT NULL",
 				   defaultValue,
@@ -196,7 +216,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			else
 			{
 				sb.AppendLineFormat("ALTER TABLE {0}", column.Table.GetObjectNameWithSchema(this));
-				sb.AppendLineFormat("ALTER COLUMN {0} SET DATA TYPE {1}{2},", column.GetQueryObjectName(this), column.DataType, postScript);
+				sb.AppendLineFormat("ALTER COLUMN {0} SET DATA TYPE {1}{2},", column.GetQueryObjectName(this), dataType, postScript);
 				sb.AppendLineFormat("ALTER COLUMN {0} {1} DEFAULT {2},", column.GetQueryObjectName(this), string.IsNullOrEmpty(defaultValue) ? "DROP" : "SET",
 					defaultValue);
 				sb.AppendLineFormat("ALTER COLUMN {0} {1} NOT NULL;", column.GetQueryObjectName(this), column.IsNullable ? "DROP" : "SET");
@@ -204,9 +224,9 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			return sb.ToString();
 		}
 
-		internal override string GetPostTableCreateScript(Table table)
+		internal override string GetPreTableCreateScript(Table table)
 		{
-			var schema = table.Schema.SchemaName == table.ParentDatabase.DataSource.DefaultSchemaName ?
+			var schema = table.Schema.SchemaName == table.Database.DataSource.DefaultSchemaName ?
 						this.DefaultSchemaName : table.Schema.SchemaName;
 			schema = this.GetConvertedObjectName(schema);
 			var sb = new StringBuilder();
@@ -221,6 +241,23 @@ from INFORMATION_SCHEMA.SEQUENCES";
 ", schema, table.TableName.ToLower(), idCol.ColumnName.ToLower(), idCol.Increment.GetValueOrDefault(1)));
 			}
 			return sb.ToString();
+		}
+
+		internal override bool IgnoreColumnDifference(Difference difference, Column column)
+		{
+			if (column.Database.DataSource.GetType().FullName != this.GetType().FullName)
+			{
+				if (difference.PropertyName == "ColumnDefault")
+				{
+					if (difference.TargetValue.StartsWith("nextval"))
+						return true;
+				}
+				else if (difference.PropertyName == "NumericPrecision" || difference.PropertyName == "IsIdentity")
+				{
+					return true;
+				}
+			}
+			return base.IgnoreColumnDifference(difference, column);
 		}
 
 		public override string GetColumnSelectList(string[] columns)

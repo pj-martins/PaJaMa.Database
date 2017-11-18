@@ -29,16 +29,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			var permission = ParentDatabase.Permissions.FirstOrDefault(p => p.SchemaName == this.SchemaName
+			var permission = Database.Permissions.FirstOrDefault(p => p.SchemaName == this.SchemaName
 							&& p.PermissionSchemaName == this.PermissionSchemaName && p.PermissionName == this.PermissionName);
 			if (permission == null)
 			{
 				permission = this;
-				ParentDatabase.Permissions.Add(permission);
+				Database.Permissions.Add(permission);
 			}
 
 			var permissionPrincipal = reader.ToObject<PermissionPrincipal>();
-			permissionPrincipal.DatbasePrincipal = ParentDatabase.Principals.First(p => p.PrincipalName == reader["PrincipalName"].ToString());
+			permissionPrincipal.DatbasePrincipal = Database.Principals.First(p => p.PrincipalName == reader["PrincipalName"].ToString());
 			permissionPrincipal.Permission = permission;
 			permission.PermissionPrincipals.Add(permissionPrincipal);
 		}

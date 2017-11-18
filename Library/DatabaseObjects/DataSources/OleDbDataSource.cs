@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PaJaMa.Database.Library.DatabaseObjects.Servers
+namespace PaJaMa.Database.Library.DatabaseObjects.DataSources
 {
 	public class OleDbDataSource : DataSource
 	{

@@ -111,8 +111,8 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 
 		public DataTableWithSchema ComparedData { get; set; }
 
-		public TableWorkspace(CompareHelper compareHelper, Table sourceTable, DatabaseObjects.Database targetDatabase, Table targetTable)
-			: base(sourceTable, targetDatabase, targetTable)
+		public TableWorkspace(CompareHelper compareHelper, Table sourceTable, DatabaseObjects.Database targetDatabase, Table targetTable,
+			bool ignoreCase) : base(sourceTable, targetDatabase, targetTable, ignoreCase)
 		{
 			_compareHelper = compareHelper;
 		}
@@ -176,19 +176,21 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		{
 			var lst = new TableWorkspaceList();
 
-			var fromTbls = (from s in compareHelper.FromDataSource.GetNonSystemSchemas(compareHelper.FromDataSource.CurrentDatabase)
+			var fromTbls = (from s in compareHelper.FromDataSource.CurrentDatabase.Schemas
+							where !s.IsSystemSchema
 							from t in s.Tables
 							select t).ToList();
 
-			var toTbls = (from s in compareHelper.ToDataSource.GetNonSystemSchemas(compareHelper.ToDataSource.CurrentDatabase)
-						  from t in s.Tables
-						  select t).ToList();
+			var toTbls = (from s in compareHelper.ToDataSource.CurrentDatabase.Schemas
+						  where !s.IsSystemSchema
+						from t in s.Tables
+						select t).ToList();
 
 			foreach (var tbl in fromTbls)
 			{
 				Table sourceTable = tbl;
 				Table targetTable = toTbls.FirstOrDefault(t => t.TableName == tbl.TableName && t.Schema.MappedSchemaName == tbl.Schema.MappedSchemaName);
-				lst.Workspaces.Add(new TableWorkspace(compareHelper, sourceTable, compareHelper.ToDataSource.CurrentDatabase, targetTable));
+				lst.Workspaces.Add(new TableWorkspace(compareHelper, sourceTable, compareHelper.ToDataSource.CurrentDatabase, targetTable, compareHelper.IgnoreCase));
 			}
 
 			foreach (var table in toTbls

@@ -39,8 +39,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			var foreignKeyName = reader["ForeignKeyName"].ToString();
 			var childTableName = reader["ChildTableName"].ToString();
-			var parentSchema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["ParentTableSchema"].ToString());
-			var childSchema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["ChildTableSchema"].ToString());
+			var parentSchema = Database.Schemas.First(s => s.SchemaName == reader["ParentTableSchema"].ToString());
+			var childSchema = Database.Schemas.First(s => s.SchemaName == reader["ChildTableSchema"].ToString());
 			var childTable = childSchema.Tables.First(t => t.TableName == reader["ChildTableName"].ToString());
 			var foreignKey = childTable.ForeignKeys.FirstOrDefault(f => f.ForeignKeyName == foreignKeyName 
 				&& f.ChildTable.TableName == childTableName

@@ -24,19 +24,21 @@ namespace PaJaMa.Database.Library.Helpers
 
 		public DatabaseObjects.DataSource FromDataSource { get; private set; }
 		public DatabaseObjects.DataSource ToDataSource { get; private set; }
+		
+		public bool IgnoreCase { get; set; }
 
 		public CompareHelper(DataSource fromDataSource, DataSource toDataSource, BackgroundWorker worker)
 		{
 			FromDataSource = fromDataSource;
 			ToDataSource = toDataSource;
-			FromDataSource.CurrentDatabase.PopulateChildren(false, worker);
-			ToDataSource.CurrentDatabase.PopulateChildren(false, worker);
+			FromDataSource.CurrentDatabase.PopulateChildren(false, false, worker);
+			ToDataSource.CurrentDatabase.PopulateChildren(false, false, worker);
 		}
 
 		public void Init(BackgroundWorker worker)
 		{
-			FromDataSource.CurrentDatabase.PopulateChildren(false, worker);
-			ToDataSource.CurrentDatabase.PopulateChildren(false, worker);
+			FromDataSource.CurrentDatabase.PopulateChildren(false, false, worker);
+			ToDataSource.CurrentDatabase.PopulateChildren(false, false, worker);
 		}
 
 		public bool Synchronize(BackgroundWorker worker, List<WorkspaceBase> workspaces, DbTransaction trans)
@@ -129,7 +131,7 @@ namespace PaJaMa.Database.Library.Helpers
 							if (!ignorePrompt)
 							{
 								var args = new DialogEventArgs("Failed to synchronize \"" + (kvp.Key is WorkspaceWithSourceBase && kvp.Key.TargetObject == null ? (kvp.Key as WorkspaceWithSourceBase).SourceObject.ObjectName : kvp.Key.TargetObject.ObjectName)
-									+ "\": " + ex.Message + "\r\n\r\n" + script + ".\r\n\r\nWould you like to continue?");
+									+ "\": " + ex.Message + "\r\n\r\n" + script + ".");
 								Prompt(this, args);
 								switch (args.Result)
 								{
@@ -163,7 +165,7 @@ namespace PaJaMa.Database.Library.Helpers
 							if (!ignorePrompt)
 							{
 								var args = new DialogEventArgs("Failed to synchronize \"" + key.ToString()
-									+ "\": " + ex.Message + ". Would you like to continue?");
+									+ "\": " + ex.Message + ".");
 								Prompt(this, args);
 								switch (args.Result)
 								{
@@ -217,9 +219,9 @@ namespace PaJaMa.Database.Library.Helpers
 								where !si.Omit
 								select si;
 
-			var sync = DatabaseObjectSynchronizationBase.GetSynchronization(parent.ParentDatabase, parent);
+			var sync = DatabaseObjectSynchronizationBase.GetSynchronization(parent.Database, parent);
 
-			var missingDendencies = sync.GetMissingDependencies(toObjects, selectedItems.ToList(), isForDrop);
+			var missingDendencies = sync.GetMissingDependencies(toObjects, selectedItems.ToList(), isForDrop, IgnoreCase);
 			foreach (var child in missingDendencies)
 			{
 				if (checkedObjects.Contains(child))

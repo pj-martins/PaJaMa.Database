@@ -20,16 +20,16 @@ namespace PaJaMa.Database.Library.Synchronization
 			return getStandardItems(string.Format(@"CREATE CREDENTIAL [{0}] WITH IDENTITY = '{1}'", databaseObject.CredentialName, databaseObject.CredentialIdentity));
 		}
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			if (target == null)
-				return base.GetSynchronizationItems(target);
+				return base.GetSynchronizationItems(target, ignoreCase);
 
 			var targetCredential = target as Credential;
 			if (databaseObject.CredentialIdentity != targetCredential.CredentialIdentity)
 			{
 				var item = new SynchronizationItem(databaseObject);
-				item.Differences.AddRange(GetPropertyDifferences(target));
+				item.Differences.AddRange(GetPropertyDifferences(target, ignoreCase));
 				item.AddScript(7, string.Format(@"ALTER CREDENTIAL [{0}] WITH IDENTITY = '{1}'", databaseObject.CredentialName, databaseObject.CredentialIdentity));
 
 				return new List<SynchronizationItem>() { item };

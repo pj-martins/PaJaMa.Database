@@ -292,7 +292,7 @@ namespace PaJaMa.Database.Studio.Query
 				if (node.Tag is Library.DatabaseObjects.Database)
 				{
 					var db = node.Tag as Library.DatabaseObjects.Database;
-					db.PopulateSchemas();
+					db.PopulateSchemas(true);
 					foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
 					{
 						var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);
@@ -311,7 +311,7 @@ namespace PaJaMa.Database.Studio.Query
 					var schema = node.Tag as Schema;
 					if (node.Text == "Tables")
 					{
-						schema.ParentDatabase.PopulateTables(schema);
+						schema.Database.PopulateTables(schema);
 						foreach (var table in from t in schema.Tables
 											  orderby t.TableName
 											  select t)
@@ -327,7 +327,7 @@ namespace PaJaMa.Database.Studio.Query
 					}
 					else if (node.Text == "Views")
 					{
-						schema.ParentDatabase.PopulateViews(schema);
+						schema.Database.PopulateViews(schema);
 						foreach (var view in from v in schema.Views
 											 orderby v.ViewName
 											 select v)
@@ -482,7 +482,7 @@ namespace PaJaMa.Database.Studio.Query
 				var obj = treeTables.SelectedNode.Tag as DatabaseObjectBase;
 				if (obj != null)
 				{
-					uc.PopulateScript(DatabaseObjectSynchronizationBase.GetSynchronization(obj.ParentDatabase, obj).GetRawCreateText(), treeTables.SelectedNode);
+					uc.PopulateScript(DatabaseObjectSynchronizationBase.GetSynchronization(obj.Database, obj).GetRawCreateText(), treeTables.SelectedNode);
 				}
 			}
 		}

@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
             return new List<SynchronizationItem>();
 		}
@@ -28,16 +28,15 @@ namespace PaJaMa.Database.Library.Synchronization
             items.Add(item);
             item.Differences.Add(new Difference() { PropertyName = Difference.CREATE });
 
-            // TODO: cache
-            item.AddScript(0, string.Format(@"CREATE SEQUENCE IF NOT EXISTS {0}.""{1}""
-                INCREMENT {2}
-                MINVALUE {3}
-                MAXVALUE {4}
-                START {5}
+			// TODO: cache
+			item.AddScript(0, string.Format(@"CREATE SEQUENCE IF NOT EXISTS {0}
+                INCREMENT {1}
+                MINVALUE {2}
+                MAXVALUE {3}
+                START {4}
                 CACHE 1
-                {6} CYCLE", 
-                databaseObject.Schema.SchemaName, 
-                databaseObject.SequenceName,
+                {5} CYCLE",
+				databaseObject.GetObjectNameWithSchema(targetDatabase.DataSource),
                 databaseObject.Increment,
                 databaseObject.MinValue,
                 databaseObject.MaxValue,

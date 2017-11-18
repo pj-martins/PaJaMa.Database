@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
             return new List<SynchronizationItem>();
 		}
@@ -33,7 +33,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override string ToString()
 		{
-			return databaseObject.ParentDatabase.DatabaseName + "." + databaseObject.Name;
+			return databaseObject.Database.DatabaseName + "." + databaseObject.Name;
 		}
 
 		public override List<SynchronizationItem> GetDropItems()

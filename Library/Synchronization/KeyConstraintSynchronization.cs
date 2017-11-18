@@ -23,7 +23,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return string.Format(@"CONSTRAINT {0}
 {1}
 {2}
-({3})", databaseObject.GetQueryObjectName(targetDatabase.DataSource), databaseObject.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE", databaseObject.ClusteredNonClustered, string.Join(", ",
+({3})", databaseObject.GetQueryObjectName(targetDatabase.DataSource), databaseObject.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE", targetDatabase.DataSource.BypassClusteredNonClustered ? string.Empty : databaseObject.ClusteredNonClustered, string.Join(", ",
 	  databaseObject.Columns.OrderBy(c => c.Ordinal).Select(c => string.Format("{0} {1}", targetDatabase.DataSource.GetConvertedObjectName(c.ColumnName), (targetDatabase.DataSource.BypassKeyConstraints ? string.Empty : (c.Descending ? "DESC" : "ASC"))))));
 		}
 
@@ -58,9 +58,9 @@ namespace PaJaMa.Database.Library.Synchronization
 				databaseObject.ConstraintName));
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
-			var items = base.GetAlterItems(target);
+			var items = base.GetAlterItems(target, ignoreCase);
 			if (target != null)
 			{
 				var targetKey = target as KeyConstraint;

@@ -31,7 +31,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			ParentDatabase.Extensions.Add(this);
+			Database.Extensions.Add(this);
 		}
 	}
 }

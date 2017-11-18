@@ -49,7 +49,7 @@ where type = 'table'
 
 		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
 
-		internal override bool PopulateColumns(Database database, DbCommand cmd, BackgroundWorker worker)
+		internal override bool PopulateColumns(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating columns for {database.DatabaseName}...");
 
@@ -88,7 +88,7 @@ where type = 'table'
 			return true;
 		}
 
-		internal override bool PopulateForeignKeys(Database database, DbCommand cmd, BackgroundWorker worker)
+		internal override bool PopulateForeignKeys(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating foreign keys for {database.DatabaseName}...");
 
@@ -120,7 +120,7 @@ where type = 'table'
 			return true;
 		}
 
-		internal override bool PopulateKeyConstraints(Database database, DbCommand cmd, BackgroundWorker worker)
+		internal override bool PopulateKeyConstraints(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating key constraints for {database.DatabaseName}...");
 
@@ -154,7 +154,7 @@ where type = 'table'
 			return true;
 		}
 
-		internal override bool PopulateIndexes(Database database, DbCommand cmd, BackgroundWorker worker)
+		internal override bool PopulateIndexes(Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, "Populating indexes for " + database.DatabaseName + "...");
 			

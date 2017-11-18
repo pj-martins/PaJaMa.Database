@@ -46,7 +46,7 @@ namespace PaJaMa.Database.Library.Helpers
 
 			_cancel = false;
 
-			using (var conn = workspace.SourceTable.ParentDatabase.DataSource.OpenConnection())
+			using (var conn = workspace.SourceTable.Database.DataSource.OpenConnection())
 			{
 				_currentCommand = conn.CreateCommand();
 				_currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));
@@ -59,7 +59,7 @@ namespace PaJaMa.Database.Library.Helpers
 
 			workspace.ComparedData.PrimaryKeyFields = primaryKeys;
 
-			using (var conn = workspace.TargetTable.ParentDatabase.DataSource.OpenConnection())
+			using (var conn = workspace.TargetTable.Database.DataSource.OpenConnection())
 			{
 				_currentCommand = conn.CreateCommand();
 				_currentCommand.CommandText = string.Format("select * from {0}", workspace.TargetTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));
@@ -175,7 +175,7 @@ namespace PaJaMa.Database.Library.Helpers
 										from c in kc.Columns
 										select c.ColumnName).ToList();
 
-			using (var conn = workspace.TargetTable.ParentDatabase.OpenConnection())
+			using (var conn = workspace.TargetTable.Database.OpenConnection())
 			{
 				using (var trans = conn.BeginTransaction())
 				{
@@ -206,7 +206,7 @@ namespace PaJaMa.Database.Library.Helpers
 							firstIn = false;
 						}
 
-						string where = string.Format("where " + string.Join(" and ", primaryKeys.Select(pk => workspace.TargetTable.ParentDatabase.DataSource.GetConvertedObjectName(pk) + " = @" + pk)));
+						string where = string.Format("where " + string.Join(" and ", primaryKeys.Select(pk => workspace.TargetTable.Database.DataSource.GetConvertedObjectName(pk) + " = @" + pk)));
 						sbUpdate.AppendLine(where);
 
 						foreach (var dr in selectedRows)

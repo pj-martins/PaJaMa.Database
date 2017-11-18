@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public abstract string ObjectName { get; }
 
-		public Database ParentDatabase { get; }
+		public Database Database { get; }
 
 		[IgnoreCase]
 		public string Definition { get; set; }
@@ -30,7 +30,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public DatabaseObjectBase(Database database)
 		{
-			this.ParentDatabase = database;
+			this.Database = database;
 		}
 
 		public virtual string ObjectType
@@ -45,15 +45,15 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal abstract void setObjectProperties(DbDataReader reader);
 
-		public virtual string GetObjectNameWithSchema(DataSource server)
+		public virtual string GetObjectNameWithSchema(DataSource dataSource)
 		{
-			var schema = this.Schema == null ? server.DefaultSchemaName : this.Schema.SchemaName;
+			var schema = this.Schema == null || this.Schema.SchemaName == this.Database.DataSource.DefaultSchemaName ? dataSource.DefaultSchemaName : this.Schema.SchemaName;
 			if (string.IsNullOrEmpty(schema))
-				return server.GetConvertedObjectName(ObjectName);
+				return dataSource.GetConvertedObjectName(ObjectName);
 
 			return string.Format("{0}.{1}",
-				server.GetConvertedObjectName(schema),
-				server.GetConvertedObjectName(ObjectName));
+				dataSource.GetConvertedObjectName(schema),
+				dataSource.GetConvertedObjectName(ObjectName));
 		}
 
 		public string GetQueryObjectName(DataSource server)

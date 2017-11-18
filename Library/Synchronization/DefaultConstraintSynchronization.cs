@@ -19,38 +19,30 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems()
 		{
-            if (targetDatabase.DataSource.BypassKeyConstraints)
-            {
-                if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
-                    return new List<SynchronizationItem>();
-            }
+			if (targetDatabase.DataSource.BypassKeyConstraints)
+			{
+				if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
+					return new List<SynchronizationItem>();
+			}
 			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};", databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
 				databaseObject.GetQueryObjectName(targetDatabase.DataSource)));
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-            if (targetDatabase.DataSource.BypassKeyConstraints)
-            {
-                if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
-                    return new List<SynchronizationItem>();
-            }
+			if (targetDatabase.DataSource.BypassKeyConstraints)
+			{
+				if (databaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == databaseObject.ObjectName))
+					return new List<SynchronizationItem>();
+			}
 
-            string def = databaseObject.ColumnDefault;
+			string def = databaseObject.ColumnDefault;
 			if (!string.IsNullOrEmpty(def) && def.StartsWith("((") && def.EndsWith("))"))
 				def = def.Substring(1, def.Length - 2);
 
 			return getStandardItems(string.Format(@"ALTER TABLE {0} ADD  CONSTRAINT {1}  DEFAULT {2} FOR {3};",
 				databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource), databaseObject.GetQueryObjectName(targetDatabase.DataSource), def, databaseObject.Column.GetQueryObjectName(targetDatabase.DataSource)
-                ), 7);
+				), 7);
 		}
-
-		//public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
-		//{
-		//	if (targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite)
-		//		return new List<SynchronizationItem>();
-
-		//	return base.GetSynchronizationItems(target);
-		//}
 	}
 }

@@ -56,9 +56,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			if (reader["Definition"] != DBNull.Value)
 				this.Definition = reader["Definition"].ToString();
-			this.Schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
-			if (ParentDatabase.ExtendedProperties != null)
-				this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.Level1Object == this.TableName && ep.ObjectSchema == this.Schema.SchemaName &&
+			this.Schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			if (Database.ExtendedProperties != null)
+				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.TableName && ep.SchemaName == this.Schema.SchemaName &&
 				string.IsNullOrEmpty(ep.Level2Object)).ToList();
 			this.Schema.Tables.Add(this);
 		}
@@ -66,7 +66,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		private List<ForeignKey> getForeignKeys()
 		{
 			var fks = this.ForeignKeys.ToList();
-			fks.AddRange(from s in this.Schema.ParentDatabase.Schemas
+			fks.AddRange(from s in this.Schema.Database.Schemas
 						 from t in s.Tables
 						 where t.TableName != this.TableName
 						 from fk in t.ForeignKeys
@@ -88,7 +88,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			foreach (var ix in Indexes)
 			{
-				cmd.CommandText = new IndexSynchronization(ParentDatabase, ix).GetRawDropText();
+				cmd.CommandText = new IndexSynchronization(Database, ix).GetRawDropText();
 				cmd.ExecuteNonQuery();
 				ix.HasBeenDropped = true;
 			}
@@ -101,7 +101,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				if (!ix.HasBeenDropped)
 					continue;
 
-				var items = new IndexSynchronization(ParentDatabase, ix).GetCreateItems();
+				var items = new IndexSynchronization(Database, ix).GetCreateItems();
 				foreach (var item in items)
 				{
 					foreach (var script in item.Scripts.Where(s => s.Value.Length > 0).OrderBy(s => (int)s.Key))
@@ -130,7 +130,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				if (fk.HasBeenDropped)
 					continue;
 
-				cmd.CommandText = new ForeignKeySynchronization(ParentDatabase, fk).GetRawDropText();
+				cmd.CommandText = new ForeignKeySynchronization(Database, fk).GetRawDropText();
 				cmd.ExecuteNonQuery();
 				fk.HasBeenDropped = true;
 			}
@@ -143,7 +143,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				if (!fk.HasBeenDropped)
 					continue;
 
-				var items = new ForeignKeySynchronization(ParentDatabase, fk).GetCreateItems();
+				var items = new ForeignKeySynchronization(Database, fk).GetCreateItems();
 				foreach (var item in items)
 				{
 					foreach (var script in item.Scripts.Where(s => s.Value.Length > 0).OrderBy(s => (int)s.Key))

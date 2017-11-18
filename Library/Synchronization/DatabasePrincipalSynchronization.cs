@@ -70,16 +70,16 @@ namespace PaJaMa.Database.Library.Synchronization
 						databaseObject.LoginName, databaseObject.DefaultSchema);
 		}
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			var items = new List<SynchronizationItem>();
 
 			if (databaseObject.PrincipalType != PrincipalType.DatabaseRole)
 			{
 				if (target == null)
-					return base.GetSynchronizationItems(target);
+					return base.GetSynchronizationItems(target, ignoreCase);
 
-				var diffs = GetPropertyDifferences(target);
+				var diffs = GetPropertyDifferences(target, ignoreCase);
 				if (diffs.Any())
 				{
 					if (target != null && databaseObject.PrincipalName == "dbo")
@@ -180,7 +180,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,
-			bool isForDrop)
+			bool isForDrop, bool ignoreCase)
 		{
 			var missing = new List<DatabaseObjectBase>();
 			var checks = new List<DatabaseObjectBase>();
@@ -204,7 +204,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				if (!string.IsNullOrEmpty(databaseObject.LoginName))
 				{
-					var slogin = databaseObject.ParentDatabase.ServerLogins.FirstOrDefault(l => l.LoginName == databaseObject.LoginName);
+					var slogin = databaseObject.Database.ServerLogins.FirstOrDefault(l => l.LoginName == databaseObject.LoginName);
 					if (slogin != null)
 						checks.Add(slogin);
 				}

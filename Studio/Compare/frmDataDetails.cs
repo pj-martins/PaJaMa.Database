@@ -48,10 +48,10 @@ namespace PaJaMa.Database.Studio.Compare
 					this.Width = settings.DataDetailsWidth;
 			}
 
-			this.Text = SelectedWorkspace.SourceTable.TableName + ": " + SelectedWorkspace.SourceTable.Schema.ParentDatabase.DataSource + " - " +
-					SelectedWorkspace.SourceTable.Schema.ParentDatabase.DatabaseName + " <> " +
-					SelectedWorkspace.TargetTable.Schema.ParentDatabase.DataSource + " - " +
-					SelectedWorkspace.TargetTable.Schema.ParentDatabase.DatabaseName;
+			this.Text = SelectedWorkspace.SourceTable.TableName + ": " + SelectedWorkspace.SourceTable.Schema.Database.DataSource + " - " +
+					SelectedWorkspace.SourceTable.Schema.Database.DatabaseName + " <> " +
+					SelectedWorkspace.TargetTable.Schema.Database.DataSource + " - " +
+					SelectedWorkspace.TargetTable.Schema.Database.DatabaseName;
 
 			cboOverrideKeyField.Items.Add("");
 			cboOverrideKeyField.Items.AddRange(SelectedWorkspace.SourceTable.Columns.Select(c => c.ColumnName).ToArray());
@@ -221,8 +221,8 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void btnSync_Click(object sender, EventArgs e)
 		{
-			if (MessageBox.Show(string.Format("{0} - {1} will be changed:\r\n\r\nContinue?", SelectedWorkspace.TargetTable.Schema.ParentDatabase.DataSource,
-					SelectedWorkspace.TargetTable.Schema.ParentDatabase.DatabaseName), "Proceed", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
+			if (MessageBox.Show(string.Format("{0} - {1} will be changed:\r\n\r\nContinue?", SelectedWorkspace.TargetTable.Schema.Database.DataSource,
+					SelectedWorkspace.TargetTable.Schema.Database.DatabaseName), "Proceed", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
 				return;
 
 			List<DataRow> drs = new List<DataRow>();

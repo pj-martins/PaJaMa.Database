@@ -15,18 +15,18 @@ namespace PaJaMa.Database.Library.Synchronization
 
         protected DatabaseObjects.Database targetDatabase { get; private set; }
 
-        public DatabaseObjectSynchronizationBase(DatabaseObjects.Database targetDb, DatabaseObjectBase obj)
+		public DatabaseObjectSynchronizationBase(DatabaseObjects.Database targetDb, DatabaseObjectBase obj)
 		{
             targetDatabase = targetDb;
 			databaseObject = obj;
 		}
 
-		public virtual List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
+		public virtual List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			if (target == null)
 				return GetCreateItems();
 
-			return GetAlterItems(target);
+			return GetAlterItems(target, ignoreCase);
 		}
 
 		public virtual List<SynchronizationItem> GetDropItems()
@@ -35,7 +35,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 		public abstract List<SynchronizationItem> GetCreateItems();
-		public virtual List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public virtual List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			var items = GetCreateItems();
 			var dropItem = items.FirstOrDefault();
@@ -49,12 +49,12 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (diff != null && diff.PropertyName == Difference.CREATE)
 				dropItem.Differences.Remove(diff);
 
-			dropItem.Differences.AddRange(GetPropertyDifferences(target));
+			dropItem.Differences.AddRange(GetPropertyDifferences(target, ignoreCase));
 			dropItem.AddScript(0, GetRawDropText());
 			return items;
 		}
 
-		public List<Difference> GetPropertyDifferences(DatabaseObjectBase target)
+		public List<Difference> GetPropertyDifferences(DatabaseObjectBase target, bool caseInsensitive)
 		{
 			if (target == null)
 				return new List<Difference>() { new Difference() { PropertyName = Difference.CREATE } };
@@ -90,7 +90,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				if (targetVal != null && sourceVal != null)
 				{
-					if (propInf.HasAttribute<IgnoreCaseAttribute>())
+					if (caseInsensitive || propInf.HasAttribute<IgnoreCaseAttribute>())
 					{
 						sourceVal = sourceVal.ToString().ToLower().Trim();
 						targetVal = targetVal.ToString().ToLower().Trim();
@@ -125,7 +125,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 		public virtual List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,
-			bool isForDrop)
+			bool isForDrop, bool ignoreCase)
 		{
 			return new List<DatabaseObjectBase>();
 		}

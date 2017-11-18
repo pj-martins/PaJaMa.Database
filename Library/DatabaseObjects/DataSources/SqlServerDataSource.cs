@@ -39,11 +39,11 @@ join sys.database_principals p on p.principal_id = s.principal_id";
 			get
 			{
 				if (_is2000OrLess)
-					return @"select ROUTINE_SCHEMA as ObjectSchema, ROUTINE_NAME as Name, ROUTINE_TYPE as Type, Definition = ROUTINE_DEFINITION
+					return @"select ROUTINE_SCHEMA as SchemaName, ROUTINE_NAME as Name, ROUTINE_TYPE as Type, Definition = ROUTINE_DEFINITION
 					from INFORMATION_SCHEMA.ROUTINES
 				";
 
-				return @"select ROUTINE_SCHEMA as ObjectSchema, ROUTINE_NAME as Name, ROUTINE_TYPE as Type, Definition = OBJECT_DEFINITION(OBJECT_ID(ROUTINE_SCHEMA + '.' + ROUTINE_NAME)) 
+				return @"select ROUTINE_SCHEMA as SchemaName, ROUTINE_NAME as Name, ROUTINE_TYPE as Type, Definition = OBJECT_DEFINITION(OBJECT_ID(ROUTINE_SCHEMA + '.' + ROUTINE_NAME)) 
 					from INFORMATION_SCHEMA.ROUTINES
 				union all
 				select s.name, sy.name, 'SYNONYM', 'CREATE SYNONYM [' + s.name + '].[' + sy.name + '] FOR ' + replace(base_object_name, '[' + db_name(parent_object_id) + '].', '') from sys.synonyms sy
@@ -273,7 +273,7 @@ join sys.schemas sc on sc.schema_id = o.schema_id
 
 		internal override string ExtendedPropertySQL => _is2000OrLess ? @"
 select name as PropName, value as PropValue, objtype as Level1Type, objname as Level1Object, null as Level2Type,
-	null as Level2Object, 'dbo' as ObjectSchema, convert(bit, 0) as IgnoreSchema
+	null as Level2Object, 'dbo' as SchemaName, convert(bit, 0) as IgnoreSchema
 from ::fn_listextendedproperty 
 (NULL, 'user', 'dbo', 'function', NULL, NULL, NULL)
 union all
@@ -287,39 +287,39 @@ select name, value, objtype, objname, null, null, 'dbo', convert(bit, 0) from ::
 (NULL, 'user', 'dbo', 'synonym', NULL, NULL, NULL)
 "
 				: @"
-select ep.name as PropName, ep.value as PropValue, 'PROCEDURE' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, sc.name as ObjectSchema, IgnoreSchema = convert(bit, 0)
+select ep.name as PropName, ep.value as PropValue, 'PROCEDURE' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, sc.name as SchemaName, IgnoreSchema = convert(bit, 0)
 FROM sys.extended_properties AS ep
 JOIN sys.procedures p on p.object_id = ep.major_id
 join sys.schemas sc on sc.schema_id = p.schema_id
 union all
-select ep.name as PropName, ep.value as PropValue, 'VIEW' as Level1Type, v.name as Level1Object, null as Level2Type, null as Level2Object, s.name as ObjectSchema, IgnoreSchema = convert(bit, 0)
+select ep.name as PropName, ep.value as PropValue, 'VIEW' as Level1Type, v.name as Level1Object, null as Level2Type, null as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 0)
 FROM sys.extended_properties AS ep
 join sys.views v on v.object_id = ep.major_id
 join sys.schemas s on s.schema_id = v.schema_id
 union all
-select ep.name as PropName, ep.value as PropValue, 'FUNCTION' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, sc.name as ObjectSchema, IgnoreSchema = convert(bit, 0)
+select ep.name as PropName, ep.value as PropValue, 'FUNCTION' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, sc.name as SchemaName, IgnoreSchema = convert(bit, 0)
 FROM sys.extended_properties AS ep
 JOIN sys.objects p on p.object_id = ep.major_id
  and type in ('FN', 'IF', 'TF')
 join sys.schemas sc on sc.schema_id = p.schema_id
 union all
-select ep.name as PropName, ep.value as PropValue, 'SYNONYM' as Level1Type, sy.name as Level1Object, null as Level2Type, null as Level2Object, s.name as ObjectSchema, IgnoreSchema = convert(bit, 0)
+select ep.name as PropName, ep.value as PropValue, 'SYNONYM' as Level1Type, sy.name as Level1Object, null as Level2Type, null as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 0)
 FROM sys.extended_properties AS ep
 JOIN sys.synonyms sy on sy.object_id = ep.major_id
 join sys.schemas s on s.schema_id = sy.schema_id
 union all
-select ep.name as PropName, ep.value as PropValue, 'TABLE' as Level1Type, t.name as Level1Object, 'COLUMN' as Level2Type, c.name as Level2Object, s.name as ObjectSchema, IgnoreSchema = convert(bit, 0)
+select ep.name as PropName, ep.value as PropValue, 'TABLE' as Level1Type, t.name as Level1Object, 'COLUMN' as Level2Type, c.name as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 0)
 FROM sys.extended_properties AS ep
 JOIN sys.tables AS t ON ep.major_id = t.object_id 
 join sys.schemas s on s.schema_id = t.schema_id
 left JOIN sys.columns AS c ON ep.major_id = c.object_id AND ep.minor_id = c.column_id
 union all
-select ep.name as PropName, ep.value as PropValue, 'USER' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, p.default_schema_name as ObjectSchema, IgnoreSchema = convert(bit, 1)
+select ep.name as PropName, ep.value as PropValue, 'USER' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, p.default_schema_name as SchemaName, IgnoreSchema = convert(bit, 1)
 FROM sys.extended_properties AS ep
 join sys.database_principals p on p.principal_id = ep.major_id
 where ep.class = 4
 union all
-select ep.name as PropName, ep.value as PropValue, 'SCHEMA' as Level1Type, s.name as Level1Object, null as Level2Type, null as Level2Object, s.name as ObjectSchema, IgnoreSchema = convert(bit, 1)
+select ep.name as PropName, ep.value as PropValue, 'SCHEMA' as Level1Type, s.name as Level1Object, null as Level2Type, null as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 1)
 FROM sys.extended_properties AS ep
 join sys.schemas s on s.schema_id = ep.major_id
 where ep.class_desc = 'SCHEMA'
@@ -353,10 +353,14 @@ left join sys.server_principals sp on sp.sid = dp.sid
 				if (_columnTypes == null)
 				{
 					_columnTypes = new List<ColumnType>();
-					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, typeof(Guid), "newid()"));
-					_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, typeof(DateTime), "getdate()"));
-					_columnTypes.Add(new ColumnType("nvarchar", DataType.VaryingChar, typeof(string), "''"));
-					_columnTypes.Add(new ColumnType("int", DataType.Integer, typeof(int), "0"));
+					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, typeof(Guid), "(newid())"));
+					_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, typeof(DateTime), "(getdate())"));
+					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, typeof(string), "''"));
+					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVaryingChar, typeof(string), "''"));
+					_columnTypes.Add(new ColumnType("int", DataType.Integer, typeof(int), "((0))"));
+					_columnTypes.Add(new ColumnType("smallint", DataType.Integer, typeof(int), "((0))"));
+					_columnTypes.Add(new ColumnType("bit", DataType.BooleanFalse, typeof(bool), "((0))"));
+					_columnTypes.Add(new ColumnType("bit", DataType.BooleanTrue, typeof(bool), "((1))"));
 				}
 				return _columnTypes;
 			}

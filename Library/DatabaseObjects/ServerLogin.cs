@@ -37,9 +37,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			this.ExtendedProperties = ParentDatabase.ExtendedProperties.Where(ep => ep.ObjectType == LoginType.SQLLogin.ToString() &&
+			this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.ObjectType == LoginType.SQLLogin.ToString() &&
 							ep.Level1Object == this.LoginName).ToList();
-			ParentDatabase.ServerLogins.Add(this);
+			Database.ServerLogins.Add(this);
 		}
 	}
 

@@ -32,11 +32,11 @@ ON UPDATE {6}
     string.Join(",", databaseObject.Columns.Select(c => c.ParentColumn.GetQueryObjectName(targetDatabase.DataSource)).ToArray()),
     databaseObject.DeleteRule,
     databaseObject.UpdateRule,
-    databaseObject.ParentDatabase.DataSource.CheckForeignKeys ? databaseObject.WithCheck : string.Empty,
-    databaseObject.ParentDatabase.DataSource.CheckForeignKeys ? " WITH" : string.Empty,
-    databaseObject.ParentDatabase.DataSource.CheckForeignKeys ? "CHECK" : string.Empty
+    databaseObject.Database.DataSource.CheckForeignKeys ? databaseObject.WithCheck : string.Empty,
+    databaseObject.Database.DataSource.CheckForeignKeys ? " WITH" : string.Empty,
+    databaseObject.Database.DataSource.CheckForeignKeys ? "CHECK" : string.Empty
     );
-            if (databaseObject.ParentDatabase.DataSource.CheckForeignKeys)
+            if (databaseObject.Database.DataSource.CheckForeignKeys)
                 createString += string.Format(@"
 ALTER TABLE {0}
 CHECK CONSTRAINT {1}
@@ -52,10 +52,10 @@ ALTER TABLE {0} DROP CONSTRAINT {1};
 ", databaseObject.ChildTable.GetObjectNameWithSchema(targetDatabase.DataSource), databaseObject.GetQueryObjectName(targetDatabase.DataSource)));
         }
 
-        public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+        public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
         {
-            var diffs = GetPropertyDifferences(target);
-			if (targetDatabase.DataSource.BypassForeignKeyRules || databaseObject.ParentDatabase.DataSource.BypassForeignKeyRules)
+            var diffs = GetPropertyDifferences(target, ignoreCase);
+			if (targetDatabase.DataSource.BypassForeignKeyRules || databaseObject.Database.DataSource.BypassForeignKeyRules)
 			{
 				for (int i = diffs.Count - 1; i >= 0; i--)
 				{

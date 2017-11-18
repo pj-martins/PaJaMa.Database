@@ -16,10 +16,10 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			var items = new List<SynchronizationItem>();
-			var propDifferences = GetPropertyDifferences(target);
+			var propDifferences = GetPropertyDifferences(target, ignoreCase);
 			if (propDifferences.Any())
 			{
 				var createAlter = databaseObject.Definition;

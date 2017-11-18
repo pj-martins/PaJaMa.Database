@@ -21,7 +21,7 @@ namespace PaJaMa.Database.Library.Helpers
 		public GeneratorHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
 		{
 			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DatabaseObjects.DataSource;
-            DataSource.CurrentDatabase.PopulateChildren(false, worker);
+            DataSource.CurrentDatabase.PopulateChildren(false, false, worker);
 		}
 
 		public Dictionary<Table, List<Table>> GetMissingDependencies(List<TableWorkspace> selectedWorkspaces)
@@ -107,7 +107,7 @@ namespace PaJaMa.Database.Library.Helpers
 						foreach (var table in truncDelete)
 						{
 							worker.ReportProgress(100 * curr / truncDelete.Count, "Truncating/Deleting " + table.Table.TableName);
-							table.Table.TruncateDelete(table.Table.ParentDatabase, cmd, table.Truncate);
+							table.Table.TruncateDelete(table.Table.Database, cmd, table.Truncate);
 							curr++;
 						}
 					}

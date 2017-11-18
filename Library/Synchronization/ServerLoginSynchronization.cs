@@ -50,9 +50,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
-			var diff = GetPropertyDifferences(target);
+			var diff = GetPropertyDifferences(target, ignoreCase);
 			if (diff.Count == 1 && diff[0].PropertyName == "IsDisabled")
 			{
 				var item = new SynchronizationItem(databaseObject);

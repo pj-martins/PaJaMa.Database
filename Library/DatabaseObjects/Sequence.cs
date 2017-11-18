@@ -38,7 +38,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			this.Schema = ParentDatabase.Schemas.First(s => s.SchemaName == reader["sequence_schema"].ToString());
+			this.Schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
 			this.Schema.Sequences.Add(this);
 		}
 	}

@@ -17,16 +17,16 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			if (target == null)
-				return base.GetSynchronizationItems(target);
+				return base.GetSynchronizationItems(target, ignoreCase);
 
 			var targetSchema = target as Schema;
 			if (databaseObject.SchemaOwner != targetSchema.SchemaOwner)
 			{
 				var item = new SynchronizationItem(databaseObject);
-				item.Differences.AddRange(GetPropertyDifferences(target));
+				item.Differences.AddRange(GetPropertyDifferences(target, ignoreCase));
 				item.AddScript(7, string.Format(@"ALTER AUTHORIZATION ON SCHEMA::[{0}] TO [{1}]", databaseObject.SchemaName, databaseObject.SchemaOwner));
 
 				return new List<SynchronizationItem>() { item };
@@ -35,11 +35,12 @@ namespace PaJaMa.Database.Library.Synchronization
 			return new List<SynchronizationItem>();
 		}
 
-		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems, bool isForDrop)
+		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems, 
+			bool isForDrop, bool ignoreCase)
 		{
 			if (!isForDrop)
 			{
-				var princ = databaseObject.ParentDatabase.Principals.FirstOrDefault(p => p.PrincipalName == databaseObject.SchemaOwner);
+				var princ = databaseObject.Database.Principals.FirstOrDefault(p => p.PrincipalName == databaseObject.SchemaOwner);
 				if (princ != null)
 				{
 					var targetPrinc = existingTargetObjects.OfType<DatabasePrincipal>().FirstOrDefault(p => p.PrincipalName == princ.PrincipalName);

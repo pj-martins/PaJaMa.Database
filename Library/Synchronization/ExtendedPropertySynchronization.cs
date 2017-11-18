@@ -16,8 +16,14 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public static List<SynchronizationItem> GetExtendedProperties(DatabaseObjects.Database targetDatabase, DatabaseObjectWithExtendedProperties sourceObject, DatabaseObjectWithExtendedProperties targetObject)
+		public static List<SynchronizationItem> GetExtendedProperties(DatabaseObjects.Database targetDatabase, 
+			DatabaseObjectWithExtendedProperties sourceObject, DatabaseObjectWithExtendedProperties targetObject)
 		{
+			// TODO:?
+			if (sourceObject.Database.DataSource.GetType().FullName !=
+				targetDatabase.DataSource.GetType().FullName)
+				return new List<SynchronizationItem>();
+
 			var items = new List<SynchronizationItem>();
 			var skips = new List<string>();
 
@@ -28,11 +34,11 @@ namespace PaJaMa.Database.Library.Synchronization
 					var fromProp = sourceObject.ExtendedProperties.FirstOrDefault(p => p.PropName == toProperty.PropName);
 					if (fromProp == null)
 					{
-						items.AddRange(new ExtendedPropertySynchronization(targetObject.ParentDatabase, toProperty).GetDropItems());
+						items.AddRange(new ExtendedPropertySynchronization(targetObject.Database, toProperty).GetDropItems());
 					}
 					else
 					{
-						var toItems = new ExtendedPropertySynchronization(targetObject.ParentDatabase, fromProp).GetSynchronizationItems(toProperty);
+						var toItems = new ExtendedPropertySynchronization(targetObject.Database, fromProp).GetSynchronizationItems(toProperty, true);
 						if (toItems.Any())
 							items.AddRange(toItems);
 
@@ -52,12 +58,12 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
-			var differences = base.GetPropertyDifferences(target);
+			var differences = base.GetPropertyDifferences(target, ignoreCase);
 			if (databaseObject.IgnoreSchema)
 			{
-				var schemDiff = differences.FirstOrDefault(d => d.PropertyName == "ObjectSchema");
+				var schemDiff = differences.FirstOrDefault(d => d.PropertyName == "SchemaName");
 				if (schemDiff != null)
 					differences.Remove(schemDiff);
 			}
@@ -74,9 +80,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			return new List<SynchronizationItem>();
 		}
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
-			var items = base.GetSynchronizationItems(target);
+			var items = base.GetSynchronizationItems(target, ignoreCase);
 			var ext = target as ExtendedProperty;
 			if ((ext.PropValue != null && databaseObject.PropValue == null) || (ext.PropValue == null && databaseObject.PropValue != null) ||
 				(ext.PropValue != null && databaseObject.PropValue != null && ext.PropValue.ToString().Trim() != databaseObject.PropValue.ToString().Trim()))
@@ -103,7 +109,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 			string remove = string.Format("EXEC sp_dropextendedproperty N'{0}', ", databaseObject.PropName);
 			if (!databaseObject.IgnoreSchema)
-				remove += string.Format("'SCHEMA', N'{0}', ", databaseObject.ObjectSchema);
+				remove += string.Format("'SCHEMA', N'{0}', ", databaseObject.SchemaName);
 
 			remove += string.Format("N'{0}', '{1}', {2}, {3}",
 				databaseObject.Level1Type, databaseObject.Level1Object,
@@ -120,7 +126,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 			string add = string.Format("EXEC sp_addextendedproperty N'{0}', N'{1}', ", databaseObject.PropName, databaseObject.PropValue.ToString().Replace("'", "''"));
 			if (!databaseObject.IgnoreSchema)
-				add += string.Format("'SCHEMA', N'{0}', ", databaseObject.ObjectSchema);
+				add += string.Format("'SCHEMA', N'{0}', ", databaseObject.SchemaName);
 
 			add += string.Format("N'{0}', '{1}', {2}, {3}",
 				databaseObject.Level1Type, databaseObject.Level1Object,

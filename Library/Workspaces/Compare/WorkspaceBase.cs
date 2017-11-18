@@ -10,7 +10,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 {
 	public abstract class WorkspaceBase
 	{
-        public DatabaseObjects.Database TargetDatabase { get; set; }
+		public DatabaseObjects.Database TargetDatabase { get; set; }
 		public DatabaseObjectBase TargetObject { get; set; }
 		public List<SynchronizationItem> SynchronizationItems { get; private set; }
 
@@ -32,7 +32,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 
 		public WorkspaceBase(DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject)
 		{
-            TargetDatabase = targetDatabase;
+			TargetDatabase = targetDatabase;
 			TargetObject = targetObject;
 			SynchronizationItems = new List<SynchronizationItem>();
 		}
@@ -41,20 +41,20 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 	public abstract class WorkspaceWithSourceBase : WorkspaceBase
 	{
 		public virtual DatabaseObjectBase SourceObject { get; set; }
-		public WorkspaceWithSourceBase(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject)
-			: base(targetDatabase, targetObject)
+		public WorkspaceWithSourceBase(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject,
+			bool ignoreCase) : base(targetDatabase, targetObject)
 		{
 			SourceObject = sourceObject;
-			populateDifferences();
+			populateDifferences(ignoreCase);
 		}
 
-		private void populateDifferences()
+		private void populateDifferences(bool ignoreCase)
 		{
 			var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(TargetDatabase, SourceObject);
-			SynchronizationItems.AddRange(syncItem.GetSynchronizationItems(TargetObject));
+			SynchronizationItems.AddRange(syncItem.GetSynchronizationItems(TargetObject, ignoreCase));
 
 			if (SourceObject is DatabaseObjectWithExtendedProperties)
-				SynchronizationItems.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(TargetDatabase, SourceObject as DatabaseObjectWithExtendedProperties, 
+				SynchronizationItems.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(TargetDatabase, SourceObject as DatabaseObjectWithExtendedProperties,
 					TargetObject as DatabaseObjectWithExtendedProperties));
 		}
 

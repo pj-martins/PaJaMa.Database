@@ -39,17 +39,22 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			if (target == null)
-				return base.GetSynchronizationItems(target);
+				return base.GetSynchronizationItems(target, ignoreCase);
 
 			if (GetRawCreateText().ToLower() == new TriggerSynchronization(targetDatabase, target as Trigger).GetRawCreateText().ToLower()) return new List<SynchronizationItem>();
+
+			// TODO:?
+			if (databaseObject.Database.DataSource.GetType().FullName !=
+				targetDatabase.DataSource.GetType().FullName)
+				return new List<SynchronizationItem>();
 
 			var targetTrigger = target as Trigger;
 
 			if (targetTrigger.Table.TableName != databaseObject.Table.TableName)
-				return base.GetSynchronizationItems(target);
+				return base.GetSynchronizationItems(target, ignoreCase);
 
 			var items = new List<SynchronizationItem>();
 

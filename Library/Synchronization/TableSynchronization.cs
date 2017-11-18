@@ -42,7 +42,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				sb.AppendLine("\t" + (firstIn ? string.Empty : ",") + string.Format("{0} {1}{2} {3} {4}",
 					targetDatabase.DataSource.GetConvertedObjectName(col.ColumnName),
-					targetDatabase.DataSource.GetConvertedColumnType(databaseObject.ParentDatabase.DataSource, col.DataType),
+					targetDatabase.DataSource.GetConvertedColumnType(databaseObject.Database.DataSource, col.DataType, true),
 					part2,
 					col.IsNullable ? "NULL" : "NOT NULL",
 					def));
@@ -54,6 +54,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		private string getCreateScript()
 		{
 			var sb = new StringBuilder();
+			sb.AppendLine(targetDatabase.DataSource.GetPreTableCreateScript(databaseObject));
 			var tbl = targetDatabase.DataSource.GetConvertedObjectName(databaseObject.TableName);
 			sb.AppendLineFormat("CREATE TABLE {0}(", databaseObject.GetObjectNameWithSchema(targetDatabase.DataSource));
 
@@ -63,7 +64,6 @@ namespace PaJaMa.Database.Library.Synchronization
 				sb.AppendLine(", " + new KeyConstraintSynchronization(targetDatabase, kc).GetInnerCreateText());
 			}
 			sb.AppendLine(");");
-			sb.AppendLine(targetDatabase.DataSource.GetPostTableCreateScript(databaseObject));
 			
 
 			return sb.ToString();
@@ -82,9 +82,9 @@ namespace PaJaMa.Database.Library.Synchronization
 				items.AddRange(new ForeignKeySynchronization(targetDatabase, fk).GetCreateItems());
 			}
 
-			items.AddRange(getIndexCreateUpdateItems(null));
-			items.AddRange(getDefaultConstraintCreateUpdateItems(null));
-			items.AddRange(getTriggerUpdateItems(null));
+			items.AddRange(getIndexCreateUpdateItems(null, false));
+			items.AddRange(getDefaultConstraintCreateUpdateItems(null, false));
+			items.AddRange(getTriggerUpdateItems(null, false));
 			foreach (var column in databaseObject.Columns)
 			{
 				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(targetDatabase, column, null));
@@ -93,7 +93,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			var targetTable = target as Table;
 
@@ -104,10 +104,10 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			foreach (var fc in databaseObject.Columns)
 			{
-				var tc = targetTable.Columns.FirstOrDefault(c => c.ColumnName.ToLower() == fc.ColumnName.ToLower());
-				if (tc != null && tc.IsIdentity != fc.IsIdentity)
+				var tc = targetTable.Columns.FirstOrDefault(c => string.Compare(c.ColumnName, fc.ColumnName, ignoreCase) == 0);
+				if (!target.Database.DataSource.BypassIdentityColumn && tc != null && tc.IsIdentity != fc.IsIdentity)
 				{
-					var item = getRecreateTableItem(targetTable);
+					var item = getRecreateTableItem(targetTable, ignoreCase);
 					item.Differences.Add(new Difference()
 					{
 						PropertyName = "IsIdentity",
@@ -122,10 +122,10 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				if (tc != null && tc.DataType == "timestamp")
 				{
-					var diff = new ColumnSynchronization(targetDatabase, fc).GetPropertyDifferences(tc);
+					var diff = new ColumnSynchronization(targetDatabase, fc).GetPropertyDifferences(tc, ignoreCase);
 					if (diff.Any())
 					{
-						var item = getRecreateTableItem(targetTable);
+						var item = getRecreateTableItem(targetTable, ignoreCase);
 						item.Differences.AddRange(diff);
 						items.Add(item);
 						recreate = true;
@@ -139,21 +139,21 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				foreach (var tk in targetTable.ForeignKeys)
 				{
-					if (databaseObject.ParentDatabase.DataSource.MatchForeignKeyTablesAndColumns || targetTable.ParentDatabase.DataSource.MatchForeignKeyTablesAndColumns)
+					if (databaseObject.Database.DataSource.MatchForeignKeyTablesAndColumns || targetTable.Database.DataSource.MatchForeignKeyTablesAndColumns)
 					{
 						if (!databaseObject.ForeignKeys.Any(k =>
-							k.ChildTable.ObjectName == tk.ChildTable.ObjectName
-							&& k.ParentTable.ObjectName == tk.ParentTable.ObjectName
-							&& k.Columns.All(x => tk.Columns.Any(c => c.ChildColumn.ObjectName == x.ChildColumn.ObjectName
-							&& c.ParentColumn.ObjectName == x.ParentColumn.ObjectName))))
+							string.Compare(k.ChildTable.ObjectName, tk.ChildTable.ObjectName, ignoreCase) == 0
+							&& string.Compare(k.ParentTable.ObjectName, tk.ParentTable.ObjectName, ignoreCase) == 0
+							&& k.Columns.All(x => tk.Columns.Any(c => string.Compare(c.ChildColumn.ObjectName, x.ChildColumn.ObjectName, ignoreCase) == 0
+							&& string.Compare(c.ParentColumn.ObjectName, x.ParentColumn.ObjectName, ignoreCase) == 0))))
 							items.AddRange(new ForeignKeySynchronization(targetDatabase, tk).GetDropItems());
 					}
-					else if (!databaseObject.ForeignKeys.Any(k => k.ForeignKeyName.ToLower() == tk.ForeignKeyName.ToLower()))
+					else if (!databaseObject.ForeignKeys.Any(k => string.Compare(k.ForeignKeyName, tk.ForeignKeyName, ignoreCase) == 0))
 					{
-                        if (targetTable.ParentDatabase.DataSource.ForeignKeyDropsWithColumns)
+                        if (targetTable.Database.DataSource.ForeignKeyDropsWithColumns)
                         {
                             // column being dropped
-                            if (tk.Columns.Any(c => !databaseObject.Columns.Any(x => x.ColumnName == c.ChildColumn.ColumnName)))
+                            if (tk.Columns.Any(c => !databaseObject.Columns.Any(x => string.Compare(x.ColumnName, c.ChildColumn.ColumnName, ignoreCase) == 0)))
                                 continue;
                         }
 
@@ -163,23 +163,23 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				foreach (var fk in databaseObject.ForeignKeys)
 				{
-					var tk = targetTable.ForeignKeys.FirstOrDefault(x => x.ObjectName == fk.ObjectName);
+					var tk = targetTable.ForeignKeys.FirstOrDefault(x => string.Compare(x.ObjectName, fk.ObjectName, ignoreCase) == 0);
 					if (tk == null)
 					{
-						if (targetDatabase.DataSource.MatchForeignKeyTablesAndColumns || databaseObject.ParentDatabase.DataSource.MatchForeignKeyTablesAndColumns)
+						if (targetDatabase.DataSource.MatchForeignKeyTablesAndColumns || databaseObject.Database.DataSource.MatchForeignKeyTablesAndColumns)
 						{
 							tk = targetTable.ForeignKeys.FirstOrDefault(x =>
-								x.ParentTable.TableName == fk.ParentTable.TableName
-								&& x.ChildTable.TableName == fk.ChildTable.TableName
+								string.Compare(x.ParentTable.TableName, fk.ParentTable.TableName, ignoreCase) == 0
+								&& string.Compare(x.ChildTable.TableName, fk.ChildTable.TableName, ignoreCase) == 0
 								&& x.Columns.All(y =>
 									fk.Columns.Any(z =>
-										z.ChildColumn.ColumnName == y.ChildColumn.ColumnName
-										&& z.ParentColumn.ColumnName == y.ParentColumn.ColumnName)));
+										string.Compare(z.ChildColumn.ColumnName, y.ChildColumn.ColumnName, ignoreCase) == 0
+										&& string.Compare(z.ParentColumn.ColumnName, y.ParentColumn.ColumnName, ignoreCase) == 0)));
 						}
 					}
 					if (tk != null)
 					{
-						items.AddRange(new ForeignKeySynchronization(targetDatabase, fk).GetSynchronizationItems(tk));
+						items.AddRange(new ForeignKeySynchronization(targetDatabase, fk).GetSynchronizationItems(tk, ignoreCase));
 					}
 					else
 					{
@@ -189,7 +189,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				foreach (var tc in targetTable.Columns)
 				{
-					if (!databaseObject.Columns.Any(c => c.ColumnName.ToLower() == tc.ColumnName.ToLower()))
+					if (!databaseObject.Columns.Any(c => string.Compare(c.ColumnName, tc.ColumnName, ignoreCase) == 0))
 					{
 						items.AddRange(new ColumnSynchronization(targetDatabase, tc).GetDropItems());
 					}
@@ -200,15 +200,15 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				foreach (var fc in databaseObject.Columns)
 				{
-					var tc = targetTable.Columns.FirstOrDefault(c => c.ColumnName.ToLower() == fc.ColumnName.ToLower());
+					var tc = targetTable.Columns.FirstOrDefault(c => string.Compare(c.ColumnName, fc.ColumnName, ignoreCase) == 0);
 					if (tc == null)
 					{
-						items.AddRange(new ColumnSynchronization(targetDatabase, fc).GetAddAlterItems(null));
+						items.AddRange(new ColumnSynchronization(targetDatabase, fc).GetAddAlterItems(null, ignoreCase));
 						_createdColumns.Add(fc.ColumnName);
 					}
 					else
 					{
-						var alteredItems = new ColumnSynchronization(targetDatabase, fc).GetSynchronizationItems(tc);
+						var alteredItems = new ColumnSynchronization(targetDatabase, fc).GetSynchronizationItems(tc, ignoreCase);
 						if (alteredItems.Any())
 						{
 							items.AddRange(alteredItems);
@@ -219,11 +219,11 @@ namespace PaJaMa.Database.Library.Synchronization
 			}
 
 			if (!recreate)
-				items.AddRange(getKeyConstraintUpdateItems(targetTable));
+				items.AddRange(getKeyConstraintUpdateItems(targetTable, ignoreCase));
 
-			items.AddRange(getIndexCreateUpdateItems(targetTable));
-			items.AddRange(getDefaultConstraintCreateUpdateItems(targetTable));
-			items.AddRange(getTriggerUpdateItems(targetTable));
+			items.AddRange(getIndexCreateUpdateItems(targetTable, ignoreCase));
+			items.AddRange(getDefaultConstraintCreateUpdateItems(targetTable, ignoreCase));
+			items.AddRange(getTriggerUpdateItems(targetTable, ignoreCase));
 			foreach (var column in databaseObject.Columns)
 			{
 				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(targetDatabase, column, targetTable == null ? null : targetTable.Columns.FirstOrDefault(c => c.ColumnName == column.ColumnName)));
@@ -273,7 +273,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		//	return diffs;
 		//}
 
-		private SynchronizationItem getRecreateTableItem(Table targetTable)
+		private SynchronizationItem getRecreateTableItem(Table targetTable, bool ignoreCase)
 		{
 			var item = new SynchronizationItem(databaseObject);
 			var tmpTable = "#tmp" + Guid.NewGuid().ToString().Replace("-", "_");
@@ -283,11 +283,11 @@ namespace PaJaMa.Database.Library.Synchronization
 				databaseObject.TableName
 			));
 
-			var foreignKeys = from s in targetTable.Schema.ParentDatabase.Schemas
+			var foreignKeys = from s in targetTable.Schema.Database.Schemas
 							  from t in s.Tables
 							  from fk in t.ForeignKeys
-							  where fk.ParentTable.ObjectName == databaseObject.ObjectName
-							  || fk.ChildTable.ObjectName == databaseObject.ObjectName
+							  where string.Compare(fk.ParentTable.ObjectName, databaseObject.ObjectName, ignoreCase) == 0
+							  || string.Compare(fk.ChildTable.ObjectName, databaseObject.ObjectName, ignoreCase) == 0
 							  select fk;
 
 			foreach (var fk in foreignKeys)
@@ -328,9 +328,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			return item;
 		}
 
-		private List<SynchronizationItem> getKeyConstraintUpdateItems(Table targetTable)
+		private List<SynchronizationItem> getKeyConstraintUpdateItems(Table targetTable, bool ignoreCase)
 		{
-			if (targetDatabase.DataSource.BypassConstraints || databaseObject.ParentDatabase.DataSource.BypassConstraints) return new List<SynchronizationItem>();
+			if (targetDatabase.DataSource.BypassConstraints || databaseObject.Database.DataSource.BypassConstraints) return new List<SynchronizationItem>();
 
 			var items = new List<SynchronizationItem>();
 
@@ -342,12 +342,12 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					bool drop = false;
 					Difference diff = null;
-					var fromConstraint = databaseObject.KeyConstraints.FirstOrDefault(c => c.ConstraintName == toConstraint.ConstraintName);
+					var fromConstraint = databaseObject.KeyConstraints.FirstOrDefault(c => string.Compare(c.ConstraintName, toConstraint.ConstraintName, ignoreCase) == 0);
 					if (fromConstraint == null)
 						drop = true;
-					else if (fromConstraint.Columns.Any(c => !toConstraint.Columns.Any(t => t.ColumnName == c.ColumnName
+					else if (fromConstraint.Columns.Any(c => !toConstraint.Columns.Any(t => string.Compare(t.ColumnName, c.ColumnName, ignoreCase) == 0
 						&& t.Ordinal == c.Ordinal && t.Descending == c.Descending)) ||
-							toConstraint.Columns.Any(c => !fromConstraint.Columns.Any(t => t.ColumnName == c.ColumnName
+							toConstraint.Columns.Any(c => !fromConstraint.Columns.Any(t => string.Compare(t.ColumnName, c.ColumnName, ignoreCase) == 0
 						&& t.Ordinal == c.Ordinal && t.Descending == c.Descending)))
 						diff = new Difference()
 						{
@@ -363,7 +363,7 @@ namespace PaJaMa.Database.Library.Synchronization
 						var item = new SynchronizationItem(toConstraint);
 						items.Add(item);
 						item.Differences.Add(diff);
-						foreach (var constraintItem in new KeyConstraintSynchronization(targetDatabase, fromConstraint).GetAlterItems(toConstraint))
+						foreach (var constraintItem in new KeyConstraintSynchronization(targetDatabase, fromConstraint).GetAlterItems(toConstraint, ignoreCase))
 						{
 							foreach (var script in constraintItem.Scripts)
 							{
@@ -384,7 +384,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			var target = targetTable == null ? databaseObject : targetTable;
 			foreach (var fromConstraint in databaseObject.KeyConstraints)
 			{
-				if (skips.Contains(fromConstraint.ConstraintName))
+				if (skips.Any(s => string.Compare(s, fromConstraint.ConstraintName, ignoreCase) == 0))
 					continue;
 
 
@@ -397,7 +397,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		private List<SynchronizationItem> getIndexCreateUpdateItems(Table targetTable)
+		private List<SynchronizationItem> getIndexCreateUpdateItems(Table targetTable, bool ignoreCase)
 		{
 			var items = new List<SynchronizationItem>();
 
@@ -409,12 +409,12 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					bool drop = false;
 					Difference diff = null;
-					var fromIndex = databaseObject.Indexes.FirstOrDefault(c => c.IndexName == toIndex.IndexName);
+					var fromIndex = databaseObject.Indexes.FirstOrDefault(c => string.Compare(c.IndexName, toIndex.IndexName, ignoreCase) == 0);
 					if (fromIndex == null)
 						drop = true;
-					else if (fromIndex.IndexColumns.Any(c => !toIndex.IndexColumns.Any(t => t.ColumnName == c.ColumnName
+					else if (fromIndex.IndexColumns.Any(c => !toIndex.IndexColumns.Any(t => string.Compare(t.ColumnName, c.ColumnName, ignoreCase) == 0
 						&& t.Ordinal == c.Ordinal && t.Descending == c.Descending)) ||
-							toIndex.IndexColumns.Any(c => !fromIndex.IndexColumns.Any(t => t.ColumnName == c.ColumnName
+							toIndex.IndexColumns.Any(c => !fromIndex.IndexColumns.Any(t => string.Compare(t.ColumnName, c.ColumnName, ignoreCase) == 0
 						&& t.Ordinal == c.Ordinal && t.Descending == c.Descending)))
 						diff = new Difference()
 						{
@@ -457,9 +457,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		private List<SynchronizationItem> getDefaultConstraintCreateUpdateItems(Table targetTable)
+		private List<SynchronizationItem> getDefaultConstraintCreateUpdateItems(Table targetTable, bool ignoreCase)
 		{
-			if (targetDatabase.DataSource.BypassConstraints || databaseObject.ParentDatabase.DataSource.BypassConstraints)
+			if (targetDatabase.DataSource.BypassConstraints || databaseObject.Database.DataSource.BypassConstraints)
 				return new List<SynchronizationItem>();
 
 			var skips = new List<string>();
@@ -471,19 +471,19 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					Difference diff = null;
 					bool drop = false;
-					var fromConstraint = databaseObject.DefaultConstraints.FirstOrDefault(c => c.Table.TableName == databaseObject.TableName &&
-						c.ConstraintName == toConstraint.ConstraintName);
+					var fromConstraint = databaseObject.DefaultConstraints.FirstOrDefault(c => string.Compare(c.Table.TableName, databaseObject.TableName, ignoreCase) == 0 &&
+						string.Compare(c.ConstraintName, toConstraint.ConstraintName, ignoreCase) == 0);
 					if (fromConstraint == null)
 						drop = true;
 					else if (fromConstraint.Column.ColumnName != toConstraint.Column.ColumnName ||
-							targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, fromConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")")
-								!= targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, toConstraint.ColumnDefault).Replace("((", "(").Replace("))", ")"))
+							targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.Column, fromConstraint.ColumnDefault).Replace("(", "").Replace(")", "")
+								!= targetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.Column, toConstraint.ColumnDefault).Replace("(", "").Replace(")", ""))
 					{
 						diff = new Difference()
 						{
 							PropertyName = "ColumnDefault",
-							SourceValue = targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, fromConstraint.ColumnDefault),
-							TargetValue = targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.ParentDatabase.DataSource, toConstraint.ColumnDefault)
+							SourceValue = targetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.Column, fromConstraint.ColumnDefault),
+							TargetValue = targetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.Column, toConstraint.ColumnDefault)
 						};
 
 						var creates = new DefaultConstraintSynchronization(targetDatabase, fromConstraint).GetCreateItems();
@@ -522,8 +522,10 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		private List<SynchronizationItem> getTriggerUpdateItems(Table targetTable)
+		private List<SynchronizationItem> getTriggerUpdateItems(Table targetTable, bool ignoreCase)
 		{
+			if (targetDatabase.DataSource.GetType().FullName != databaseObject.Database.GetType().FullName) return new List<SynchronizationItem>();
+
 			var skips = new List<string>();
 			var items = new List<SynchronizationItem>();
 
@@ -532,11 +534,11 @@ namespace PaJaMa.Database.Library.Synchronization
 				foreach (var toTrigger in targetTable.Triggers)
 				{
 					bool drop = false;
-					var fromTrigger = databaseObject.Triggers.FirstOrDefault(c => c.TriggerName == toTrigger.TriggerName);
+					var fromTrigger = databaseObject.Triggers.FirstOrDefault(c => string.Compare(c.TriggerName, toTrigger.TriggerName, ignoreCase) == 0);
 					if (fromTrigger == null)
 						drop = true;
 					else
-						items.AddRange(new TriggerSynchronization(targetDatabase, fromTrigger).GetSynchronizationItems(toTrigger));
+						items.AddRange(new TriggerSynchronization(targetDatabase, fromTrigger).GetSynchronizationItems(toTrigger, ignoreCase));
 
 					if (drop)
 						items.AddRange(new TriggerSynchronization(targetDatabase, toTrigger).GetDropItems());
@@ -563,29 +565,29 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,
-			bool isForDrop)
+			bool isForDrop, bool ignoreCase)
 		{
 			if (isForDrop)
-				return base.GetMissingDependencies(existingTargetObjects, selectedItems, isForDrop);
+				return base.GetMissingDependencies(existingTargetObjects, selectedItems, isForDrop, ignoreCase);
 
 			var toTbls = existingTargetObjects.OfType<Table>();
 
 			List<DatabaseObjectBase> missing = new List<DatabaseObjectBase>();
 			foreach (var fk in databaseObject.ForeignKeys)
 			{
-				var toTbl = toTbls.FirstOrDefault(t => t.TableName == fk.ParentTable.TableName);
+				var toTbl = toTbls.FirstOrDefault(t => string.Compare(t.TableName, fk.ParentTable.TableName, ignoreCase) == 0);
 				if (toTbl != null)
 				{
-					if (fk.Columns.Any(k => !toTbl.KeyConstraints.Any(kc => kc.Columns.Any(c => c.ColumnName == k.ParentColumn.ColumnName))))
+					if (fk.Columns.Any(k => !toTbl.KeyConstraints.Any(kc => kc.Columns.Any(c => string.Compare(c.ColumnName, k.ParentColumn.ColumnName, ignoreCase) == 0))))
 					{
-						if (!selectedItems.Select(si => si.DatabaseObject).OfType<KeyConstraint>().Any(kc => kc.Table.TableName == fk.ParentTable.ObjectName))
+						if (!selectedItems.Select(si => si.DatabaseObject).OfType<KeyConstraint>().Any(kc => string.Compare(kc.Table.TableName, fk.ParentTable.ObjectName, ignoreCase) == 0))
 							missing.Add(fk.ParentTable);
 					}
 					continue;
 				}
 
 				var item = (from si in selectedItems
-							where si.ObjectName == fk.ParentTable.ObjectName
+							where string.Compare(si.ObjectName, fk.ParentTable.ObjectName, ignoreCase) == 0
 								&& si.DatabaseObject is Table
 							select si).FirstOrDefault();
 
@@ -595,11 +597,11 @@ namespace PaJaMa.Database.Library.Synchronization
 				missing.Add(fk.ParentTable);
 			}
 
-			if (!existingTargetObjects.OfType<Schema>().Any(s => s.MappedSchemaName == databaseObject.Schema.MappedSchemaName))
+			if (!existingTargetObjects.OfType<Schema>().Any(s => string.Compare(s.MappedSchemaName, databaseObject.Schema.MappedSchemaName, ignoreCase) == 0))
 			{
 				var item = (from si in selectedItems
 							where si.DatabaseObject is Schema
-							where si.ObjectName == databaseObject.Schema.SchemaName
+							where string.Compare(si.ObjectName, databaseObject.Schema.SchemaName, ignoreCase) == 0
 							select si).FirstOrDefault();
 
 				if (item == null || item.Omit)
@@ -609,9 +611,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			foreach (var trig in databaseObject.Triggers)
 			{
 				var toTrig = from tt in toTbls
-							 where tt.TableName != databaseObject.TableName && tt.Schema.MappedSchemaName == databaseObject.Schema.MappedSchemaName
+							 where tt.TableName != databaseObject.TableName && string.Compare(tt.Schema.MappedSchemaName, databaseObject.Schema.MappedSchemaName, ignoreCase) == 0
 							 from tr in tt.Triggers
-							 where tr.TriggerName == trig.TriggerName
+							 where string.Compare(tr.TriggerName, trig.TriggerName, ignoreCase) == 0
 							 select tr;
 
 				foreach (var tr in toTrig)

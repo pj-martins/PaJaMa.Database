@@ -40,7 +40,7 @@ namespace PaJaMa.Database.Library.Synchronization
 	{4}
 ){5};", 
 (bool)databaseObject.IsUnique ? "UNIQUE" : "",
-databaseObject.IndexType,
+targetDatabase.DataSource.BypassClusteredNonClustered ? string.Empty : databaseObject.IndexType,
 targetDatabase.DataSource.GetConvertedObjectName(databaseObject.IndexName),
 databaseObject.Table.GetObjectNameWithSchema(targetDatabase.DataSource),
 string.Join(",\r\n\t",
