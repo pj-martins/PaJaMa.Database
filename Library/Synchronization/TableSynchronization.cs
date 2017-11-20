@@ -37,12 +37,12 @@ namespace PaJaMa.Database.Library.Synchronization
 					continue;
 				}
 
-				string part2 = new ColumnSynchronization(TargetDatabase, col).GetPostScript();
+				string part2 = TargetDatabase.DataSource.GetColumnPostPart(col);
 				string def = new ColumnSynchronization(TargetDatabase, col).GetDefaultScript();
 
 				sb.AppendLine("\t" + (firstIn ? string.Empty : ",") + string.Format("{0} {1}{2} {3} {4}",
 					TargetDatabase.DataSource.GetConvertedObjectName(col.ColumnName),
-					TargetDatabase.DataSource.GetConvertedColumnType(DatabaseObject.Database.DataSource, col.DataType, true),
+					TargetDatabase.DataSource.GetConvertedColumnType(col.ColumnType.DataType, true),
 					part2,
 					col.IsNullable ? "NULL" : "NOT NULL",
 					def));
@@ -61,7 +61,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			sb.AppendLine(getColumnCreates().ToString());
 			foreach (var kc in DatabaseObject.KeyConstraints)
 			{
-				sb.AppendLine(", " + new KeyConstraintSynchronization(TargetDatabase, kc).GetInnerCreateText());
+				sb.AppendLine(", " + TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc));
 			}
 			sb.AppendLine(");");
 			
@@ -123,7 +123,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 				}
 
-				if (tc != null && tc.DataType == "timestamp")
+				if (tc != null && tc.ColumnType.TypeName == "timestamp")
 				{
 					var diff = new ColumnSynchronization(TargetDatabase, fc).GetPropertyDifferences(tc, ignoreCase);
 					if (diff.Any())
@@ -308,7 +308,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			item.AddScript(6, string.Format("INSERT INTO [{0}].[{1}] ({2}) SELECT {2} FROM [{3}]",
 				DatabaseObject.Schema.SchemaName,
 				DatabaseObject.TableName,
-				string.Join(",", DatabaseObject.Columns.Where(c => c.DataType != "timestamp").Select(c => "[" + c.ColumnName + "]").ToArray()),
+				string.Join(",", DatabaseObject.Columns.Where(c => c.ColumnType.TypeName != "timestamp").Select(c => "[" + c.ColumnName + "]").ToArray()),
 				tmpTable));
 
 			if (DatabaseObject.Columns.Any(c => c.IsIdentity))
@@ -431,7 +431,7 @@ namespace PaJaMa.Database.Library.Synchronization
 						items.Add(item);
 						item.Differences.Add(diff);
 						item.AddScript(1, new IndexSynchronization(TargetDatabase, toIndex).GetRawDropText());
-						item.AddScript(7, new IndexSynchronization(TargetDatabase, fromIndex).GetCreateScript(targetTable != null).ToString());
+						item.AddScript(7, TargetDatabase.DataSource.GetIndexCreateScript(fromIndex));
 					}
 
 					if (drop)
@@ -452,7 +452,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					var item = new SynchronizationItem(fromIndex);
 					item.Differences.Add(diff);
-					item.AddScript(7, new IndexSynchronization(TargetDatabase, fromIndex).GetCreateScript(targetTable != null).ToString());
+					item.AddScript(7, TargetDatabase.DataSource.GetIndexCreateScript(fromIndex));
 					items.Add(item);
 				}
 			}

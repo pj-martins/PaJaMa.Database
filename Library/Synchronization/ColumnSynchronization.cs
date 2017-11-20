@@ -32,30 +32,6 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 
-		public string GetPostScript()
-		{
-			string part2 = string.Empty;
-			if ((DatabaseObject.DataType == "decimal" || DatabaseObject.DataType == "numeric") && DatabaseObject.NumericPrecision != null && DatabaseObject.NumericScale != null)
-			{
-				part2 = "(" + DatabaseObject.NumericPrecision.ToString() + ", " + DatabaseObject.NumericScale.ToString() + ")";
-			}
-			else if (DatabaseObject.CharacterMaximumLength != null && DatabaseObject.DataType != "text" && DatabaseObject.DataType != "image"
-				&& DatabaseObject.DataType != "ntext" && DatabaseObject.DataType != "xml")
-			{
-				string max = DatabaseObject.CharacterMaximumLength.ToString();
-				if (max == "-1")
-					max = TargetDatabase.DataSource.Max;
-				else
-					max = "(" + max + ")";
-				part2 = max;
-			}
-
-			if (DatabaseObject.IsIdentity)
-				part2 = TargetDatabase.DataSource.GetCreateIdentity(DatabaseObject);
-
-			return part2;
-		}
-
 		public string GetDefaultScript()
 		{
 			string def = string.Empty;
@@ -136,7 +112,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (!differences.Any())
 				return items;
 
-			string part2 = GetPostScript();
+			string part2 = TargetDatabase.DataSource.GetColumnPostPart(DatabaseObject);
 
 			string def = string.Empty;
 
@@ -147,28 +123,11 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				def = GetDefaultScript();
 
-				if (!DatabaseObject.IsNullable && !DatabaseObject.IsIdentity && string.IsNullOrEmpty(def) && DatabaseObject.DataType != "timestamp")
+				if (!DatabaseObject.IsNullable && !DatabaseObject.IsIdentity && string.IsNullOrEmpty(def) && DatabaseObject.ColumnType.TypeName != "timestamp")
 				{
-					var clrType = DatabaseObject.Database.DataSource.ColumnTypes.First(c => c.TypeName == DatabaseObject.DataType).ClrType;
-
+					var colType = TargetDatabase.DataSource.ColumnTypes.First(c => c.DataType == DatabaseObject.ColumnType.DataType);
 					tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");
-
-					def = "CONSTRAINT " + tempConstraint + " DEFAULT({0})";
-
-					if (clrType.Equals(typeof(string)))
-						def = string.Format(def, "''");
-					else if (clrType.Equals(typeof(DateTime)) || clrType.Equals(typeof(DateTimeOffset)))
-						def = string.Format(def, "'1/1/1900'");
-					else if (clrType.IsNumericType())
-						def = string.Format(def, 0);
-					else if (clrType.Equals(typeof(byte[])))
-						def = string.Format(def, "0x");
-					else if (clrType.Equals(typeof(bool)))
-						def = string.Format(def, "0");
-					else if (clrType.Equals(typeof(Guid)))
-						def = string.Format(def, "'" + Guid.Empty.ToString() + "'");
-					else
-						throw new NotImplementedException();
+					def = string.Format("CONSTRAINT {0} DEFAULT({1})", tempConstraint, colType.DefaultValue);
 				}
 			}
 

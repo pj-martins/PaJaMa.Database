@@ -18,31 +18,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			var createString = string.Format(@"
-ALTER TABLE {0} {8}{7}{9} ADD CONSTRAINT {1} FOREIGN KEY({2})
-REFERENCES {3} ({4})
-ON DELETE {5}
-ON UPDATE {6}
-;
-",
-	DatabaseObject.ChildTable.GetObjectNameWithSchema(TargetDatabase.DataSource),
-	DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource),
-	string.Join(",", DatabaseObject.Columns.Select(c => c.ChildColumn.GetQueryObjectName(TargetDatabase.DataSource)).ToArray()),
-	DatabaseObject.ParentTable.GetObjectNameWithSchema(TargetDatabase.DataSource),
-	string.Join(",", DatabaseObject.Columns.Select(c => c.ParentColumn.GetQueryObjectName(TargetDatabase.DataSource)).ToArray()),
-	DatabaseObject.DeleteRule,
-	DatabaseObject.UpdateRule,
-	TargetDatabase.DataSource.CheckForeignKeys ? DatabaseObject.WithCheck : string.Empty,
-	TargetDatabase.DataSource.CheckForeignKeys ? " WITH" : string.Empty,
-	TargetDatabase.DataSource.CheckForeignKeys ? " CHECK" : string.Empty
-	);
-			if (TargetDatabase.DataSource.CheckForeignKeys)
-				createString += string.Format(@"
-ALTER TABLE {0}
-CHECK CONSTRAINT {1}
-", DatabaseObject.ChildTable.GetObjectNameWithSchema(TargetDatabase.DataSource),
-	DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource));
-			return getStandardItems(createString, 7);
+			return getStandardItems(TargetDatabase.DataSource.GetForeignKeyCreateScript(DatabaseObject), 7);
 		}
 
 		public override List<SynchronizationItem> GetDropItems()
@@ -55,20 +31,6 @@ ALTER TABLE {0} DROP CONSTRAINT {1};
 		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
 		{
 			var diffs = GetPropertyDifferences(target, ignoreCase);
-			if (TargetDatabase.DataSource.BypassForeignKeyRules || DatabaseObject.Database.DataSource.BypassForeignKeyRules)
-			{
-				for (int i = diffs.Count - 1; i >= 0; i--)
-				{
-					var d = diffs[i];
-					if (d.PropertyName == "ForeignKeyName" ||
-						d.PropertyName == "WithCheck" ||
-						d.PropertyName == "UpdateRule" ||
-						d.PropertyName == "DeleteRule"
-						)
-						diffs.RemoveAt(i);
-				}
-			}
-
 			var diff = getColumnDifference(target);
 			if (diff != null)
 				diffs.Add(diff);

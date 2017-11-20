@@ -30,7 +30,7 @@ namespace PaJaMa.Database.Library.Workspaces.Generate
 					  select fk;
 
 			SqlDbType type = SqlDbType.UniqueIdentifier;
-			Enum.TryParse(column.DataType, true, out type);
+			Enum.TryParse(column.ColumnType.TypeName, true, out type);
 
 			if (fks.Any())
 			{

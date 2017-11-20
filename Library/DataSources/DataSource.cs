@@ -14,6 +14,7 @@ namespace PaJaMa.Database.Library.DataSources
 	public abstract class DataSource
 	{
 		public List<DatabaseObjects.Database> Databases { get; private set; }
+		public List<string> UnsupportedTypes { get; private set; }
 		public DatabaseObjects.Database CurrentDatabase { get; private set; }
 		public string DataSourceName { get; private set; }
 
@@ -40,21 +41,18 @@ namespace PaJaMa.Database.Library.DataSources
 		internal abstract string TriggerSQL { get; }
 		internal virtual string SequenceSQL => "";
 		internal virtual string ExtensionSQL => "";
-		internal virtual string Max => "max";
 		internal virtual List<string> SystemSchemaNames => new List<string>();
 		internal abstract string DatabaseSQL { get; }
 		internal abstract List<ColumnType> ColumnTypes { get; }
 
-		internal virtual bool BypassKeyConstraints => false;
 		internal virtual bool MatchConstraintsByColumns => false;
 		internal virtual bool ForeignKeyDropsWithColumns => false;
-		internal virtual bool CheckForeignKeys => false;
-		internal virtual bool BypassForeignKeyRules => false;
-		internal virtual bool BypassClusteredNonClustered => false;
+		internal virtual bool BypassKeyConstraints => false;
 
 		public DataSource(string connectionString)
 		{
 			ConnectionString = connectionString;
+			UnsupportedTypes = new List<string>();
 			Databases = getDatabases();
 		}
 
@@ -69,6 +67,7 @@ namespace PaJaMa.Database.Library.DataSources
 				using (var cmd = conn.CreateCommand())
 				{
 					cmd.CommandText = DatabaseSQL;
+					cmd.CommandTimeout = 60000;
 					using (var rdr = cmd.ExecuteReader())
 					{
 						if (rdr.HasRows)
@@ -85,7 +84,7 @@ namespace PaJaMa.Database.Library.DataSources
 				if (string.IsNullOrEmpty(conn.Database))
 					this.CurrentDatabase = databases.First();
 				else
-					this.CurrentDatabase = databases.First(d => d.DatabaseName == conn.Database);
+					this.CurrentDatabase = databases.First(d => d.DatabaseName.ToLower() == conn.Database.ToLower());
 			}
 			return databases;
 		}
@@ -131,6 +130,20 @@ namespace PaJaMa.Database.Library.DataSources
 			return false;
 		}
 
+		internal ColumnType GetColumnType(string dataType)
+		{
+			try
+			{
+				return this.ColumnTypes.First(c => c.TypeName == dataType);
+			}
+			catch (InvalidOperationException)
+			{
+				if (!UnsupportedTypes.Contains(dataType))
+					this.UnsupportedTypes.Add(dataType);
+				return this.ColumnTypes.First(c => c.DataType == DataType.Text);
+			}
+		}
+
 		public virtual string GetPreTopN(int topN)
 		{
 			return string.Empty;
@@ -168,28 +181,96 @@ namespace PaJaMa.Database.Library.DataSources
 			return string.Format("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
 				   column.Table.GetObjectNameWithSchema(this),
 				   column.GetQueryObjectName(this),
-				   this.GetConvertedColumnType(column.Database.DataSource, column.DataType, true),
+				   this.GetConvertedColumnType(column.ColumnType.DataType, true),
 				   postScript,
 				   column.IsNullable ? "NULL" : "NOT NULL",
 				   defaultValue,
 				   add ? "ADD" : "ALTER COLUMN");
 		}
 
+		internal virtual string GetIndexCreateScript(Index index)
+		{
+			var indexCols = index.IndexColumns.Where(i => i.Ordinal != 0);
+			var includeCols = index.IndexColumns.Where(i => i.Ordinal == 0);
+			var sb = new StringBuilder();
+
+			sb.AppendLineFormat(@"CREATE {0} {1} INDEX {2} ON {3}
+(
+	{4}
+){5};",
+(bool)index.IsUnique ? "UNIQUE" : "",
+index.IndexType,
+this.GetConvertedObjectName(index.IndexName),
+index.Table.GetObjectNameWithSchema(this),
+string.Join(",\r\n\t",
+indexCols.OrderBy(c => c.Ordinal).Select(c =>
+	string.Format("{0} {1}", this.GetConvertedObjectName(c.ColumnName), c.Descending ? "DESC" : "ASC")).ToArray()),
+	!includeCols.Any() ? string.Empty : string.Format(@"
+INCLUDE (
+	{0}
+)", string.Join(",\r\n\t",
+includeCols.Select(c =>
+	string.Format("{0}", this.GetConvertedObjectName(c.ColumnName)).ToString()))
+	));
+
+			return sb.ToString();
+		}
+
+		internal virtual string GetKeyConstraintCreateScript(KeyConstraint keyConstraint)
+		{
+			return string.Format(@"CONSTRAINT {0}
+{1}
+({2})",
+	keyConstraint.GetQueryObjectName(this),
+	keyConstraint.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE",
+	string.Join(", ",
+	  keyConstraint.Columns.OrderBy(c => c.Ordinal).Select(c => this.GetConvertedObjectName(c.ColumnName)
+	  )));
+		}
+
+		internal virtual string GetForeignKeyCreateScript(ForeignKey foreignKey)
+		{
+			return string.Format(@"
+ALTER TABLE {0} ADD CONSTRAINT {1} FOREIGN KEY({2})
+REFERENCES {3} ({4})
+ON DELETE {5}
+ON UPDATE {6}
+;
+",
+	foreignKey.ChildTable.GetObjectNameWithSchema(this),
+	foreignKey.GetQueryObjectName(this),
+	string.Join(",", foreignKey.Columns.Select(c => c.ChildColumn.GetQueryObjectName(this)).ToArray()),
+	foreignKey.ParentTable.GetObjectNameWithSchema(this),
+	string.Join(",", foreignKey.Columns.Select(c => c.ParentColumn.GetQueryObjectName(this)).ToArray()),
+	foreignKey.DeleteRule,
+	foreignKey.UpdateRule
+	);
+		}
+
+		internal virtual string GetColumnPostPart(Column column)
+		{
+			if (column.NumericPrecision != null && column.NumericScale != null &&
+				(column.ColumnType.DataType == DataType.Numeric || column.ColumnType.DataType == DataType.Decimal))
+				return "(" + column.NumericPrecision.ToString() + ", " + column.NumericScale.ToString() + ")";
+
+			if (column.IsIdentity)
+				return this.GetCreateIdentity(column);
+
+			return string.Empty;
+		}
+
 		internal string GetConvertedColumnDefault(Column column, string columnDefault)
 		{
 			if (string.IsNullOrEmpty(columnDefault)) return string.Empty;
-			var src = column.Database.DataSource.ColumnTypes.FirstOrDefault(c => c.DefaultValue == columnDefault && c.TypeName == column.DataType);
+			var src = column.Database.DataSource.ColumnTypes.FirstOrDefault(c => c.DefaultValue == columnDefault && c.DataType == column.ColumnType.DataType);
 			return src != null ? this.ColumnTypes.First(t => t.DataType == src.DataType).DefaultValue
 				: columnDefault;
 		}
 
-		internal string GetConvertedColumnType(DataSource source, string columnType, bool forCreate)
+		internal string GetConvertedColumnType(DataType dataType, bool forCreate)
 		{
-			if (string.IsNullOrEmpty(columnType)) return string.Empty;
-			var src = source.ColumnTypes.FirstOrDefault(c => c.TypeName == columnType);
-			if (src == null) return columnType;
-			return forCreate ? this.ColumnTypes.First(t => t.DataType == src.DataType).CreateTypeName :
-				this.ColumnTypes.First(t => t.DataType == src.DataType).TypeName;
+			return forCreate ? this.ColumnTypes.First(t => t.DataType == dataType).CreateTypeName :
+				this.ColumnTypes.First(t => t.DataType == dataType).TypeName;
 		}
 
 		internal virtual bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
@@ -203,9 +284,9 @@ namespace PaJaMa.Database.Library.DataSources
 					if (difference.SourceValue == "-1" && string.IsNullOrEmpty(difference.TargetValue))
 						return true;
 				}
-				else if (difference.PropertyName == "DataType")
+				else if (difference.PropertyName == "ColumnType")
 				{
-					if (difference.TargetValue == this.GetConvertedColumnType(fromObject.Database.DataSource, difference.SourceValue, false))
+					if (difference.TargetValue == this.GetConvertedColumnType((DataType)Enum.Parse(typeof(DataType), difference.SourceValue), false))
 						return true;
 				}
 				else if (difference.PropertyName == "ColumnDefault")
@@ -229,35 +310,5 @@ namespace PaJaMa.Database.Library.DataSources
 				.OrderBy(d => d.Name)
 				.ToList();
 		}
-	}
-
-	public class ColumnType
-	{
-		public string TypeName { get; private set; }
-		public string CreateTypeName { get; set; }
-		public DataType DataType { get; private set; }
-		public string DefaultValue { get; private set; }
-		public Type ClrType { get; private set; }
-
-		public ColumnType(string typeName, DataType dataType, Type clrType, string defaultValue)
-		{
-			this.TypeName = typeName;
-			this.CreateTypeName = typeName;
-			this.DataType = dataType;
-			this.ClrType = clrType;
-			this.DefaultValue = defaultValue;
-		}
-	}
-
-	public enum DataType
-	{
-		UniqueIdentifier,
-		DateTimeZone,
-		SmallDateTime,
-		NVaryingChar,
-		VaryingChar,
-		Integer,
-		BooleanTrue,
-		BooleanFalse,
 	}
 }

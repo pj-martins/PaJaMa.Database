@@ -17,7 +17,6 @@ namespace PaJaMa.Database.Library.DataSources
 		}
 
 		public override string DefaultSchemaName => "dbo";
-		internal override bool CheckForeignKeys => true;
 
 		#region SQLS
 		internal override string SchemaSQL => @"select distinct TABLE_SCHEMA as SchemaName, p.name as SchemaOwner 
@@ -212,15 +211,29 @@ left join sys.server_principals sp on sp.sid = dp.sid
 				if (_columnTypes == null)
 				{
 					_columnTypes = new List<ColumnType>();
-					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, typeof(Guid), "(newid())"));
-					_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, typeof(DateTime), "(getdate())"));
-					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, typeof(DateTime), "(getdate())"));
-					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, typeof(string), "''"));
-					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVaryingChar, typeof(string), "''"));
-					_columnTypes.Add(new ColumnType("int", DataType.Integer, typeof(int), "((0))"));
-					_columnTypes.Add(new ColumnType("smallint", DataType.Integer, typeof(int), "((0))"));
-					_columnTypes.Add(new ColumnType("bit", DataType.BooleanFalse, typeof(bool), "((0))"));
-					_columnTypes.Add(new ColumnType("bit", DataType.BooleanTrue, typeof(bool), "((1))"));
+					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, "(newid())"));
+					_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, "(getdate())"));
+					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())"));
+					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, "''"));
+					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVaryingChar, "''"));
+					_columnTypes.Add(new ColumnType("int", DataType.Integer, "((0))"));
+					_columnTypes.Add(new ColumnType("smallint", DataType.Integer, "((0))"));
+					_columnTypes.Add(new ColumnType("bit", DataType.BooleanFalse, "((0))"));
+					_columnTypes.Add(new ColumnType("bit", DataType.BooleanTrue, "((1))"));
+					_columnTypes.Add(new ColumnType("float", DataType.Float, "0"));
+					_columnTypes.Add(new ColumnType("varbinary", DataType.VarBinary, "0"));
+					_columnTypes.Add(new ColumnType("xml", DataType.Xml, "''"));
+					_columnTypes.Add(new ColumnType("text", DataType.Text, "''") { FixedSize = true });
+					_columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
+					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())"));
+					_columnTypes.Add(new ColumnType("binary", DataType.Binary, "0"));
+					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())"));
+					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
+					_columnTypes.Add(new ColumnType("timestamp", DataType.RowVersion, ""));
+					_columnTypes.Add(new ColumnType("rowversion", DataType.RowVersion, ""));
+					_columnTypes.Add(new ColumnType("numeric", DataType.Numeric, "0"));
+
+
 				}
 				return _columnTypes;
 			}
@@ -249,6 +262,55 @@ left join sys.server_principals sp on sp.sid = dp.sid
 		internal override string GetIdentityInsertOff(Table table)
 		{
 			return string.Empty;
+		}
+
+		internal override string GetForeignKeyCreateScript(ForeignKey foreignKey)
+		{
+			var createString = string.Format(@"
+ALTER TABLE {0} WITH {7} CHECK ADD CONSTRAINT {1} FOREIGN KEY({2})
+REFERENCES {3} ({4})
+ON DELETE {5}
+ON UPDATE {6}
+;
+",
+	foreignKey.ChildTable.GetObjectNameWithSchema(this),
+	foreignKey.GetQueryObjectName(this),
+	string.Join(",", foreignKey.Columns.Select(c => c.ChildColumn.GetQueryObjectName(this)).ToArray()),
+	foreignKey.ParentTable.GetObjectNameWithSchema(this),
+	string.Join(",", foreignKey.Columns.Select(c => c.ParentColumn.GetQueryObjectName(this)).ToArray()),
+	foreignKey.DeleteRule,
+	foreignKey.UpdateRule,
+	foreignKey.WithCheck
+	);
+			createString += string.Format(@"
+ALTER TABLE {0}
+CHECK CONSTRAINT {1}
+", foreignKey.ChildTable.GetObjectNameWithSchema(this),
+foreignKey.GetQueryObjectName(this));
+			return createString;
+		}
+
+		internal override string GetKeyConstraintCreateScript(KeyConstraint keyConstraint)
+		{
+			return string.Format(@"CONSTRAINT {0}
+{1}
+{2}
+({3})", keyConstraint.GetQueryObjectName(this), keyConstraint.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE", keyConstraint.ClusteredNonClustered, string.Join(", ",
+	  keyConstraint.Columns.OrderBy(c => c.Ordinal).Select(c => string.Format("{0} {1}", this.GetConvertedObjectName(c.ColumnName), c.Descending ? "DESC" : "ASC"))));
+		}
+
+		internal override string GetColumnPostPart(Column column)
+		{
+			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
+			if (column.CharacterMaximumLength != null && !targetType.FixedSize)
+			{
+				string max = column.CharacterMaximumLength.ToString();
+				if (max == "-1")
+					max = "max";
+				return "(" + max + ")";
+			}
+
+			return base.GetColumnPostPart(column);
 		}
 	}
 }

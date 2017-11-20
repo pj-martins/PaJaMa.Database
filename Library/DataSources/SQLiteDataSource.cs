@@ -43,7 +43,6 @@ where type = 'table'
 		internal override string DefaultConstraintSQL => throw new NotImplementedException();
 
 		internal override bool MatchConstraintsByColumns => true;
-		internal override bool BypassForeignKeyRules => true;
 
 		protected override Type connectionType => typeof(SQLiteConnection);
 
@@ -64,13 +63,14 @@ where type = 'table'
 						{
 							var col = new Column(database);
 							col.ColumnName = rdr["name"].ToString();
-							col.DataType = rdr["type"].ToString();
-							var m = Regex.Match(col.DataType, "(.*nvarchar)\\((\\d*)\\)");
+							var colType = rdr["type"].ToString();
+							var m = Regex.Match(colType, "(.*nvarchar)\\((\\d*)\\)");
 							if (m.Success)
 							{
-								col.DataType = m.Groups[1].Value;
+								colType = m.Groups[1].Value;
 								col.CharacterMaximumLength = Convert.ToInt16(m.Groups[2].Value);
 							}
+							col.ColumnType = ColumnTypes.First(t => t.TypeName == colType);
 
 							col.IsNullable = rdr["notnull"].ToString() == "0";
 							var def = rdr["dflt_value"];

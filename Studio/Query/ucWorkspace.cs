@@ -319,7 +319,7 @@ namespace PaJaMa.Database.Studio.Query
 							var node4 = node.Nodes.Add(table.TableName);
 							foreach (var column in table.Columns)
 							{
-								node4.Nodes.Add(column.ColumnName + " (" + column.DataType + ", "
+								node4.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
 											+ (column.IsNullable ? "null" : "not null") + ")");
 							}
 							node4.Tag = table;
@@ -335,7 +335,7 @@ namespace PaJaMa.Database.Studio.Query
 							var node4 = node.Nodes.Add(view.ViewName);
 							foreach (var column in view.Columns)
 							{
-								node4.Nodes.Add(column.ColumnName + " (" + column.DataType + ", "
+								node4.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
 											+ (column.IsNullable ? "null" : "not null") + ")");
 							}
 							node4.Tag = view;

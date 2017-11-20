@@ -18,18 +18,10 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 
-		public string GetInnerCreateText()
-		{
-			return string.Format(@"CONSTRAINT {0}
-{1}
-{2}
-({3})", DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource), DatabaseObject.IsPrimaryKey ? "PRIMARY KEY" : "UNIQUE", TargetDatabase.DataSource.BypassClusteredNonClustered ? string.Empty : DatabaseObject.ClusteredNonClustered, string.Join(", ",
-	  DatabaseObject.Columns.OrderBy(c => c.Ordinal).Select(c => string.Format("{0} {1}", TargetDatabase.DataSource.GetConvertedObjectName(c.ColumnName), (TargetDatabase.DataSource.BypassKeyConstraints ? string.Empty : (c.Descending ? "DESC" : "ASC"))))));
-		}
-
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			var items = getStandardItems(string.Format("ALTER TABLE {0} ADD {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), GetInnerCreateText()));
+			var items = getStandardItems(string.Format("ALTER TABLE {0} ADD {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), 
+				TargetDatabase.DataSource.GetKeyConstraintCreateScript(DatabaseObject)));
 
 			if (TargetDatabase.DataSource.BypassKeyConstraints)
 			{

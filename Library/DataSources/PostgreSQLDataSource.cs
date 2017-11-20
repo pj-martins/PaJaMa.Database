@@ -17,12 +17,10 @@ namespace PaJaMa.Database.Library.DataSources
 		}
 
 		public override string DefaultSchemaName => "public";
-		internal override bool BypassKeyConstraints => true;
 		internal override bool ForeignKeyDropsWithColumns => true;
-		internal override bool BypassClusteredNonClustered => true;
 		internal override bool MatchConstraintsByColumns => true;
+		internal override bool BypassKeyConstraints => true;
 
-		internal override string Max => "";
 		internal override List<string> SystemSchemaNames => new List<string>() { "pg_catalog", "information_schema" };
 
 		#region SQLS
@@ -107,7 +105,7 @@ and ku.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
 ";
 
 		internal override string IndexSQL => @"
-select 
+select distinct
 	t.relname as TableName,
 	i.relname as IndexName,
 	a.attname as ColumnName,
@@ -192,14 +190,27 @@ from INFORMATION_SCHEMA.SEQUENCES";
 				if (_columnTypes == null)
 				{
 					_columnTypes = new List<ColumnType>();
-					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, typeof(Guid), "uuid_generate_v4()"));
-					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTimeZone, typeof(DateTime), "now()"));
-					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, typeof(DateTime), "now()"));
-					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, typeof(string), "''") { CreateTypeName = "varchar" });
-					_columnTypes.Add(new ColumnType("character varying", DataType.NVaryingChar, typeof(string), "''") { CreateTypeName = "varchar" });
-					_columnTypes.Add(new ColumnType("integer", DataType.Integer, typeof(int), "0"));
-					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanFalse, typeof(bool), "false"));
-					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanTrue, typeof(bool), "true"));
+					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, "uuid_generate_v4()"));
+					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTimeZone, "now()"));
+					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, "now()"));
+					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("character varying", DataType.NVaryingChar, "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
+					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanFalse, "false"));
+					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanTrue, "true"));
+					_columnTypes.Add(new ColumnType("double precision", DataType.Float, "0"));
+					_columnTypes.Add(new ColumnType("bytea", DataType.VarBinary, "0") { FixedSize = true });
+					_columnTypes.Add(new ColumnType("xml", DataType.Xml, "''"));
+					_columnTypes.Add(new ColumnType("text", DataType.Text, "''") { FixedSize = true });
+					_columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
+					_columnTypes.Add(new ColumnType("numeric", DataType.Numeric, "0"));
+					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())"));
+					_columnTypes.Add(new ColumnType("bytea", DataType.Binary, "0") { FixedSize = true });
+					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())"));
+					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
+					_columnTypes.Add(new ColumnType("serial", DataType.RowVersion, ""));
+					_columnTypes.Add(new ColumnType("serial", DataType.RowVersion, ""));
+
 				}
 				return _columnTypes;
 			}
@@ -217,7 +228,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 
 		internal override string GetColumnAddAlterScript(Column column, bool add, string postScript, string defaultValue)
 		{
-			var dataType = this.GetConvertedColumnType(column.Database.DataSource, column.DataType, true);
+			var dataType = this.GetConvertedColumnType(column.ColumnType.DataType, true);
 			var sb = new StringBuilder();
 			if (add)
 			{
@@ -261,6 +272,38 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			return sb.ToString();
 		}
 
+		internal override string GetIndexCreateScript(Index index)
+		{
+			var indexCols = index.IndexColumns.Where(i => i.Ordinal != 0);
+			if (indexCols.Count() < 1)
+				indexCols = index.IndexColumns;
+
+			var sb = new StringBuilder();
+
+			sb.AppendLineFormat(@"CREATE {0} INDEX {1} ON {2}
+(
+	{3}
+);",
+(bool)index.IsUnique ? "UNIQUE" : "",
+this.GetConvertedObjectName(index.IndexName),
+index.Table.GetObjectNameWithSchema(this),
+string.Join(",\r\n\t",
+indexCols.OrderBy(c => c.Ordinal).Select(c =>
+	string.Format("{0} {1}", this.GetConvertedObjectName(c.ColumnName), c.Descending ? "DESC" : "ASC")).ToArray())
+	);
+
+			return sb.ToString();
+		}
+
+		internal override string GetColumnPostPart(Column column)
+		{
+			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
+			if (column.CharacterMaximumLength.GetValueOrDefault() > 0 && !targetType.FixedSize)
+				return "(" + column.CharacterMaximumLength.ToString() + ")";
+
+			return base.GetColumnPostPart(column);
+		}
+
 		internal override bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
 		{
 			if (base.IgnoreDifference(difference, fromObject, toObject)) return true;
@@ -277,8 +320,16 @@ from INFORMATION_SCHEMA.SEQUENCES";
 				{
 					return true;
 				}
+				else if (difference.PropertyName == "NumericScale" && difference.TargetValue.Replace("0", "") == difference.SourceValue.Replace("0", ""))
+				{
+					return true;
+				}
 			}
-			else if (fromObject is ForeignKey && difference.PropertyName == "WithCheck")
+			else if (fromObject is ForeignKey && (
+				difference.PropertyName == "ForeignKeyName" ||
+						difference.PropertyName == "WithCheck" ||
+						difference.PropertyName == "UpdateRule" ||
+						difference.PropertyName == "DeleteRule"))
 				return true;
 
 			return false;

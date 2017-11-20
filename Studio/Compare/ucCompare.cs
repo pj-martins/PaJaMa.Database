@@ -78,7 +78,8 @@ namespace PaJaMa.Database.Studio.Compare
 					}
 					catch (Exception ex)
 					{
-						exception = new Exception("Error opening target connection: " + ex.Message);
+						exception = new Exception("Error opening target connection: " + 
+							(ex is TargetInvocationException && ex.InnerException != null ? ex.InnerException.Message : ex.Message));
 						return;
 					}
 
@@ -107,6 +108,26 @@ namespace PaJaMa.Database.Studio.Compare
 				MessageBox.Show(exception.Message);
 			else
 			{
+				var sbUnsupported = new StringBuilder();
+				if (fromDataSource.UnsupportedTypes.Count > 0)
+				{
+					sbUnsupported.AppendLine("Source does not support types:");
+					fromDataSource.UnsupportedTypes.ForEach(u => sbUnsupported.AppendLine(u));
+					sbUnsupported.AppendLine();
+				}
+
+				if (toDataSource.UnsupportedTypes.Count > 0)
+				{
+					sbUnsupported.AppendLine("Target does not support types:");
+					toDataSource.UnsupportedTypes.ForEach(u => sbUnsupported.AppendLine(u));
+					sbUnsupported.AppendLine();
+				}
+
+				if (sbUnsupported.Length > 0)
+				{
+					MessageBox.Show(sbUnsupported.ToString());
+				}
+
 				refreshPage(false);
 
 				List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
@@ -512,16 +533,16 @@ namespace PaJaMa.Database.Studio.Compare
 				row.DefaultCellStyle.SelectionBackColor = row.DefaultCellStyle.BackColor = Color.Empty;
 				if (ws.TargetObject == null)
 				{
-					row.DefaultCellStyle.SelectionBackColor = row.DefaultCellStyle.BackColor = Color.LimeGreen;
-					row.DefaultCellStyle.SelectionForeColor = row.DefaultCellStyle.ForeColor = Color.White;
+					row.DefaultCellStyle.SelectionBackColor = row.DefaultCellStyle.BackColor = Color.LightSkyBlue;
+					row.DefaultCellStyle.SelectionForeColor = row.DefaultCellStyle.ForeColor = Color.Black;
 				}
 				else
 				{
 					var differences = ws.SynchronizationItems;
 					if (differences.Any(d => d.Scripts.Any(s => s.Value.Length > 0)))
 					{
-						row.DefaultCellStyle.SelectionBackColor = row.DefaultCellStyle.BackColor = Color.Red;
-						row.DefaultCellStyle.SelectionForeColor = row.DefaultCellStyle.ForeColor = Color.White;
+						row.DefaultCellStyle.SelectionBackColor = row.DefaultCellStyle.BackColor = Color.LightSalmon;
+						row.DefaultCellStyle.SelectionForeColor = row.DefaultCellStyle.ForeColor = Color.Black;
 					}
 				}
 
