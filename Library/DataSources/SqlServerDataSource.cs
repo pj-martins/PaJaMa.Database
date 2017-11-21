@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PaJaMa.Database.Library.Synchronization;
 
 namespace PaJaMa.Database.Library.DataSources
 {
@@ -211,23 +212,28 @@ left join sys.server_principals sp on sp.sid = dp.sid
 				if (_columnTypes == null)
 				{
 					_columnTypes = new List<ColumnType>();
-					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, "(newid())"));
-					_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, "(getdate())"));
-					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())"));
+					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, "(newid())", new Map("newid", "(newid())")));
+					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", new Map("now", "(getdate())")));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, "''"));
 					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVaryingChar, "''"));
 					_columnTypes.Add(new ColumnType("int", DataType.Integer, "((0))"));
-					_columnTypes.Add(new ColumnType("smallint", DataType.Integer, "((0))"));
-					_columnTypes.Add(new ColumnType("bit", DataType.BooleanFalse, "((0))"));
-					_columnTypes.Add(new ColumnType("bit", DataType.BooleanTrue, "((1))"));
+					_columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "((0))"));
+					_columnTypes.Add(new ColumnType("tinyint", DataType.SmallInteger, "0"));
+					_columnTypes.Add(new ColumnType("real", DataType.Real, "((0))"));
+					_columnTypes.Add(new ColumnType("bit", DataType.Boolean, "((0))", new Map(false, "((0))"), new Map(true, "((1))")));
+					_columnTypes.Add(new ColumnType("money", DataType.Money, "0") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("float", DataType.Float, "0"));
 					_columnTypes.Add(new ColumnType("varbinary", DataType.VarBinary, "0"));
 					_columnTypes.Add(new ColumnType("xml", DataType.Xml, "''"));
-					_columnTypes.Add(new ColumnType("text", DataType.Text, "''") { FixedSize = true });
+					_columnTypes.Add(new ColumnType("text", DataType.Text, "''") { IsFixedSize = true });
+					// TODO: not supported
+					_columnTypes.Add(new ColumnType("text", DataType.Json, "''") { IsFixedSize = true });
+					_columnTypes.Add(new ColumnType("ntext", DataType.Text, "''") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
-					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())"));
+					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())", new Map("now", "(getdate())")));
 					_columnTypes.Add(new ColumnType("binary", DataType.Binary, "0"));
-					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())"));
+					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())", new Map("now", "(getdate())")));
 					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
 					_columnTypes.Add(new ColumnType("timestamp", DataType.RowVersion, ""));
 					_columnTypes.Add(new ColumnType("rowversion", DataType.RowVersion, ""));
@@ -302,7 +308,7 @@ foreignKey.GetQueryObjectName(this));
 		internal override string GetColumnPostPart(Column column)
 		{
 			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
-			if (column.CharacterMaximumLength != null && !targetType.FixedSize)
+			if (column.CharacterMaximumLength != null && !targetType.IsFixedSize)
 			{
 				string max = column.CharacterMaximumLength.ToString();
 				if (max == "-1")
@@ -311,6 +317,16 @@ foreignKey.GetQueryObjectName(this));
 			}
 
 			return base.GetColumnPostPart(column);
+		}
+
+		internal override bool IgnoreDrop(DatabaseObjectBase sourceParent, DatabaseObjectBase obj)
+		{
+			if (obj is DefaultConstraint && sourceParent is Table)
+			{
+				if ((sourceParent as Table).Columns.Any(c => c.IsIdentity && c.ColumnName == (obj as DefaultConstraint).Column.ColumnName))
+					return true;
+			}
+			return base.IgnoreDrop(sourceParent, obj);
 		}
 	}
 }

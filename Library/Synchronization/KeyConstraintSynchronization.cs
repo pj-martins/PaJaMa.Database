@@ -43,11 +43,11 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};",
 				DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
-				DatabaseObject.ConstraintName));
+				DatabaseObject.ConstraintName), sourceParent);
 		}
 
 		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
@@ -64,7 +64,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					var childSync = new ForeignKeySynchronization(TargetDatabase, childKey);
 					var item = new SynchronizationItem(childKey);
-					foreach (var dropItem in childSync.GetDropItems())
+					foreach (var dropItem in childSync.GetDropItems(childKey))
 					{
 						item.Differences.AddRange(dropItem.Differences);
 						foreach (var script in dropItem.Scripts)

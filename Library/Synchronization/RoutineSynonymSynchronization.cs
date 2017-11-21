@@ -51,10 +51,10 @@ namespace PaJaMa.Database.Library.Synchronization
 			return DatabaseObject.Schema.SchemaName + "." + DatabaseObject.Name;
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			return getStandardDropItems(string.Format("DROP {0} [{1}].[{2}]", DatabaseObject.ObjectType.ToString().ToUpper(),
-				DatabaseObject.Schema.SchemaName, DatabaseObject.ObjectName));
+				DatabaseObject.Schema.SchemaName, DatabaseObject.ObjectName), sourceParent);
 		}
 	}
 }

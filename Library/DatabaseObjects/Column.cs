@@ -49,7 +49,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		internal override void setObjectProperties(DbDataReader reader)
 		{
 			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
-			ColumnType = Database.DataSource.GetColumnType(reader["DataType"].ToString());
+			ColumnType = Database.DataSource.GetColumnType(reader["DataType"].ToString(), this.ColumnDefault);
 			this.Table = schema.Tables.First(t => t.TableName == reader["TableName"].ToString());
 			this.Table.Columns.Add(this);
 			if (Database.ExtendedProperties != null)
@@ -63,15 +63,18 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 	{
 		public string TypeName { get; private set; }
 		public string CreateTypeName { get; set; }
+		public Type ClrType { get; private set; }
 		public DataType DataType { get; private set; }
 		public string DefaultValue { get; private set; }
-		public bool FixedSize { get; set; }
+		public Map[] MappedValues { get; private set; }
+		public bool IsFixedSize { get; set; }
 
-		public ColumnType(string typeName, DataType dataType, string defaultValue)
+		public ColumnType(string typeName, DataType dataType, string defaultValue, params Map[] maps)
 		{
 			this.TypeName = typeName;
 			this.CreateTypeName = typeName;
 			this.DataType = dataType;
+			this.MappedValues = maps;
 			this.DefaultValue = defaultValue;
 		}
 
@@ -84,15 +87,18 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 	public enum DataType
 	{
 		UniqueIdentifier,
-		DateTimeZone,
+		DateTime,
 		SmallDateTime,
 		DateOnly,
 		NVaryingChar,
 		VaryingChar,
+		SmallInteger,
 		Integer,
-		BooleanTrue,
-		BooleanFalse,
+		Real,
+		Money,
+		Boolean,
 		Xml,
+		Json,
 		Float,
 		VarBinary,
 		Text,
@@ -102,5 +108,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		TimeOnly,
 		BigInt,
 		RowVersion,
+	}
+
+	public class Map
+	{
+		public object Value { get; private set; }
+		public string SqlValue { get; private set; }
+		public Map(object value, string sqlValue)
+		{
+			this.Value = value;
+			this.SqlValue = sqlValue;
+		}
 	}
 }

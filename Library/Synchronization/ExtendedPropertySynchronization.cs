@@ -34,7 +34,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					var fromProp = sourceObject.ExtendedProperties.FirstOrDefault(p => p.PropName == toProperty.PropName);
 					if (fromProp == null)
 					{
-						items.AddRange(new ExtendedPropertySynchronization(targetObject.Database, toProperty).GetDropItems());
+						items.AddRange(new ExtendedPropertySynchronization(targetObject.Database, toProperty).GetDropItems(sourceObject));
 					}
 					else
 					{
@@ -106,7 +106,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			string remove = string.Format("EXEC sp_dropextendedproperty N'{0}', ", DatabaseObject.PropName);
 			if (!DatabaseObject.IgnoreSchema)
@@ -120,7 +120,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (DatabaseObject.IgnoreSchema)
 				remove += ", NULL, NULL";
 
-			return getStandardDropItems(remove);
+			return getStandardDropItems(remove, sourceParent);
 		}
 
 		private string getAddScript()

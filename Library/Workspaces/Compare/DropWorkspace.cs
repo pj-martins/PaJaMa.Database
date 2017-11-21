@@ -24,7 +24,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			: base(dbObject.Database, dbObject)
 		{
 			var sync = DatabaseObjectSynchronizationBase.GetSynchronization(dbObject.Database, dbObject);
-			SynchronizationItems.AddRange(sync.GetDropItems());
+			SynchronizationItems.AddRange(sync.GetDropItems(null));
 		}
 
 		public override string ToString()

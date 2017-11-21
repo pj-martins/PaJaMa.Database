@@ -21,11 +21,12 @@ namespace PaJaMa.Database.Library.Synchronization
 			return getStandardItems(TargetDatabase.DataSource.GetForeignKeyCreateScript(DatabaseObject), 7);
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			return getStandardDropItems(string.Format(@"
 ALTER TABLE {0} DROP CONSTRAINT {1};
-", DatabaseObject.ChildTable.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)));
+", DatabaseObject.ChildTable.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
+			sourceParent);
 		}
 
 		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)

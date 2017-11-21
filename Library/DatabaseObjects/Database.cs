@@ -152,21 +152,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 					if (!DataSource.PopulateForeignKeys(this, cmd, includeSystemSchemas, worker)) populateObjects<ForeignKey>(cmd, this.DataSource.ForeignKeySQL, includeSystemSchemas, worker);
 					if (!DataSource.PopulateKeyConstraints(this, cmd, includeSystemSchemas, worker)) populateObjects<KeyConstraint>(cmd, this.DataSource.KeyConstraintSQL, includeSystemSchemas, worker);
 					if (!DataSource.PopulateIndexes(this, cmd, includeSystemSchemas, worker))
-					{
-						var indexes = populateObjects<Index>(cmd, this.DataSource.IndexSQL, includeSystemSchemas, worker);
-						foreach (var ix in indexes)
-						{
-							if (ix.IndexColumns != null)
-							{
-								ix.IndexColumns.Sort((x, y) => x.Ordinal - y.Ordinal);
-								int i = 0;
-								foreach (var ic in ix.IndexColumns)
-								{
-									ic.Ordinal = i++;
-								}
-							}
-						}
-					}
+					populateObjects<Index>(cmd, this.DataSource.IndexSQL, includeSystemSchemas, worker);
 					populateObjects<DefaultConstraint>(cmd, this.DataSource.DefaultConstraintSQL, includeSystemSchemas, worker);
 					populateObjects<Trigger>(cmd, this.DataSource.TriggerSQL, includeSystemSchemas, worker);
 					populateObjects<Sequence>(cmd, this.DataSource.SequenceSQL, includeSystemSchemas, worker);

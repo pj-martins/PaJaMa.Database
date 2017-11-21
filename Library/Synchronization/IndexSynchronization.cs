@@ -17,11 +17,12 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			return getStandardDropItems(string.Format("DROP INDEX {0}.{1}",
 				DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
-				DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)));
+				DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
+				sourceParent);
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()

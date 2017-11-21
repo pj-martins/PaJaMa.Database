@@ -17,7 +17,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			if (TargetDatabase.DataSource.BypassKeyConstraints || DatabaseObject.Database.DataSource.BypassKeyConstraints)
 			{
@@ -25,7 +25,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					return new List<SynchronizationItem>();
 			}
 			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
-				DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)));
+				DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)), sourceParent);
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()

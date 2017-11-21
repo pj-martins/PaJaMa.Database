@@ -130,11 +130,16 @@ namespace PaJaMa.Database.Library.DataSources
 			return false;
 		}
 
-		internal ColumnType GetColumnType(string dataType)
+		internal ColumnType GetColumnType(string dataType, string columnDefault)
 		{
 			try
 			{
-				return this.ColumnTypes.First(c => c.TypeName == dataType);
+				ColumnType columnType = null;
+				if (!string.IsNullOrEmpty(columnDefault))
+					columnType = this.ColumnTypes.FirstOrDefault(c => c.TypeName == dataType);
+				if (columnType == null)
+					columnType = this.ColumnTypes.First(c => c.TypeName == dataType);
+				return columnType;
 			}
 			catch (InvalidOperationException)
 			{
@@ -249,8 +254,7 @@ ON UPDATE {6}
 
 		internal virtual string GetColumnPostPart(Column column)
 		{
-			if (column.NumericPrecision != null && column.NumericScale != null &&
-				(column.ColumnType.DataType == DataType.Numeric || column.ColumnType.DataType == DataType.Decimal))
+			if (column.NumericPrecision != null && (column.ColumnType.DataType == DataType.Numeric || column.ColumnType.DataType == DataType.Decimal))
 				return "(" + column.NumericPrecision.ToString() + ", " + column.NumericScale.ToString() + ")";
 
 			if (column.IsIdentity)
@@ -259,12 +263,28 @@ ON UPDATE {6}
 			return string.Empty;
 		}
 
-		internal string GetConvertedColumnDefault(Column column, string columnDefault)
+		internal virtual string GetColumnDefault(Column column, string columnDefault)
 		{
 			if (string.IsNullOrEmpty(columnDefault)) return string.Empty;
-			var src = column.Database.DataSource.ColumnTypes.FirstOrDefault(c => c.DefaultValue == columnDefault && c.DataType == column.ColumnType.DataType);
-			return src != null ? this.ColumnTypes.First(t => t.DataType == src.DataType).DefaultValue
-				: columnDefault;
+			var src = column.Database.DataSource.ColumnTypes.First(c => c.DataType == column.ColumnType.DataType);
+			var srcmapped = src.MappedValues.FirstOrDefault(m => m.SqlValue == columnDefault);
+			if (srcmapped != null)
+			{
+				var dest = this.ColumnTypes.First(c => c.DataType == src.DataType)
+					.MappedValues.FirstOrDefault(m => m.Value.ToString() == srcmapped.Value.ToString());
+				if (dest != null)
+					return dest.SqlValue;
+				columnDefault = srcmapped.Value.ToString();
+			}
+			if (column.ColumnType.DataType == DataType.DateTime
+				|| column.ColumnType.DataType == DataType.SmallDateTime)
+			{
+				DateTime tempDT;
+				if (DateTime.TryParse(columnDefault.Replace("(", "").Replace(")", "").Replace("'", ""), out tempDT))
+					return "('" + tempDT.ToString() + "')";
+			}
+
+			return columnDefault;
 		}
 
 		internal string GetConvertedColumnType(DataType dataType, bool forCreate)
@@ -273,15 +293,27 @@ ON UPDATE {6}
 				this.ColumnTypes.First(t => t.DataType == dataType).TypeName;
 		}
 
+		private string maxReplacement(string max)
+		{
+			return max
+				.Replace("-1", "")
+				.Replace((int.MaxValue / 2).ToString(), "")
+				.Replace(int.MaxValue.ToString(), "")
+				;
+		}
+
 		internal virtual bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
 		{
 			if (fromObject is Column)
 			{
-				if (difference.PropertyName == "CharacterMaximumLength")
+				if (difference.PropertyName == "NumericScale" || difference.PropertyName == "NumericPrecision")
 				{
-					if (difference.TargetValue == "-1" && string.IsNullOrEmpty(difference.SourceValue))
+					if ((fromObject as Column).ColumnType.DataType != DataType.Numeric && (fromObject as Column).ColumnType.DataType != DataType.Decimal)
 						return true;
-					if (difference.SourceValue == "-1" && string.IsNullOrEmpty(difference.TargetValue))
+				}
+				else if (difference.PropertyName == "CharacterMaximumLength")
+				{
+					if (maxReplacement(difference.TargetValue) == maxReplacement(difference.SourceValue))
 						return true;
 				}
 				else if (difference.PropertyName == "ColumnType")
@@ -291,15 +323,17 @@ ON UPDATE {6}
 				}
 				else if (difference.PropertyName == "ColumnDefault")
 				{
-					var srcDefault = this.GetConvertedColumnDefault(fromObject as Column, difference.SourceValue);
-					var targDefault = difference.TargetValue;
+					var srcDefault = this.GetColumnDefault(fromObject as Column, difference.SourceValue);
+					var targDefault = this.GetColumnDefault(fromObject as Column, difference.TargetValue);
 					if (srcDefault.Replace("(", "").Replace(")", "") == targDefault.Replace("(", "").Replace(")", ""))
 						return true;
 				}
-				// TODO:
-				//else if ((targetDatabase.IsSQLite || databaseObject.ParentDatabase.IsSQLite) && (diff.PropertyName == "NumericScale" || diff.PropertyName == "NumericPrecision"))
-				//	differences.RemoveAt(i);
 			}
+			return false;
+		}
+
+		internal virtual bool IgnoreDrop(DatabaseObjectBase sourceParent, DatabaseObjectBase obj)
+		{
 			return false;
 		}
 

@@ -16,13 +16,13 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			if (DatabaseObject.LoginType == LoginType.SQLLogin)
 			{
-				return getStandardDropItems(string.Format("DROP LOGIN [{0}]", DatabaseObject.ObjectName));
+				return getStandardDropItems(string.Format("DROP LOGIN [{0}]", DatabaseObject.ObjectName), sourceParent);
 			}
-			return getStandardDropItems(string.Format("DROP USER [{0}]", DatabaseObject.ObjectName));
+			return getStandardDropItems(string.Format("DROP USER [{0}]", DatabaseObject.ObjectName), sourceParent);
 		}
 
 		private string getLoginScript(bool create)

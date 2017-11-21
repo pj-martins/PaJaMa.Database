@@ -1,5 +1,6 @@
 ﻿using PaJaMa.Common;
 using PaJaMa.Database.Library.DatabaseObjects;
+using PaJaMa.Database.Library.DataSources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,9 +30,10 @@ namespace PaJaMa.Database.Library.Synchronization
 			return GetAlterItems(target, ignoreCase);
 		}
 
-		public virtual List<SynchronizationItem> GetDropItems()
+		public virtual List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
-			return getStandardDropItems(string.Format("DROP {0} [{1}]", DatabaseObject.ObjectType.ToString(), DatabaseObject.ObjectName));
+			return getStandardDropItems(string.Format("DROP {0} [{1}]", DatabaseObject.ObjectType.ToString(), DatabaseObject.ObjectName),
+				sourceParent);
 		}
 
 		public abstract List<SynchronizationItem> GetCreateItems();
@@ -113,8 +115,11 @@ namespace PaJaMa.Database.Library.Synchronization
 			return diff;
 		}
 
-		protected List<SynchronizationItem> getStandardDropItems(string script, int level = 0)
+		protected List<SynchronizationItem> getStandardDropItems(string script, DatabaseObjectBase sourceParent, int level = 0)
 		{
+			if (sourceParent != null && DatabaseObject.Database.DataSource.GetType().FullName != sourceParent.Database.DataSource.GetType().FullName &&
+				sourceParent.Database.DataSource.IgnoreDrop(sourceParent, DatabaseObject)) 
+				return new List<SynchronizationItem>();
 			return getStandardItems(script, level, getDifference(DifferenceType.Drop, DatabaseObject));
 		}
 
@@ -156,7 +161,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public virtual string GetRawDropText()
 		{
-			string rawText = string.Join("\r\n", from i in GetDropItems()
+			string rawText = string.Join("\r\n", from i in GetDropItems(null)
 												 from kvp in i.Scripts
 												 where kvp.Value.Length > 0
 												 orderby (int)kvp.Key

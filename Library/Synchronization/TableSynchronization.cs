@@ -64,7 +64,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				sb.AppendLine(", " + TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc));
 			}
 			sb.AppendLine(");");
-			
+
 
 			return sb.ToString();
 		}
@@ -149,18 +149,18 @@ namespace PaJaMa.Database.Library.Synchronization
 							&& string.Compare(k.ParentTable.ObjectName, tk.ParentTable.ObjectName, ignoreCase) == 0
 							&& k.Columns.All(x => tk.Columns.Any(c => string.Compare(c.ChildColumn.ObjectName, x.ChildColumn.ObjectName, ignoreCase) == 0
 							&& string.Compare(c.ParentColumn.ObjectName, x.ParentColumn.ObjectName, ignoreCase) == 0))))
-							items.AddRange(new ForeignKeySynchronization(TargetDatabase, tk).GetDropItems());
+							items.AddRange(new ForeignKeySynchronization(TargetDatabase, tk).GetDropItems(DatabaseObject));
 					}
 					else if (!DatabaseObject.ForeignKeys.Any(k => string.Compare(k.ForeignKeyName, tk.ForeignKeyName, ignoreCase) == 0))
 					{
-                        if (targetTable.Database.DataSource.ForeignKeyDropsWithColumns)
-                        {
-                            // column being dropped
-                            if (tk.Columns.Any(c => !DatabaseObject.Columns.Any(x => string.Compare(x.ColumnName, c.ChildColumn.ColumnName, ignoreCase) == 0)))
-                                continue;
-                        }
+						if (targetTable.Database.DataSource.ForeignKeyDropsWithColumns)
+						{
+							// column being dropped
+							if (tk.Columns.Any(c => !DatabaseObject.Columns.Any(x => string.Compare(x.ColumnName, c.ChildColumn.ColumnName, ignoreCase) == 0)))
+								continue;
+						}
 
-						items.AddRange(new ForeignKeySynchronization(TargetDatabase, tk).GetDropItems());
+						items.AddRange(new ForeignKeySynchronization(TargetDatabase, tk).GetDropItems(DatabaseObject));
 					}
 				}
 
@@ -194,7 +194,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					if (!DatabaseObject.Columns.Any(c => string.Compare(c.ColumnName, tc.ColumnName, ignoreCase) == 0))
 					{
-						items.AddRange(new ColumnSynchronization(TargetDatabase, tc).GetDropItems());
+						items.AddRange(new ColumnSynchronization(TargetDatabase, tc).GetDropItems(DatabaseObject));
 					}
 				}
 
@@ -295,7 +295,14 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			foreach (var fk in foreignKeys)
 			{
-				item.AddScript(4, new ForeignKeySynchronization(TargetDatabase, fk).GetDropItems().ToString());
+				var dropItems = new ForeignKeySynchronization(TargetDatabase, fk).GetDropItems(DatabaseObject);
+				foreach (var di in dropItems)
+				{
+					foreach (var s in di.Scripts)
+					{
+						item.AddScript(4, s.Value.ToString());
+					}
+				}
 			}
 
 			item.AddScript(4, string.Format("DROP TABLE [{0}].[{1}]", DatabaseObject.Schema.SchemaName,
@@ -374,7 +381,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 
 					if (drop)
-						items.AddRange(new KeyConstraintSynchronization(TargetDatabase, toConstraint).GetDropItems());
+						items.AddRange(new KeyConstraintSynchronization(TargetDatabase, toConstraint).GetDropItems(DatabaseObject));
 					else
 						skips.Add(toConstraint.ConstraintName);
 				}
@@ -435,7 +442,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 
 					if (drop)
-						items.AddRange(new IndexSynchronization(TargetDatabase, toIndex).GetDropItems());
+						items.AddRange(new IndexSynchronization(TargetDatabase, toIndex).GetDropItems(DatabaseObject));
 					else
 						skips.Add(toIndex.IndexName);
 				}
@@ -471,20 +478,27 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					Difference diff = null;
 					bool drop = false;
-					var fromConstraint = DatabaseObject.DefaultConstraints.FirstOrDefault(c => string.Compare(c.Table.TableName, DatabaseObject.TableName, ignoreCase) == 0 &&
-						string.Compare(c.ConstraintName, toConstraint.ConstraintName, ignoreCase) == 0);
-					if (fromConstraint == null && (DataSourcesAreDifferent && (TargetDatabase.DataSource.MatchConstraintsByColumns || DatabaseObject.Database.DataSource.MatchConstraintsByColumns)))
+					DefaultConstraint fromConstraint = null;
+					if (DataSourcesAreDifferent && (TargetDatabase.DataSource.MatchConstraintsByColumns || DatabaseObject.Database.DataSource.MatchConstraintsByColumns))
+					{
 						fromConstraint = DatabaseObject.DefaultConstraints.FirstOrDefault(c => string.Compare(c.Table.TableName, DatabaseObject.TableName, ignoreCase) == 0 &&
-						string.Compare(c.Column.ColumnName, toConstraint.Column.ColumnName, ignoreCase) == 0);
+							string.Compare(c.Column.ColumnName, toConstraint.Column.ColumnName, ignoreCase) == 0);
+					}
+					else
+					{
+						fromConstraint = DatabaseObject.DefaultConstraints.FirstOrDefault(c => string.Compare(c.Table.TableName, DatabaseObject.TableName, ignoreCase) == 0 &&
+						string.Compare(c.ConstraintName, toConstraint.ConstraintName, ignoreCase) == 0);
+					}
+
 					if (fromConstraint == null)
 						drop = true;
 					else if (fromConstraint.Column.ColumnName != toConstraint.Column.ColumnName ||
-							TargetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.Column, fromConstraint.ColumnDefault).Replace("(", "").Replace(")", "")
-								!= TargetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.Column, toConstraint.ColumnDefault).Replace("(", "").Replace(")", ""))
+							TargetDatabase.DataSource.GetColumnDefault(fromConstraint.Column, fromConstraint.ColumnDefault).Replace("(", "").Replace(")", "")
+								!= TargetDatabase.DataSource.GetColumnDefault(toConstraint.Column, toConstraint.ColumnDefault).Replace("(", "").Replace(")", ""))
 					{
 						diff = getDifference(DifferenceType.Alter, fromConstraint, toConstraint, "ColumnDefault",
-							TargetDatabase.DataSource.GetConvertedColumnDefault(fromConstraint.Column, fromConstraint.ColumnDefault),
-							TargetDatabase.DataSource.GetConvertedColumnDefault(toConstraint.Column, toConstraint.ColumnDefault)
+							TargetDatabase.DataSource.GetColumnDefault(fromConstraint.Column, fromConstraint.ColumnDefault),
+							TargetDatabase.DataSource.GetColumnDefault(toConstraint.Column, toConstraint.ColumnDefault)
 						);
 
 						var creates = new DefaultConstraintSynchronization(TargetDatabase, fromConstraint).GetCreateItems();
@@ -502,7 +516,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					if (drop)
 					{
 						// table was dropped
-						items.AddRange(new DefaultConstraintSynchronization(TargetDatabase, toConstraint).GetDropItems());
+						items.AddRange(new DefaultConstraintSynchronization(TargetDatabase, toConstraint).GetDropItems(DatabaseObject));
 					}
 					else
 						skips.Add(toConstraint);
@@ -545,7 +559,7 @@ namespace PaJaMa.Database.Library.Synchronization
 						items.AddRange(new TriggerSynchronization(TargetDatabase, fromTrigger).GetSynchronizationItems(toTrigger, ignoreCase));
 
 					if (drop)
-						items.AddRange(new TriggerSynchronization(TargetDatabase, toTrigger).GetDropItems());
+						items.AddRange(new TriggerSynchronization(TargetDatabase, toTrigger).GetDropItems(DatabaseObject));
 					else
 						skips.Add(toTrigger.TriggerName);
 				}
@@ -563,9 +577,10 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
-			return getStandardDropItems(string.Format("DROP TABLE {0}", DatabaseObject.GetObjectNameWithSchema(TargetDatabase.DataSource)));
+			return getStandardDropItems(string.Format("DROP TABLE {0}", DatabaseObject.GetObjectNameWithSchema(TargetDatabase.DataSource)),
+				sourceParent);
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,

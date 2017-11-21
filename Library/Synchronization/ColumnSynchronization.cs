@@ -17,13 +17,12 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
-			return getStandardItems(string.Format("ALTER TABLE {0} DROP COLUMN {1};",
+			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP COLUMN {1};",
 						DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
 						DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
-						level: 1,
-						difference: getDifference(DifferenceType.Drop, DatabaseObject));
+						sourceParent, 1);
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()
@@ -35,7 +34,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public string GetDefaultScript()
 		{
 			string def = string.Empty;
-			string colDef = TargetDatabase.DataSource.GetConvertedColumnDefault(DatabaseObject, DatabaseObject.ColumnDefault);
+			string colDef = TargetDatabase.DataSource.GetColumnDefault(DatabaseObject, DatabaseObject.ColumnDefault);
 			if (!string.IsNullOrEmpty(colDef) && colDef.StartsWith("((") && colDef.EndsWith("))"))
 				colDef = colDef.Substring(1, colDef.Length - 2);
 

@@ -16,14 +16,14 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			StringBuilder sb = new StringBuilder();
 			foreach (var princ in DatabaseObject.PermissionPrincipals)
 			{
 				sb.AppendLine(princ.GetCreateRemoveScript(false));
 			}
-			return getStandardDropItems(sb.ToString());
+			return getStandardDropItems(sb.ToString(), sourceParent);
 		}
 
 		private string getCreateScript()

@@ -55,7 +55,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return DatabaseObject.Schema.SchemaName + "." + DatabaseObject.SequenceName;
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
             var items = new List<SynchronizationItem>();
 			var diff = getDifference(DifferenceType.Drop, DatabaseObject);

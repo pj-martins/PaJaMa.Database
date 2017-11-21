@@ -21,9 +21,10 @@ namespace PaJaMa.Database.Library.Synchronization
 			return DatabaseObject.Table.Triggers.IndexOf(DatabaseObject) + 1;
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
-			return getStandardDropItems(string.Format("DROP TRIGGER [{0}].[{1}]", DatabaseObject.Table.Schema.SchemaName, DatabaseObject.TriggerName), level: 11 * getIndex());
+			return getStandardDropItems(string.Format("DROP TRIGGER [{0}].[{1}]", 
+				DatabaseObject.Table.Schema.SchemaName, DatabaseObject.TriggerName), sourceParent, getIndex());
 		}
 
 		public override List<SynchronizationItem> GetCreateItems()

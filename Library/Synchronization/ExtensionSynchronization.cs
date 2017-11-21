@@ -40,7 +40,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return DatabaseObject.Database.DatabaseName + "." + DatabaseObject.Name;
 		}
 
-		public override List<SynchronizationItem> GetDropItems()
+		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
             var items = new List<SynchronizationItem>();
 			var diff = getDifference(DifferenceType.Create, DatabaseObject);

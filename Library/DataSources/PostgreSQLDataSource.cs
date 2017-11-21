@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PaJaMa.Database.Library.Synchronization;
 using PaJaMa.Database.Library.DatabaseObjects;
+using System.Text.RegularExpressions;
 
 namespace PaJaMa.Database.Library.DataSources
 {
@@ -105,28 +106,31 @@ and ku.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
 ";
 
 		internal override string IndexSQL => @"
-select distinct
-	t.relname as TableName,
-	i.relname as IndexName,
-	a.attname as ColumnName,
+select
+    t.relname as TableName,
+    i.relname as IndexName,
+    a.attname as ColumnName,
 	-- TODO: case when ix.indisclustered = true then 'CLUSTERED' else 'NONCLUSTERED' end as IndexType,
-    	'' as IndexType,
+    '' as IndexType,
+	row_number() over (partition by t.relname, i.relname)::integer as Ordinal,
 	ix.indisunique as IsUnique,
 	n.nspname as SchemaName,
-	x.Ordinal,
 	-- TODO:
 	false as Descending
 from
-(
-	select indrelid, unnest(indkey) as Ordinal from pg_index
-) x
-join pg_index ix on ix.indrelid = x.indrelid
-join pg_class t on t.oid = ix.indrelid
-join pg_class i on i.oid = ix.indexrelid
-join pg_attribute a on a.attrelid = t.oid and a.attnum = x.Ordinal
-join pg_catalog.pg_namespace n on n.oid = t.relnamespace
-where t.relkind = 'r' and t.relname not like 'pg_%' and indisprimary = false
-and x.Ordinal > 1
+    pg_class t,
+    pg_class i,
+    pg_index ix,
+    pg_attribute a,
+    pg_catalog.pg_namespace n
+where
+    t.oid = ix.indrelid
+    and i.oid = ix.indexrelid
+    and a.attrelid = t.oid
+    and a.attnum = ANY(ix.indkey)
+    and t.relkind = 'r'
+	and indisprimary = false
+	and n.oid = t.relnamespace
 ";
 
 		internal override string DefaultConstraintSQL => @"select 
@@ -189,26 +193,33 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			{
 				if (_columnTypes == null)
 				{
+					var dtMaps = new Map[] {
+						new Map("mintime", "now()"),
+						new Map("now", "now()")
+					};
 					_columnTypes = new List<ColumnType>();
-					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, "uuid_generate_v4()"));
-					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTimeZone, "now()"));
-					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, "now()"));
+					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, "uuid_generate_v4()", new Map("newid", "uuid_generate_v4()")));
+					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTime, "now()", dtMaps));
+					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("character varying", DataType.NVaryingChar, "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
-					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanFalse, "false"));
-					_columnTypes.Add(new ColumnType("boolean", DataType.BooleanTrue, "true"));
+					_columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "0"));
+					_columnTypes.Add(new ColumnType("real", DataType.Real, "0"));
+					_columnTypes.Add(new ColumnType("boolean", DataType.Boolean, "false", new Map(false, "false"), new Map(true, "true")));
 					_columnTypes.Add(new ColumnType("double precision", DataType.Float, "0"));
-					_columnTypes.Add(new ColumnType("bytea", DataType.VarBinary, "0") { FixedSize = true });
+					_columnTypes.Add(new ColumnType("money", DataType.Money, "0"));
+					_columnTypes.Add(new ColumnType("bytea", DataType.VarBinary, "0") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("xml", DataType.Xml, "''"));
-					_columnTypes.Add(new ColumnType("text", DataType.Text, "''") { FixedSize = true });
+					_columnTypes.Add(new ColumnType("text", DataType.Text, "''") { IsFixedSize = true });
+					_columnTypes.Add(new ColumnType("json", DataType.Json, "") { IsFixedSize = true });
+					_columnTypes.Add(new ColumnType("jsonb", DataType.Json, "") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
 					_columnTypes.Add(new ColumnType("numeric", DataType.Numeric, "0"));
-					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())"));
-					_columnTypes.Add(new ColumnType("bytea", DataType.Binary, "0") { FixedSize = true });
-					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())"));
+					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "now()", dtMaps));
+					_columnTypes.Add(new ColumnType("bytea", DataType.Binary, "0") { IsFixedSize = true });
+					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
-					_columnTypes.Add(new ColumnType("serial", DataType.RowVersion, ""));
 					_columnTypes.Add(new ColumnType("serial", DataType.RowVersion, ""));
 
 				}
@@ -298,10 +309,22 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 		internal override string GetColumnPostPart(Column column)
 		{
 			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
-			if (column.CharacterMaximumLength.GetValueOrDefault() > 0 && !targetType.FixedSize)
+			if (column.CharacterMaximumLength.GetValueOrDefault() > 0 && !targetType.IsFixedSize)
 				return "(" + column.CharacterMaximumLength.ToString() + ")";
 
 			return base.GetColumnPostPart(column);
+		}
+
+		internal override string GetColumnDefault(Column column, string columnDefault)
+		{
+			var def = base.GetColumnDefault(column, columnDefault);
+			if (!string.IsNullOrEmpty(columnDefault) && columnDefault.Contains("::"))
+			{
+				var match = Regex.Match(columnDefault, "'(.*)'::.*");
+				if (match.Success)
+					def = match.Groups[1].Value;
+			}
+			return def;
 		}
 
 		internal override bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
@@ -331,6 +354,12 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 						difference.PropertyName == "UpdateRule" ||
 						difference.PropertyName == "DeleteRule"))
 				return true;
+			else if (fromObject is Index && toObject is Index && difference.PropertyName == "Columns")
+			{
+				var tcs = (toObject as Index).IndexColumns.Where(ic => ic.Ordinal != 0);
+				var ics = (fromObject as Index).IndexColumns.Where(ic => ic.Ordinal != 0);
+				return tcs.Select(t => t.ColumnName).OrderBy(c => c).SequenceEqual(ics.Select(i => i.ColumnName).OrderBy(c => c));
+			}
 
 			return false;
 		}
