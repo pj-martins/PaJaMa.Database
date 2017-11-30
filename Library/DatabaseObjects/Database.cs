@@ -87,7 +87,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			{
 				using (var cmd = conn.CreateCommand())
 				{
-					var qry = "select * from ({0}) z where SchemaName = '" + schema.SchemaName + "'";
+					var qry = "select * from ({0}) z";
+					if (!string.IsNullOrEmpty(schema.SchemaName))
+						qry += "where SchemaName = '" + schema.SchemaName + "'";
 
 					populateObjects<Table>(cmd, string.Format(qry, this.DataSource.TableSQL), true, null);
 					if (!DataSource.PopulateColumns(this, cmd, true, null))
@@ -152,7 +154,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 					if (!DataSource.PopulateForeignKeys(this, cmd, includeSystemSchemas, worker)) populateObjects<ForeignKey>(cmd, this.DataSource.ForeignKeySQL, includeSystemSchemas, worker);
 					if (!DataSource.PopulateKeyConstraints(this, cmd, includeSystemSchemas, worker)) populateObjects<KeyConstraint>(cmd, this.DataSource.KeyConstraintSQL, includeSystemSchemas, worker);
 					if (!DataSource.PopulateIndexes(this, cmd, includeSystemSchemas, worker))
-					populateObjects<Index>(cmd, this.DataSource.IndexSQL, includeSystemSchemas, worker);
+						populateObjects<Index>(cmd, this.DataSource.IndexSQL, includeSystemSchemas, worker);
 					populateObjects<DefaultConstraint>(cmd, this.DataSource.DefaultConstraintSQL, includeSystemSchemas, worker);
 					populateObjects<Trigger>(cmd, this.DataSource.TriggerSQL, includeSystemSchemas, worker);
 					populateObjects<Sequence>(cmd, this.DataSource.SequenceSQL, includeSystemSchemas, worker);

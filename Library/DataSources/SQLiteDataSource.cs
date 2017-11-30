@@ -12,20 +12,20 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DataSources
 {
-	public class SQLiteDataSource : DataSource
+	public class SQLiteDataSource : SqlServerDataSource
 	{
 		public SQLiteDataSource(string connectionString) : base(connectionString)
 		{
 		}
 
-		internal override string ViewSQL => "select *, sql as Definition, name as ViewName from sqlite_master where type = 'view'";
+		internal override string ViewSQL => "select *, sql as Definition, name as ViewName, '' as SchemaName from sqlite_master where type = 'view'";
 		internal override string TriggerSQL => "select *, sql as Definition, name as TriggerName, tbl_name as TableName, '' as SchemaName from sqlite_master where type = 'trigger'";
 
 		public override string DefaultSchemaName => "";
 
 		internal override string SchemaSQL => "";
 
-		internal override string TableSQL => @"select name as TABLE_NAME, '' as TABLE_SCHEMA, sql as Definition
+		internal override string TableSQL => @"select name as TableName, '' as SchemaName, sql as Definition
 from sqlite_master
 where type = 'table'
 ";
@@ -46,7 +46,19 @@ where type = 'table'
 
 		protected override Type connectionType => typeof(SQLiteConnection);
 
-		internal override List<ColumnType> ColumnTypes => throw new NotImplementedException();
+		private List<ColumnType> _columnTypes;
+		internal override List<ColumnType> ColumnTypes
+		{
+			get
+			{
+				if (_columnTypes == null)
+				{
+					_columnTypes = base.ColumnTypes;
+					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "((0))"));
+				}
+				return _columnTypes;
+			}
+		}
 
 		internal override bool PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
@@ -64,13 +76,21 @@ where type = 'table'
 							var col = new Column(database);
 							col.ColumnName = rdr["name"].ToString();
 							var colType = rdr["type"].ToString();
-							var m = Regex.Match(colType, "(.*nvarchar)\\((\\d*)\\)");
+							var m = Regex.Match(colType, "(.*nvarchar)\\((\\d*)\\)", RegexOptions.IgnoreCase);
 							if (m.Success)
 							{
 								colType = m.Groups[1].Value;
 								col.CharacterMaximumLength = Convert.ToInt16(m.Groups[2].Value);
 							}
-							col.ColumnType = ColumnTypes.First(t => t.TypeName == colType);
+							m = Regex.Match(colType, "(.*numeric)\\((\\d*),(\\d*)\\)", RegexOptions.IgnoreCase);
+							if (m.Success)
+							{
+								colType = m.Groups[1].Value;
+								col.NumericPrecision = Convert.ToInt16(m.Groups[2].Value);
+								col.NumericScale = Convert.ToInt16(m.Groups[3].Value);
+							}
+							if (string.IsNullOrEmpty(colType)) colType = "text";
+							col.ColumnType = ColumnTypes.First(t => t.TypeName.ToLower() == colType.ToLower());
 
 							col.IsNullable = rdr["notnull"].ToString() == "0";
 							var def = rdr["dflt_value"];
@@ -220,16 +240,6 @@ where type = 'table'
 			}
 
 			return true;
-		}
-
-		public override string GetConvertedObjectName(string objectName)
-		{
-			return string.Format("{0}", objectName);
-		}
-
-		public override string GetColumnSelectList(string[] columns)
-		{
-			return string.Join(",\r\n\t", columns);
 		}
 	}
 }

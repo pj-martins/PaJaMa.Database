@@ -64,27 +64,35 @@ namespace PaJaMa.Database.Library.DataSources
 			using (var conn = OpenConnection())
 			{
 				this.DataSourceName = conn.DataSource;
-				using (var cmd = conn.CreateCommand())
+				if (string.IsNullOrEmpty(DatabaseSQL))
 				{
-					cmd.CommandText = DatabaseSQL;
-					cmd.CommandTimeout = 60000;
-					using (var rdr = cmd.ExecuteReader())
-					{
-						if (rdr.HasRows)
-						{
-							while (rdr.Read())
-							{
-								databases.Add(new DatabaseObjects.Database(this, rdr["DatabaseName"].ToString()));
-							}
-						}
-						rdr.Close();
-					}
-					conn.Close();
+					databases.Add(new DatabaseObjects.Database(this, conn.Database));
+					this.CurrentDatabase = databases[0];
 				}
-				if (string.IsNullOrEmpty(conn.Database))
-					this.CurrentDatabase = databases.First();
 				else
-					this.CurrentDatabase = databases.First(d => d.DatabaseName.ToLower() == conn.Database.ToLower());
+				{
+					using (var cmd = conn.CreateCommand())
+					{
+						cmd.CommandText = DatabaseSQL;
+						cmd.CommandTimeout = 60000;
+						using (var rdr = cmd.ExecuteReader())
+						{
+							if (rdr.HasRows)
+							{
+								while (rdr.Read())
+								{
+									databases.Add(new DatabaseObjects.Database(this, rdr["DatabaseName"].ToString()));
+								}
+							}
+							rdr.Close();
+						}
+						conn.Close();
+					}
+					if (string.IsNullOrEmpty(conn.Database))
+						this.CurrentDatabase = databases.First();
+					else
+						this.CurrentDatabase = databases.First(d => d.DatabaseName.ToLower() == conn.Database.ToLower());
+				}
 			}
 			return databases;
 		}
