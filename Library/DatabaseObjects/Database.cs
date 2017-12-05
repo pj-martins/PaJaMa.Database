@@ -87,7 +87,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			{
 				using (var cmd = conn.CreateCommand())
 				{
-					var qry = "select * from ({0}) z";
+					var qry = "select * from ({0}) z ";
 					if (!string.IsNullOrEmpty(schema.SchemaName))
 						qry += "where SchemaName = '" + schema.SchemaName + "'";
 

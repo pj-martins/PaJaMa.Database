@@ -31,6 +31,13 @@ where type = 'table'
 ";
 
 		internal override string DatabaseSQL => "";
+		internal override string ExtendedPropertySQL => "";
+		internal override string CredentialSQL => "";
+		internal override string DatabasePrincipalSQL => "";
+		internal override string PermissionSQL => "";
+		internal override string ServerLoginSQL => "";
+		internal override string RoutineSynonymSQL => "";
+		internal override string DefaultConstraintSQL => "";
 
 		internal override string ColumnSQL => throw new NotImplementedException();
 
@@ -39,8 +46,6 @@ where type = 'table'
 		internal override string KeyConstraintSQL => throw new NotImplementedException();
 
 		internal override string IndexSQL => throw new NotImplementedException();
-
-		internal override string DefaultConstraintSQL => throw new NotImplementedException();
 
 		internal override bool MatchConstraintsByColumns => true;
 
@@ -55,6 +60,13 @@ where type = 'table'
 				{
 					_columnTypes = base.ColumnTypes;
 					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "((0))"));
+					var dt = _columnTypes.First(ct => ct.DataType == DataType.SmallDateTime);
+					_columnTypes.Remove(dt);
+					dt = _columnTypes.First(ct => ct.DataType == DataType.DateTime);
+					_columnTypes.Remove(dt);
+					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "CURRENT_TIMESTAMP", new Map("mintime", "")));
+					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "CURRENT_TIMESTAMP", new Map("mintime", "")));
+
 				}
 				return _columnTypes;
 			}
