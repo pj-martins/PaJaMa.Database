@@ -92,6 +92,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		DateOnly,
 		NVaryingChar,
 		VaryingChar,
+        Char,
 		SmallInteger,
 		Integer,
 		Real,
