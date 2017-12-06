@@ -29,7 +29,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		public ColumnType ColumnType { get; set; }
 
-		public string ColumnName { get; set; }
+        public string ColumnName { get; set; }
 
 		[Ignore]
 		public int OrdinalPosition { get; set; }
@@ -90,10 +90,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		DateTime,
 		SmallDateTime,
 		DateOnly,
-		NVaryingChar,
 		VaryingChar,
         Char,
-		SmallInteger,
+        SmallInteger,
 		Integer,
 		Real,
 		Money,

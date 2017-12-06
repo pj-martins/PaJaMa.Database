@@ -123,7 +123,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 				}
 
-				if (tc != null && tc.ColumnType.TypeName == "timestamp")
+				if (tc != null && tc.ColumnType.DataType == DataType.RowVersion)
 				{
 					var diff = new ColumnSynchronization(TargetDatabase, fc).GetPropertyDifferences(tc, ignoreCase);
 					if (diff.Any())
@@ -315,7 +315,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			item.AddScript(6, string.Format("INSERT INTO [{0}].[{1}] ({2}) SELECT {2} FROM [{3}]",
 				DatabaseObject.Schema.SchemaName,
 				DatabaseObject.TableName,
-				string.Join(",", DatabaseObject.Columns.Where(c => c.ColumnType.TypeName != "timestamp").Select(c => "[" + c.ColumnName + "]").ToArray()),
+				string.Join(",", DatabaseObject.Columns.Where(c => c.ColumnType.DataType != DataType.RowVersion).Select(c => "[" + c.ColumnName + "]").ToArray()),
 				tmpTable));
 
 			if (DatabaseObject.Columns.Any(c => c.IsIdentity))

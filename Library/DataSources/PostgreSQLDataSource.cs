@@ -202,7 +202,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTime, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
-					_columnTypes.Add(new ColumnType("character varying", DataType.NVaryingChar, "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("character varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
 					_columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "0"));
 					_columnTypes.Add(new ColumnType("real", DataType.Real, "0"));
