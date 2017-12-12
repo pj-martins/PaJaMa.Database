@@ -122,7 +122,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				def = GetDefaultScript();
 
-				if (!DatabaseObject.IsNullable && !DatabaseObject.IsIdentity && string.IsNullOrEmpty(def) && DatabaseObject.ColumnType.TypeName != "timestamp")
+				if (!DatabaseObject.IsNullable && !DatabaseObject.IsIdentity && string.IsNullOrEmpty(def) && DatabaseObject.ColumnType.DataType != DataType.RowVersion)
 				{
 					var colType = TargetDatabase.DataSource.ColumnTypes.First(c => c.DataType == DatabaseObject.ColumnType.DataType);
 					tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");

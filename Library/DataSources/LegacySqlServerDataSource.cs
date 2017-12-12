@@ -150,26 +150,5 @@ from sysusers u
 		internal override string ServerLoginSQL => "";
 		internal override string CredentialSQL => "";
 		#endregion
-
-		//internal override List<ColumnType> ColumnTypes
-		//{
-		//	get
-		//	{
-		//		if (_columnTypes == null)
-		//		{
-		//			_columnTypes = new List<ColumnType>();
-		//			_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, typeof(Guid), "(newid())"));
-		//			_columnTypes.Add(new ColumnType("datetime", DataType.DateTimeZone, typeof(DateTime), "(getdate())"));
-		//			_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, typeof(DateTime), "(getdate())"));
-		//			_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, typeof(string), "''"));
-		//			_columnTypes.Add(new ColumnType("nvarchar", DataType.NVaryingChar, typeof(string), "''"));
-		//			_columnTypes.Add(new ColumnType("int", DataType.Integer, typeof(int), "((0))"));
-		//			_columnTypes.Add(new ColumnType("smallint", DataType.Integer, typeof(int), "((0))"));
-		//			_columnTypes.Add(new ColumnType("bit", DataType.BooleanFalse, typeof(bool), "((0))"));
-		//			_columnTypes.Add(new ColumnType("bit", DataType.BooleanTrue, typeof(bool), "((1))"));
-		//		}
-		//		return _columnTypes;
-		//	}
-		//}
 	}
 }
