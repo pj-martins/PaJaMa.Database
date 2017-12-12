@@ -159,7 +159,10 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				try
 				{
-					_currentCommand.CommandText = part;
+					if (_currentConnection.State != ConnectionState.Open)
+						_currentConnection.Open();
+					
+						_currentCommand.CommandText = part;
 					_currentCommand.CommandTimeout = 600000;
 					using (var dr = _currentCommand.ExecuteReader())
 					{

@@ -31,23 +31,7 @@ namespace PaJaMa.Database.Studio.Compare
 		{
 			new GridHelper().DecorateGrid(gridMain);
 
-			var settings = Properties.Settings.Default;
-
-			this.DesktopLocation = new Point(settings.DataDetailsLeft, settings.DataDetailsTop);
-			if (settings.DataDetailsMaximized)
-				this.WindowState = FormWindowState.Maximized;
-			else
-			{
-				//if (settings.DataDetailsLeft > 0)
-				//	this.Left = settings.DataDetailsLeft;
-				//if (settings.DataDetailsTop > 0)
-				//	this.Top = settings.DataDetailsTop;
-				if (settings.DataDetailsHeight > 0)
-					this.Height = settings.DataDetailsHeight;
-				if (settings.DataDetailsWidth > 0)
-					this.Width = settings.DataDetailsWidth;
-			}
-
+			PaJaMa.Common.FormSettings.LoadSettings(this);
 			this.Text = SelectedWorkspace.SourceTable.TableName + ": " + SelectedWorkspace.SourceTable.Schema.Database.DataSource + " - " +
 					SelectedWorkspace.SourceTable.Schema.Database.DatabaseName + " <> " +
 					SelectedWorkspace.TargetTable.Schema.Database.DataSource + " - " +
@@ -205,18 +189,7 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void frmDataDetails_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			var settings = Properties.Settings.Default;
-			settings.DataDetailsLeft = this.DesktopLocation.X;
-			settings.DataDetailsTop = this.DesktopLocation.Y;
-			if (this.WindowState == FormWindowState.Maximized)
-				settings.DataDetailsMaximized = true;
-			else
-			{
-				settings.DataDetailsMaximized = false;
-				settings.DataDetailsWidth = this.Width;
-				settings.DataDetailsHeight = this.Height;
-			}
-			settings.Save();
+			PaJaMa.Common.FormSettings.SaveSettings(this);
 		}
 
 		private void btnSync_Click(object sender, EventArgs e)

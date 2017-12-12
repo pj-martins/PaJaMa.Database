@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 using PaJaMa.Database.Library.Monitor;
+using PaJaMa.Database.Studio.Classes;
 
 // TODO: copied code... cleanup
 namespace PaJaMa.Database.Studio.Monitor
@@ -27,13 +28,14 @@ namespace PaJaMa.Database.Studio.Monitor
 		{
 			InitializeComponent();
 
-			if (Properties.Settings.Default.MonitorConnectionStrings == null)
-				Properties.Settings.Default.MonitorConnectionStrings = string.Empty;
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (settings.MonitorConnectionStrings == null)
+				settings.MonitorConnectionStrings = string.Empty;
 
 			refreshConnStrings();
 
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.LastMonitorConnectionString))
-				cboConnectionString.Text = Properties.Settings.Default.LastMonitorConnectionString;
+			if (!string.IsNullOrEmpty(settings.LastMonitorConnectionString))
+				cboConnectionString.Text = settings.LastMonitorConnectionString;
 
 			gridResults.AutoGenerateColumns = false;
 			gridResults.DataSource = _filtered;
@@ -41,9 +43,13 @@ namespace PaJaMa.Database.Studio.Monitor
 
 		private void refreshConnStrings()
 		{
-			var conns = Properties.Settings.Default.MonitorConnectionStrings.Split('|');
-			cboConnectionString.Items.Clear();
-			cboConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (!string.IsNullOrEmpty(settings.MonitorConnectionStrings))
+			{
+				var conns = settings.MonitorConnectionStrings.Split('|');
+				cboConnectionString.Items.Clear();
+				cboConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			}
 		}
 
 		private void ucMonitor_Load(object sender, EventArgs e)
@@ -341,13 +347,14 @@ namespace PaJaMa.Database.Studio.Monitor
 		{
 			if (startProfiling())
 			{
-				List<string> connStrings = Properties.Settings.Default.MonitorConnectionStrings.Split('|').ToList();
+				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+				List<string> connStrings = settings.MonitorConnectionStrings.Split('|').ToList();
 				if (!connStrings.Any(s => s == cboConnectionString.Text))
 					connStrings.Add(cboConnectionString.Text);
 
-				Properties.Settings.Default.MonitorConnectionStrings = string.Join("|", connStrings.ToArray());
-				Properties.Settings.Default.LastMonitorConnectionString = cboConnectionString.Text;
-				Properties.Settings.Default.Save();
+				settings.MonitorConnectionStrings = string.Join("|", connStrings.ToArray());
+				settings.LastMonitorConnectionString = cboConnectionString.Text;
+				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
 				btnConnect.Visible = btnRemoveConnString.Visible = false;
 				btnDisconnect.Visible = true;

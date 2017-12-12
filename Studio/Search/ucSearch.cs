@@ -25,13 +25,14 @@ namespace PaJaMa.Database.Studio.Search
 			InitializeComponent();
 
 
-			if (Properties.Settings.Default.SearchConnectionStrings == null)
-				Properties.Settings.Default.SearchConnectionStrings = string.Empty;
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (settings.SearchConnectionStrings == null)
+				settings.SearchConnectionStrings = string.Empty;
 
 			refreshConnStrings();
 
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.LastSearchConnectionString))
-				cboConnectionString.Text = Properties.Settings.Default.LastSearchConnectionString;
+			if (!string.IsNullOrEmpty(settings.LastSearchConnectionString))
+				cboConnectionString.Text = settings.LastSearchConnectionString;
 
 			new GridHelper().DecorateGrid(gridTables);
 			new GridHelper().DecorateGrid(gridColumns);
@@ -39,9 +40,13 @@ namespace PaJaMa.Database.Studio.Search
 
 		private void refreshConnStrings()
 		{
-			var conns = Properties.Settings.Default.SearchConnectionStrings.Split('|');
-			cboConnectionString.Items.Clear();
-			cboConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (!string.IsNullOrEmpty(settings.SearchConnectionStrings))
+			{
+				var conns = settings.SearchConnectionStrings.Split('|');
+				cboConnectionString.Items.Clear();
+				cboConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			}
 		}
 
 		private void btnConnect_Click(object sender, EventArgs e)
@@ -55,7 +60,7 @@ namespace PaJaMa.Database.Studio.Search
 			string database = string.Empty;
 
 			var worker = new BackgroundWorker();
-			worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
+			worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 			{
 				try
 				{
@@ -84,13 +89,14 @@ namespace PaJaMa.Database.Studio.Search
 			{
 				refreshPage(false);
 
-				List<string> connStrings = Properties.Settings.Default.SearchConnectionStrings.Split('|').ToList();
+				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+				List<string> connStrings = settings.SearchConnectionStrings.Split('|').ToList();
 				if (!connStrings.Any(s => s == cboConnectionString.Text))
 					connStrings.Add(cboConnectionString.Text);
 
-				Properties.Settings.Default.SearchConnectionStrings = string.Join("|", connStrings.ToArray());
-				Properties.Settings.Default.LastSearchConnectionString = cboConnectionString.Text;
-				Properties.Settings.Default.Save();
+				settings.SearchConnectionStrings = string.Join("|", connStrings.ToArray());
+				settings.LastSearchConnectionString = cboConnectionString.Text;
+				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
 				_lockDbChange = true;
 				cboDatabase.Items.Clear();
@@ -145,7 +151,7 @@ namespace PaJaMa.Database.Studio.Search
 
 			var worker = new BackgroundWorker();
 			string searchFor = txtSearch.Text;
-			worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
+			worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 			{
 				try
 				{
@@ -196,11 +202,12 @@ namespace PaJaMa.Database.Studio.Search
 
 		private void removeConnString(string connString, bool source)
 		{
-			List<string> connStrings = Properties.Settings.Default.SearchConnectionStrings.Split('|').ToList();
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			List<string> connStrings = settings.SearchConnectionStrings.Split('|').ToList();
 			connStrings.Remove(connString);
-			Properties.Settings.Default.SearchConnectionStrings = string.Join("|", connStrings.ToArray());
-			Properties.Settings.Default.LastSearchConnectionString = string.Empty;
-			Properties.Settings.Default.Save();
+			settings.SearchConnectionStrings = string.Join("|", connStrings.ToArray());
+			settings.LastSearchConnectionString = string.Empty;
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 			refreshConnStrings();
 			cboConnectionString.Text = string.Empty;
 		}
@@ -210,7 +217,7 @@ namespace PaJaMa.Database.Studio.Search
 			if (reinit)
 			{
 				var worker = new BackgroundWorker();
-				worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
+				worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 				{
 					_searchHelper.DataSource.CurrentDatabase.PopulateChildren(true, false, worker);
 				};
@@ -234,8 +241,8 @@ namespace PaJaMa.Database.Studio.Search
 			var tableWorkspaces = gridTables.SelectedRows.OfType<DataGridViewRow>().Select(r => r.DataBoundItem as TableWorkspace);
 			gridColumns.AutoGenerateColumns = false;
 			gridColumns.DataSource = new SortableBindingList<ColumnWorkspace>((from t in tableWorkspaces
-									 from c in t.ColumnWorkspaces
-									 select c).ToList());
+																			   from c in t.ColumnWorkspaces
+																			   select c).ToList());
 		}
 	}
 }

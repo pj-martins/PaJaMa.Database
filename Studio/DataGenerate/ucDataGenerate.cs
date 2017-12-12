@@ -30,22 +30,27 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		{
 			InitializeComponent();
 
-			if (Properties.Settings.Default.ConnectionStrings == null)
-				Properties.Settings.Default.ConnectionStrings = string.Empty;
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (settings.ConnectionStrings == null)
+				settings.ConnectionStrings = string.Empty;
 
 			refreshConnStrings();
 
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.LastQueryConnectionString))
-				cboConnectionString.Text = Properties.Settings.Default.LastQueryConnectionString;
+			if (!string.IsNullOrEmpty(settings.LastQueryConnectionString))
+				cboConnectionString.Text = settings.LastQueryConnectionString;
 
 			new GridHelper().DecorateGrid(gridTables);
 		}
 
 		private void refreshConnStrings()
 		{
-			var conns = Properties.Settings.Default.ConnectionStrings.Split('|');
-			cboConnectionString.Items.Clear();
-			cboConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (!string.IsNullOrEmpty(settings.ConnectionStrings))
+			{
+				var conns = settings.ConnectionStrings.Split('|');
+				cboConnectionString.Items.Clear();
+				cboConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			}
 		}
 
 		private void btnConnect_Click(object sender, EventArgs e)
@@ -95,13 +100,14 @@ namespace PaJaMa.Database.Studio.DataGenerate
 			{
 				refreshPage(false);
 
-				List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
+				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+				List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
 				if (!connStrings.Any(s => s == cboConnectionString.Text))
 					connStrings.Add(cboConnectionString.Text);
 
-				Properties.Settings.Default.ConnectionStrings = string.Join("|", connStrings.ToArray());
-				Properties.Settings.Default.LastQueryConnectionString = cboConnectionString.Text;
-				Properties.Settings.Default.Save();
+				settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
+				settings.LastQueryConnectionString = cboConnectionString.Text;
+				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
 				_lockDbChange = true;
 				cboDatabase.Items.Clear();
@@ -270,11 +276,12 @@ namespace PaJaMa.Database.Studio.DataGenerate
 
 		private void removeConnString(string connString, bool source)
 		{
-			List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
 			connStrings.Remove(connString);
-			Properties.Settings.Default.ConnectionStrings = string.Join("|", connStrings.ToArray());
-			Properties.Settings.Default.LastQueryConnectionString = string.Empty;
-			Properties.Settings.Default.Save();
+			settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
+			settings.LastQueryConnectionString = string.Empty;
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 			refreshConnStrings();
 			cboConnectionString.Text = string.Empty;
 		}

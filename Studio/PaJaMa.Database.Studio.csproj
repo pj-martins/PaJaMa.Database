@@ -200,6 +200,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\CommandLineHelper.cs" />
+    <Compile Include="Classes\DatabaseStudioSettings.cs" />
     <Compile Include="Classes\GridHelper.cs" />
     <Compile Include="Classes\Events.cs" />
     <Compile Include="Compare\frmCreates.cs">

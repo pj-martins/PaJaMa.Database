@@ -39,8 +39,7 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			cboServer.DataSource = DataSource.GetDataSourceTypes();
 
-			var settings = Properties.Settings.Default;
-
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 			if (settings.ConnectionStrings == null)
 				settings.ConnectionStrings = string.Empty;
 
@@ -89,11 +88,11 @@ namespace PaJaMa.Database.Studio.Query
 
 				_queryEventArgs = null;
 			}
-			else if (!string.IsNullOrEmpty(Properties.Settings.Default.LastQueryConnectionString))
+			else if (!string.IsNullOrEmpty(settings.LastQueryConnectionString))
 			{
-				txtConnectionString.Text = Properties.Settings.Default.LastQueryConnectionString;
-				cboServer.SelectedItem = Type.GetType(Properties.Settings.Default.LastQueryServerType);
-				chkUseDummyDA.Checked = Properties.Settings.Default.LastQueryUseDummyDA;
+				txtConnectionString.Text = settings.LastQueryConnectionString;
+				cboServer.SelectedItem = Type.GetType(settings.LastQueryServerType);
+				chkUseDummyDA.Checked = settings.LastQueryUseDummyDA;
 			}
 		}
 
@@ -156,14 +155,15 @@ namespace PaJaMa.Database.Studio.Query
 			if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
 				return;
 
-			List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
 			if (!connStrings.Any(s => s == txtConnectionString.Text))
 				connStrings.Add(txtConnectionString.Text);
-			Properties.Settings.Default.ConnectionStrings = string.Join("|", connStrings.ToArray());
-			Properties.Settings.Default.LastQueryConnectionString = txtConnectionString.Text;
-			Properties.Settings.Default.LastQueryServerType = (cboServer.SelectedItem as Type).AssemblyQualifiedName;
-			Properties.Settings.Default.LastQueryUseDummyDA = chkUseDummyDA.Checked;
-			Properties.Settings.Default.Save();
+			settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
+			settings.LastQueryConnectionString = txtConnectionString.Text;
+			settings.LastQueryServerType = (cboServer.SelectedItem as Type).AssemblyQualifiedName;
+			settings.LastQueryUseDummyDA = chkUseDummyDA.Checked;
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
 			var tabPage = new TabPage();
 			tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
@@ -261,7 +261,8 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void refreshConnStrings()
 		{
-			var conns = Properties.Settings.Default.ConnectionStrings.Split('|');
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			var conns = settings.ConnectionStrings.Split('|');
 			txtConnectionString.Items.Clear();
 			txtConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
 		}

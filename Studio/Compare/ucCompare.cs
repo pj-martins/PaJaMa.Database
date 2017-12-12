@@ -37,11 +37,15 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void refreshConnStrings()
 		{
-			var conns = Properties.Settings.Default.ConnectionStrings.Split('|');
-			cboSource.Items.Clear();
-			cboTarget.Items.Clear();
-			cboSource.Items.AddRange(conns.OrderBy(c => c).ToArray());
-			cboTarget.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (!string.IsNullOrEmpty(settings.ConnectionStrings))
+			{
+				var conns = settings.ConnectionStrings.Split('|');
+				cboSource.Items.Clear();
+				cboTarget.Items.Clear();
+				cboSource.Items.AddRange(conns.OrderBy(c => c).ToArray());
+				cboTarget.Items.AddRange(conns.OrderBy(c => c).ToArray());
+			}
 		}
 
 		private void btnConnect_Click(object sender, EventArgs e)
@@ -130,18 +134,19 @@ namespace PaJaMa.Database.Studio.Compare
 
 				refreshPage(false);
 
-				List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
+				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+				List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
 				if (!connStrings.Any(s => s == cboSource.Text))
 					connStrings.Add(cboSource.Text);
 				if (!connStrings.Any(s => s == cboTarget.Text))
 					connStrings.Add(cboTarget.Text);
 
-				Properties.Settings.Default.ConnectionStrings = string.Join("|", connStrings.ToArray());
-				Properties.Settings.Default.LastCompareSourceConnString = cboSource.Text;
-				Properties.Settings.Default.LastCompareTargetConnString = cboTarget.Text;
-				Properties.Settings.Default.LastCompareSourceDriver = (cboSourceDriver.SelectedItem as Type).AssemblyQualifiedName;
-				Properties.Settings.Default.LastCompareTargetDriver = (cboTargetDriver.SelectedItem as Type).AssemblyQualifiedName;
-				Properties.Settings.Default.Save();
+				settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
+				settings.LastCompareSourceConnString = cboSource.Text;
+				settings.LastCompareTargetConnString = cboTarget.Text;
+				settings.LastCompareSourceDriver = (cboSourceDriver.SelectedItem as Type).AssemblyQualifiedName;
+				settings.LastCompareTargetDriver = (cboTargetDriver.SelectedItem as Type).AssemblyQualifiedName;
+				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
 				_lockDbChange = true;
 				cboSourceDatabase.Items.Clear();
@@ -469,14 +474,15 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void removeConnString(string connString, bool source)
 		{
-			List<string> connStrings = Properties.Settings.Default.ConnectionStrings.Split('|').ToList();
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
 			connStrings.Remove(connString);
-			Properties.Settings.Default.ConnectionStrings = string.Join("|", connStrings.ToArray());
+			settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
 			if (source)
-				Properties.Settings.Default.LastCompareSourceConnString = string.Empty;
+				settings.LastCompareSourceConnString = string.Empty;
 			else
-				Properties.Settings.Default.LastCompareTargetConnString = string.Empty;
-			Properties.Settings.Default.Save();
+				settings.LastCompareTargetConnString = string.Empty;
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 			refreshConnStrings();
 			if (source)
 				cboSource.Text = string.Empty;
@@ -1011,8 +1017,9 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void ucCompare_Load(object sender, EventArgs e)
 		{
-			if (Properties.Settings.Default.ConnectionStrings == null)
-				Properties.Settings.Default.ConnectionStrings = string.Empty;
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (settings.ConnectionStrings == null)
+				settings.ConnectionStrings = string.Empty;
 
 			refreshConnStrings();
 
@@ -1023,17 +1030,17 @@ namespace PaJaMa.Database.Studio.Compare
 			cboSourceDriver.DataSource = DataSource.GetDataSourceTypes();
 			cboTargetDriver.DataSource = DataSource.GetDataSourceTypes();
 
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.LastCompareSourceConnString))
-				cboSource.Text = Properties.Settings.Default.LastCompareSourceConnString;
+			if (!string.IsNullOrEmpty(settings.LastCompareSourceConnString))
+				cboSource.Text = settings.LastCompareSourceConnString;
 
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.LastCompareTargetConnString))
-				cboTarget.Text = Properties.Settings.Default.LastCompareTargetConnString;
+			if (!string.IsNullOrEmpty(settings.LastCompareTargetConnString))
+				cboTarget.Text = settings.LastCompareTargetConnString;
 
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.LastCompareSourceDriver))
-				cboSourceDriver.SelectedItem = Type.GetType(Properties.Settings.Default.LastCompareSourceDriver);
+			if (!string.IsNullOrEmpty(settings.LastCompareSourceDriver))
+				cboSourceDriver.SelectedItem = Type.GetType(settings.LastCompareSourceDriver);
 
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.LastCompareTargetDriver))
-				cboTargetDriver.SelectedItem = Type.GetType(Properties.Settings.Default.LastCompareTargetDriver);
+			if (!string.IsNullOrEmpty(settings.LastCompareTargetDriver))
+				cboTargetDriver.SelectedItem = Type.GetType(settings.LastCompareTargetDriver);
 		}
 
 		private void cboDriver_Format(object sender, ListControlConvertEventArgs e)
