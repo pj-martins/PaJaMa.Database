@@ -116,8 +116,8 @@ namespace PaJaMa.Database.Studio.Query
 				uc.Disconnect();
 			}
 
-			tabOutputs.TabPages.Clear();
-			splitMain.Panel1Collapsed = true;
+			splitMain.Enabled = false;
+			treeTables.Nodes.Clear();
 		}
 
 		private void btnConnect_Click(object sender, EventArgs e)
@@ -150,10 +150,28 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
-			var uc = new ucQueryOutput();
-			uc.Dock = DockStyle.Fill;
-			if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
-				return;
+			if (tabOutputs.TabPages.Count < 1)
+			{
+				var uc = new ucQueryOutput();
+				uc.Dock = DockStyle.Fill;
+				if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
+					return;
+
+				var tabPage = new TabPage();
+				tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
+				tabPage.Controls.Add(uc);
+				tabOutputs.TabPages.Add(tabPage);
+				tabOutputs.SelectedTab = tabPage;
+			}
+			else
+			{
+				foreach (TabPage page in tabOutputs.TabPages)
+				{
+					var uc = page.Controls[0] as ucQueryOutput;
+					if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
+						return;
+				}
+			}
 
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 			List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
@@ -165,19 +183,12 @@ namespace PaJaMa.Database.Studio.Query
 			settings.LastQueryUseDummyDA = chkUseDummyDA.Checked;
 			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
-			var tabPage = new TabPage();
-			tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
-			tabPage.Controls.Add(uc);
-			tabOutputs.TabPages.Add(tabPage);
-			tabOutputs.SelectedTab = tabPage;
-
 			lblConnString.Text = txtConnectionString.Text;
 			pnlConnect.Visible = false;
 			treeTables.Nodes.Clear();
 
 			pnlControls.Visible = true;
-
-			splitMain.Panel1Collapsed = false;
+			splitMain.Enabled = true;
 
 			foreach (var db in _dataSource.Databases)
 			{
