@@ -23,26 +23,7 @@ namespace PaJaMa.Database.Studio.Query
 		private void frmMain_Load(object sender, EventArgs e)
 		{
 			if (tabMain.TabPages.Count < 1)
-				newWorkspaceToolStripMenuItem_Click(sender, e);
-		}
-
-		private void newWorkspaceToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			var uc = new ucWorkspace();
-			var tab = new TabPage("Workspace " + (tabMain.TabPages.Count + 1).ToString());
-			uc.Dock = DockStyle.Fill;
-			tab.Controls.Add(uc);
-			tabMain.TabPages.Add(tab);
-			tabMain.SelectedTab = tab;
-		}
-
-		private void btnClose_Click(object sender, EventArgs e)
-		{
-			if (tabMain.SelectedTab != null)
-			{
-				(tabMain.SelectedTab.Controls[0] as ucWorkspace).Disconnect();
-				tabMain.TabPages.Remove(tabMain.SelectedTab);
-			}
+				addWorkspace(null);
 		}
 
 		private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -87,7 +68,7 @@ namespace PaJaMa.Database.Studio.Query
 					if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 					{
 						var workspace = PaJaMa.Common.XmlSerialize.DeserializeObjectFromFile<QueryWorkspace>(dlg.FileName);
-						newWorkspaceToolStripMenuItem_Click(sender, e);
+						addWorkspace(null);
 
 						tabMain.SelectedTab.Text = new FileInfo(dlg.FileName).Name;
 						(tabMain.SelectedTab.Controls[0] as ucWorkspace).LoadWorkspace(workspace);
@@ -111,6 +92,25 @@ namespace PaJaMa.Database.Studio.Query
 			uc.LoadFromIDatabase(args);
 		}
 
+		private void addWorkspace(TabPage tabPage)
+		{
+			var uc = new ucWorkspace();
+			bool add = false;
+			if (tabPage == null)
+			{
+				tabPage = new TabPage();
+				add = true;
+			}
+			tabPage.Text = "Workspace " + (tabMain.TabPages.Count + 1).ToString();
+			uc.Dock = DockStyle.Fill;
+			tabPage.Controls.Add(uc);
+			if (add)
+			{
+				tabMain.TabPages.Add(tabPage);
+				tabMain.SelectedTab = tabPage;
+			}
+		}
+
 		private void copyToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (tabMain.SelectedTab != null)
@@ -118,6 +118,16 @@ namespace PaJaMa.Database.Studio.Query
 				var workSpace = tabMain.SelectedTab.Controls[0] as ucWorkspace;
 				workSpace.CopyWorkspace(true);
 			}
+		}
+
+		private void tabMain_TabClosing(object sender, WinControls.TabEventArgs e)
+		{
+			(e.TabPage.Controls[0] as ucWorkspace).Disconnect();
+		}
+
+		private void tabMain_TabAdding(object sender, WinControls.TabEventArgs e)
+		{
+			addWorkspace(e.TabPage);
 		}
 	}
 }

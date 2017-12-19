@@ -112,6 +112,7 @@ namespace PaJaMa.Database.Studio.Query
 
 			foreach (TabPage page in tabOutputs.TabPages)
 			{
+				if (page.Text == "+") continue;
 				var uc = page.Controls[0] as ucQueryOutput;
 				uc.Disconnect();
 			}
@@ -204,17 +205,28 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private ucQueryOutput addQueryOutput(string initialDatabase)
+		private ucQueryOutput addQueryOutput(TabPage tabPage, string initialDatabase)
 		{
 			var uc = new ucQueryOutput();
 			uc.Dock = DockStyle.Fill;
 			if (!uc.Connect(_currentConnection, _dataSource, initialDatabase, chkUseDummyDA.Checked))
 				return null;
-			var tabPage = new TabPage();
+
+			bool add = false;
+			if (tabPage == null)
+			{
+				tabPage = new TabPage();
+				add = true;
+
+			}
 			tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
 			tabPage.Controls.Add(uc);
-			tabOutputs.TabPages.Add(tabPage);
-			tabOutputs.SelectedTab = tabPage;
+
+			if (add)
+			{
+				tabOutputs.TabPages.Add(tabPage);
+				tabOutputs.SelectedTab = tabPage;
+			}
 			return uc;
 		}
 
@@ -384,7 +396,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void selectToNew(int topN)
 		{
-			var uc = addQueryOutput(string.Empty);
+			var uc = addQueryOutput(null, string.Empty);
 			if (uc == null) return;
 			uc.SelectTopN(topN, treeTables.SelectedNode);
 		}
@@ -440,7 +452,7 @@ namespace PaJaMa.Database.Studio.Query
 			tabOutputs.TabPages.Clear();
 			foreach (var qry in workspace.Queries)
 			{
-				var uc = addQueryOutput(qry.Database);
+				var uc = addQueryOutput(null, qry.Database);
 				uc.txtQuery.Text = qry.Query;
 			}
 
@@ -449,19 +461,6 @@ namespace PaJaMa.Database.Studio.Query
 		public void LoadFromIDatabase(QueryEventArgs args)
 		{
 			_queryEventArgs = args;
-		}
-
-		private void btnClose_Click(object sender, EventArgs e)
-		{
-			if (tabOutputs.TabPages.Count < 1) return;
-			var uc = tabOutputs.SelectedTab.Controls[0] as ucQueryOutput;
-			uc.Disconnect();
-			tabOutputs.TabPages.Remove(tabOutputs.SelectedTab);
-		}
-
-		private void btnAdd_Click(object sender, EventArgs e)
-		{
-			addQueryOutput(_currentConnection.Database);
 		}
 
 		private void scriptCreateToolStripMenuItem_Click(object sender, EventArgs e)
@@ -477,7 +476,7 @@ namespace PaJaMa.Database.Studio.Query
 			else if (inputBox.Result == DialogResult.Cancel)
 				return;
 
-			var uc = ws.addQueryOutput(string.Empty);
+			var uc = ws.addQueryOutput(null, string.Empty);
 			if (uc == null) return;
 
 			if (treeTables.SelectedNode.Tag is Library.DatabaseObjects.Database)
@@ -510,7 +509,7 @@ namespace PaJaMa.Database.Studio.Query
 				var dlgResult = builder.ShowDialog();
 				if (dlgResult == DialogResult.OK)
 				{
-					var output = addQueryOutput(string.Empty);
+					var output = addQueryOutput(null, string.Empty);
 					output.PopulateScript(builder.GetQuery(), treeTables.SelectedNode);
 				}
 			}
@@ -518,6 +517,17 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				MessageBox.Show("Only SQL connections supported.");
 			}
+		}
+
+		private void tabOutputs_TabClosing(object sender, WinControls.TabEventArgs e)
+		{
+			var uc = e.TabPage.Controls[0] as ucQueryOutput;
+			uc.Disconnect();
+		}
+
+		private void tabOutputs_TabAdding(object sender, WinControls.TabEventArgs e)
+		{
+			addQueryOutput(e.TabPage, _currentConnection.Database);
 		}
 	}
 }

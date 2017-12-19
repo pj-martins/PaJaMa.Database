@@ -37,8 +37,6 @@
 			this.cboServer = new System.Windows.Forms.ComboBox();
 			this.btnDisconnect = new System.Windows.Forms.Button();
 			this.pnlControls = new System.Windows.Forms.Panel();
-			this.btnAdd = new System.Windows.Forms.Button();
-			this.btnClose = new System.Windows.Forms.Button();
 			this.lblConnString = new System.Windows.Forms.Label();
 			this.btnShowHideTables = new System.Windows.Forms.Button();
 			this.treeTables = new System.Windows.Forms.TreeView();
@@ -48,7 +46,7 @@
 			this.scriptCreateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.buildQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
-			this.tabOutputs = new System.Windows.Forms.TabControl();
+			this.tabOutputs = new PaJaMa.WinControls.TabControl();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -134,8 +132,6 @@
 			// 
 			// pnlControls
 			// 
-			this.pnlControls.Controls.Add(this.btnAdd);
-			this.pnlControls.Controls.Add(this.btnClose);
 			this.pnlControls.Controls.Add(this.lblConnString);
 			this.pnlControls.Controls.Add(this.btnShowHideTables);
 			this.pnlControls.Controls.Add(this.btnDisconnect);
@@ -145,28 +141,6 @@
 			this.pnlControls.Size = new System.Drawing.Size(755, 40);
 			this.pnlControls.TabIndex = 4;
 			this.pnlControls.Visible = false;
-			// 
-			// btnAdd
-			// 
-			this.btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnAdd.Location = new System.Drawing.Point(665, 8);
-			this.btnAdd.Name = "btnAdd";
-			this.btnAdd.Size = new System.Drawing.Size(36, 23);
-			this.btnAdd.TabIndex = 11;
-			this.btnAdd.Text = "+";
-			this.btnAdd.UseVisualStyleBackColor = true;
-			this.btnAdd.Click += new System.EventHandler(this.btnAdd_Click);
-			// 
-			// btnClose
-			// 
-			this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnClose.Location = new System.Drawing.Point(707, 8);
-			this.btnClose.Name = "btnClose";
-			this.btnClose.Size = new System.Drawing.Size(36, 23);
-			this.btnClose.TabIndex = 5;
-			this.btnClose.Text = "X";
-			this.btnClose.UseVisualStyleBackColor = true;
-			this.btnClose.Click += new System.EventHandler(this.btnClose_Click);
 			// 
 			// lblConnString
 			// 
@@ -258,12 +232,15 @@
 			// 
 			// tabOutputs
 			// 
+			this.tabOutputs.AllowAddRemove = true;
 			this.tabOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabOutputs.Location = new System.Drawing.Point(0, 0);
 			this.tabOutputs.Name = "tabOutputs";
 			this.tabOutputs.SelectedIndex = 0;
 			this.tabOutputs.Size = new System.Drawing.Size(589, 533);
 			this.tabOutputs.TabIndex = 0;
+			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabEventHandler(this.tabOutputs_TabClosing);
+			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
 			// ucWorkspace
 			// 
@@ -303,10 +280,8 @@
 		private System.Windows.Forms.ToolStripMenuItem selectTop1000ToolStripMenuItem;
 		private System.Windows.Forms.Label lblConnString;
 		private System.Windows.Forms.ToolStripMenuItem selectToolStripMenuItem;
-		private System.Windows.Forms.TabControl tabOutputs;
+		private PaJaMa.WinControls.TabControl tabOutputs;
 		private System.Windows.Forms.ComboBox cboServer;
-		private System.Windows.Forms.Button btnClose;
-		private System.Windows.Forms.Button btnAdd;
 		private System.Windows.Forms.ToolStripMenuItem scriptCreateToolStripMenuItem;
 		private System.Windows.Forms.CheckBox chkUseDummyDA;
 		private System.Windows.Forms.ToolStripMenuItem buildQueryToolStripMenuItem;
