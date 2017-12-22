@@ -12,6 +12,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -147,6 +148,8 @@ namespace PaJaMa.Database.Studio.Query
 			catch (Exception ex)
 			{
 				Disconnect();
+				if (ex is TargetInvocationException && ex.InnerException != null)
+					ex = ex.InnerException;
 				MessageBox.Show(ex.Message);
 				return;
 			}
