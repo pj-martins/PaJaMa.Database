@@ -99,6 +99,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		public void Disconnect()
 		{
+			tabOutputs.Visible = false;
 			if (_currentConnection != null)
 			{
 				if (_currentConnection.State == ConnectionState.Open)
@@ -111,9 +112,8 @@ namespace PaJaMa.Database.Studio.Query
 			pnlControls.Visible = false;
 			pnlConnect.Visible = true;
 
-			foreach (TabPage page in tabOutputs.TabPages)
+			foreach (var page in tabOutputs.TabPages)
 			{
-				if (page.Text == "+") continue;
 				var uc = page.Controls[0] as ucQueryOutput;
 				uc.Disconnect();
 			}
@@ -154,6 +154,7 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
+			tabOutputs.Visible = true;
 			if (tabOutputs.TabPages.Count < 1)
 			{
 				var uc = new ucQueryOutput();
@@ -161,7 +162,7 @@ namespace PaJaMa.Database.Studio.Query
 				if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
 					return;
 
-				var tabPage = new TabPage();
+				var tabPage = new WinControls.TabControl.TabPage();
 				tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
 				tabPage.Controls.Add(uc);
 				tabOutputs.TabPages.Add(tabPage);
@@ -169,7 +170,7 @@ namespace PaJaMa.Database.Studio.Query
 			}
 			else
 			{
-				foreach (TabPage page in tabOutputs.TabPages)
+				foreach (var page in tabOutputs.TabPages)
 				{
 					var uc = page.Controls[0] as ucQueryOutput;
 					if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
@@ -208,7 +209,7 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private ucQueryOutput addQueryOutput(TabPage tabPage, string initialDatabase)
+		private ucQueryOutput addQueryOutput(WinControls.TabControl.TabPage tabPage, string initialDatabase)
 		{
 			var uc = new ucQueryOutput();
 			uc.Dock = DockStyle.Fill;
@@ -218,7 +219,7 @@ namespace PaJaMa.Database.Studio.Query
 			bool add = false;
 			if (tabPage == null)
 			{
-				tabPage = new TabPage();
+				tabPage = new WinControls.TabControl.TabPage();
 				add = true;
 
 			}
@@ -437,7 +438,7 @@ namespace PaJaMa.Database.Studio.Query
 				//Database = cboDatabases.Text
 			};
 
-			foreach (TabPage page in tabOutputs.TabPages)
+			foreach (var page in tabOutputs.TabPages)
 			{
 				var uc = page.Controls[0] as ucQueryOutput;
 				ws.Queries.Add(new QueryOutput() { Query = uc.txtQuery.Text, Database = uc.cboDatabases.Text });
@@ -522,13 +523,13 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private void tabOutputs_TabClosing(object sender, WinControls.TabEventArgs e)
+		private void tabOutputs_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{
 			var uc = e.TabPage.Controls[0] as ucQueryOutput;
 			uc.Disconnect();
 		}
 
-		private void tabOutputs_TabAdding(object sender, WinControls.TabEventArgs e)
+		private void tabOutputs_TabAdding(object sender, WinControls.TabControl.TabEventArgs e)
 		{
 			addQueryOutput(e.TabPage, _currentConnection.Database);
 		}

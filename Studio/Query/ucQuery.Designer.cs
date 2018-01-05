@@ -32,7 +32,7 @@
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.tabMain = new PaJaMa.WinControls.TabControl();
+			this.tabMain = new PaJaMa.WinControls.TabControl.TabControl();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -76,11 +76,10 @@
 			this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabMain.Location = new System.Drawing.Point(0, 24);
 			this.tabMain.Name = "tabMain";
-			this.tabMain.SelectedIndex = 0;
 			this.tabMain.Size = new System.Drawing.Size(707, 520);
 			this.tabMain.TabIndex = 2;
-			this.tabMain.TabClosing += new PaJaMa.WinControls.TabEventHandler(this.tabMain_TabClosing);
-			this.tabMain.TabAdding += new PaJaMa.WinControls.TabEventHandler(this.tabMain_TabAdding);
+			this.tabMain.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabMain_TabClosing);
+			this.tabMain.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabMain_TabAdding);
 			// 
 			// ucQuery
 			// 
@@ -101,7 +100,7 @@
 		#endregion
 
 		private System.Windows.Forms.MenuStrip menuStrip1;
-		private PaJaMa.WinControls.TabControl tabMain;
+		private PaJaMa.WinControls.TabControl.TabControl tabMain;
 		private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;

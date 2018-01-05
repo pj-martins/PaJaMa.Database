@@ -29,6 +29,7 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ucWorkspace));
 			this.txtConnectionString = new System.Windows.Forms.ComboBox();
 			this.pnlConnect = new System.Windows.Forms.Panel();
 			this.chkUseDummyDA = new System.Windows.Forms.CheckBox();
@@ -46,7 +47,7 @@
 			this.scriptCreateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.buildQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
-			this.tabOutputs = new PaJaMa.WinControls.TabControl();
+			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -236,11 +237,12 @@
 			this.tabOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabOutputs.Location = new System.Drawing.Point(0, 0);
 			this.tabOutputs.Name = "tabOutputs";
-			this.tabOutputs.SelectedIndex = 0;
+			this.tabOutputs.SelectedTab = null;
 			this.tabOutputs.Size = new System.Drawing.Size(589, 533);
 			this.tabOutputs.TabIndex = 0;
-			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabEventHandler(this.tabOutputs_TabClosing);
-			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabEventHandler(this.tabOutputs_TabAdding);
+			this.tabOutputs.Visible = false;
+			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
+			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
 			// ucWorkspace
 			// 
@@ -280,7 +282,7 @@
 		private System.Windows.Forms.ToolStripMenuItem selectTop1000ToolStripMenuItem;
 		private System.Windows.Forms.Label lblConnString;
 		private System.Windows.Forms.ToolStripMenuItem selectToolStripMenuItem;
-		private PaJaMa.WinControls.TabControl tabOutputs;
+		private PaJaMa.WinControls.TabControl.TabControl tabOutputs;
 		private System.Windows.Forms.ComboBox cboServer;
 		private System.Windows.Forms.ToolStripMenuItem scriptCreateToolStripMenuItem;
 		private System.Windows.Forms.CheckBox chkUseDummyDA;

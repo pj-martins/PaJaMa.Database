@@ -84,7 +84,7 @@ namespace PaJaMa.Database.Studio.Query
 		public void LoadFromIDatabase(QueryEventArgs args)
 		{
 			var uc = new ucWorkspace();
-			var tab = new TabPage("Workspace " + (tabMain.TabPages.Count + 1).ToString());
+			var tab = new WinControls.TabControl.TabPage("Workspace " + (tabMain.TabPages.Count + 1).ToString());
 			uc.Dock = DockStyle.Fill;
 			tab.Controls.Add(uc);
 			tabMain.TabPages.Add(tab);
@@ -92,13 +92,13 @@ namespace PaJaMa.Database.Studio.Query
 			uc.LoadFromIDatabase(args);
 		}
 
-		private void addWorkspace(TabPage tabPage)
+		private void addWorkspace(WinControls.TabControl.TabPage tabPage)
 		{
 			var uc = new ucWorkspace();
 			bool add = false;
 			if (tabPage == null)
 			{
-				tabPage = new TabPage();
+				tabPage = new WinControls.TabControl.TabPage();
 				add = true;
 			}
 			tabPage.Text = "Workspace " + (tabMain.TabPages.Count + 1).ToString();
@@ -120,12 +120,12 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private void tabMain_TabClosing(object sender, WinControls.TabEventArgs e)
+		private void tabMain_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{
 			(e.TabPage.Controls[0] as ucWorkspace).Disconnect();
 		}
 
-		private void tabMain_TabAdding(object sender, WinControls.TabEventArgs e)
+		private void tabMain_TabAdding(object sender, WinControls.TabControl.TabEventArgs e)
 		{
 			addWorkspace(e.TabPage);
 		}
