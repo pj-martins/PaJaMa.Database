@@ -233,7 +233,8 @@
 			// 
 			// tabOutputs
 			// 
-			this.tabOutputs.AllowAddRemove = true;
+			this.tabOutputs.AllowAdd = true;
+			this.tabOutputs.AllowRemove = true;
 			this.tabOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabOutputs.Location = new System.Drawing.Point(0, 0);
 			this.tabOutputs.Name = "tabOutputs";

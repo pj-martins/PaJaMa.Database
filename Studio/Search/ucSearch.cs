@@ -24,6 +24,7 @@ namespace PaJaMa.Database.Studio.Search
 		{
 			InitializeComponent();
 
+			if (DesignMode) return;
 
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 			if (settings.SearchConnectionStrings == null)

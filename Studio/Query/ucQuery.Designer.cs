@@ -72,7 +72,8 @@
 			// 
 			// tabMain
 			// 
-			this.tabMain.AllowAddRemove = true;
+			this.tabMain.AllowAdd = true;
+			this.tabMain.AllowRemove = true;
 			this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabMain.Location = new System.Drawing.Point(0, 24);
 			this.tabMain.Name = "tabMain";
