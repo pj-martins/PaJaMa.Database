@@ -230,6 +230,7 @@ left join sys.server_principals sp on sp.sid = dp.sid
 					_columnTypes.Add(new ColumnType("varbinary", DataType.VarBinary, "0"));
 					_columnTypes.Add(new ColumnType("xml", DataType.Xml, "''"));
 					_columnTypes.Add(new ColumnType("text", DataType.Text, "''") { IsFixedSize = true });
+					_columnTypes.Add(new ColumnType("image", DataType.Text, "''") { IsFixedSize = true });
 					// TODO: not supported
 					_columnTypes.Add(new ColumnType("text", DataType.Json, "''") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("ntext", DataType.Text, "''") { IsFixedSize = true });
