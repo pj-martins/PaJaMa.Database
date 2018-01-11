@@ -85,6 +85,7 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			var uc = new ucWorkspace();
 			var tab = new WinControls.TabControl.TabPage("Workspace " + (tabMain.TabPages.Count + 1).ToString());
+			uc.ParentTabControl = tabMain;
 			uc.Dock = DockStyle.Fill;
 			tab.Controls.Add(uc);
 			tabMain.TabPages.Add(tab);
@@ -102,6 +103,7 @@ namespace PaJaMa.Database.Studio.Query
 				add = true;
 			}
 			tabPage.Text = "Workspace " + (tabMain.TabPages.Count + 1).ToString();
+			uc.ParentTabControl = tabMain;
 			uc.Dock = DockStyle.Fill;
 			tabPage.Controls.Add(uc);
 			if (add)

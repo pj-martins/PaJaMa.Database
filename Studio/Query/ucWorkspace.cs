@@ -24,6 +24,8 @@ namespace PaJaMa.Database.Studio.Query
 	{
 		const string NONE = "__NONE__";
 
+		public WinControls.TabControl.TabControl ParentTabControl { get; set; }
+
 		private DbConnection _currentConnection;
 		private string _initialConnString;
 		private Type _initialDbType;
@@ -415,8 +417,9 @@ namespace PaJaMa.Database.Studio.Query
 			uc._initialDbType = cboServer.SelectedItem as Type;
 			//if (andText)
 			//	uc.txtQuery.Text = txtQuery.Text;
-			var tabMain = this.Parent.Parent as TabControl;
-			var tab = new TabPage("Workspace " + (tabMain.TabPages.Count + 1).ToString());
+			var tabMain = this.ParentTabControl;
+			uc.ParentTabControl = this.ParentTabControl;
+			var tab = new WinControls.TabControl.TabPage("Workspace " + (tabMain.TabPages.Count + 1).ToString());
 			uc.Dock = DockStyle.Fill;
 			tab.Controls.Add(uc);
 			tabMain.TabPages.Add(tab);
