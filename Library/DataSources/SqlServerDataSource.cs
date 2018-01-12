@@ -20,10 +20,7 @@ namespace PaJaMa.Database.Library.DataSources
 		public override string DefaultSchemaName => "dbo";
 
 		#region SQLS
-		internal override string SchemaSQL => @"select distinct TABLE_SCHEMA as SchemaName, p.name as SchemaOwner 
-from INFORMATION_SCHEMA.TABLES t
-join sys.schemas s on s.name = t.TABLE_SCHEMA
-join sys.database_principals p on p.principal_id = s.principal_id";
+		internal override string SchemaSQL => @"select SCHEMA_NAME as SchemaName, SCHEMA_OWNER as SchemaOwner from INFORMATION_SCHEMA.SCHEMATA";
 
 		internal override string RoutineSynonymSQL => @"select ROUTINE_SCHEMA as SchemaName, ROUTINE_NAME as Name, ROUTINE_TYPE as Type, Definition = OBJECT_DEFINITION(OBJECT_ID(ROUTINE_SCHEMA + '.' + ROUTINE_NAME)) 
 					from INFORMATION_SCHEMA.ROUTINES
@@ -277,11 +274,11 @@ left join sys.server_principals sp on sp.sid = dp.sid
 		internal override string GetForeignKeyCreateScript(ForeignKey foreignKey)
 		{
 			var createString = string.Format(@"
-ALTER TABLE {0} WITH {7} CHECK ADD CONSTRAINT {1} FOREIGN KEY({2})
+ALTER TABLE {0} WITH {7}CHECK ADD CONSTRAINT {1} FOREIGN KEY({2})
 REFERENCES {3} ({4})
 ON DELETE {5}
 ON UPDATE {6}
-;
+
 ",
 	foreignKey.ChildTable.GetObjectNameWithSchema(this),
 	foreignKey.GetQueryObjectName(this),

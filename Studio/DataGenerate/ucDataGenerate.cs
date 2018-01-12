@@ -3,6 +3,7 @@ using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Workspaces.Generate;
 using PaJaMa.Database.Studio.Classes;
 using PaJaMa.Database.Studio.DataGenerate.Content;
+using PaJaMa.WinControls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -87,9 +88,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 				_generatorHelper = new GeneratorHelper(typeof(SqlConnection), connString, worker);
 				_generatorHelper.Prompt += delegate (object s3, DialogEventArgs e3)
 				{
-					var dlgResult = MessageBox.Show(e3.Message, "Error", MessageBoxButtons.YesNo);
-					if (dlgResult != DialogResult.Yes)
-						e3.Result = YesYesToAllNo.No;
+					e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error", ScrollableMessageBoxButtons.YesNo);
 				};
 			};
 
@@ -191,9 +190,9 @@ namespace PaJaMa.Database.Studio.DataGenerate
 				changes.Add("...");
 			}
 
-			if (MessageBox.Show(string.Format("{0} - {1} will be populated:\r\n\r\n{2}\r\n\r\nContinue?", _generatorHelper.DataSource.DataSourceName,
+			if (ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be populated:\r\n\r\n{2}\r\n\r\nContinue?", _generatorHelper.DataSource.DataSourceName,
 					_generatorHelper.DataSource.CurrentDatabase.DatabaseName,
-				string.Join("\r\n", changes.ToArray())), "Proceed", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
+				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.YesNo) != Common.DialogResult.Yes)
 				return;
 
 
@@ -399,7 +398,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		{
 			using (var dlg = new dlgAddNRows())
 			{
-				if (dlg.ShowDialog() == DialogResult.OK)
+				if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 				{
 					foreach (var row in gridTables.SelectedRows.OfType<DataGridViewRow>())
 					{

@@ -136,11 +136,11 @@ namespace PaJaMa.Database.Library.Helpers
 								Prompt(this, args);
 								switch (args.Result)
 								{
-									case Common.YesYesToAllNo.No:
+									case DialogResult.No:
 										return false;
-									case Common.YesYesToAllNo.Yes:
+									case DialogResult.Yes:
 										break;
-									case Common.YesYesToAllNo.YesToAll:
+									case DialogResult.YesToAll:
 										ignorePrompt = true;
 										break;
 								}
@@ -170,12 +170,12 @@ namespace PaJaMa.Database.Library.Helpers
 								Prompt(this, args);
 								switch (args.Result)
 								{
-									case Common.YesYesToAllNo.No:
+									case DialogResult.No:
 										return false;
-									case Common.YesYesToAllNo.YesToAll:
+									case DialogResult.YesToAll:
 										ignorePrompt = true;
 										break;
-									case Common.YesYesToAllNo.Yes:
+									case DialogResult.Yes:
 										break;
 								}
 							}

@@ -4,6 +4,7 @@ using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Synchronization;
 using PaJaMa.Database.Library.Workspaces.Compare;
 using PaJaMa.Database.Studio.Classes;
+using PaJaMa.WinControls;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -90,8 +91,7 @@ namespace PaJaMa.Database.Studio.Compare
 					_compareHelper = new CompareHelper(fromDataSource, toDataSource, worker);
 					_compareHelper.Prompt += delegate (object s3, Common.DialogEventArgs e3)
 					{
-						var dlgResult = MessageBox.Show(e3.Message, "Error!");
-						e3.Result = Common.YesYesToAllNo.No;
+						e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error!");
 						//switch (dlgResult)
 						//{
 						//	case WinControls.YesNoMessageDialogResult.No:
@@ -319,7 +319,7 @@ namespace PaJaMa.Database.Studio.Compare
 
 			if (sb.Length > 0)
 			{
-				MessageBox.Show(sb.ToString(), "Dependencies");
+				ScrollableMessageBox.Show(sb.ToString(), "Dependencies");
 				return;
 			}
 
@@ -351,15 +351,9 @@ namespace PaJaMa.Database.Studio.Compare
 						objSpaces.Select(t => t.SourceObject + " - " + t.SourceObject.ObjectType)
 					).ToList();
 
-			if (changes.Count() > 15)
-			{
-				changes = changes.Take(15).ToList();
-				changes.Add("...");
-			}
-
-			if (MessageBox.Show(string.Format("{0} - {1} will be changed:\r\n\r\n{2}\r\n\r\nContinue?", _compareHelper.ToDataSource.DataSourceName,
+			if (ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be changed, continue?:\r\n \r\n{2}", _compareHelper.ToDataSource.DataSourceName,
 					_compareHelper.ToDataSource.CurrentDatabase.DatabaseName,
-				string.Join("\r\n", changes.ToArray())), "Proceed", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
+				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.YesNo) != Common.DialogResult.Yes)
 				return;
 
 

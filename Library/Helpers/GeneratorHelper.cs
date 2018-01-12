@@ -179,7 +179,7 @@ namespace PaJaMa.Database.Library.Helpers
 						{
 							var args = new DialogEventArgs("Failed to generate data for " + ws.Table.TableName + ": " + ex.Message + ". Continue?");
 							Prompt(this, args);
-							if (args.Result == YesYesToAllNo.No)
+							if (args.Result == DialogResult.No)
 							{
 								trans.Rollback();
 								return false;
