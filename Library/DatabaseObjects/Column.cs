@@ -80,7 +80,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public override string ToString()
 		{
-			return this.DataType.ToString();
+			return this.CreateTypeName;
 		}
 	}
 

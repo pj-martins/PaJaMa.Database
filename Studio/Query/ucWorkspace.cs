@@ -4,6 +4,7 @@ using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Synchronization;
 using PaJaMa.Database.Library.Workspaces;
 using PaJaMa.Database.Studio.Classes;
+using PaJaMa.Database.Studio.Query.QueryBuilder;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -433,6 +434,10 @@ namespace PaJaMa.Database.Studio.Query
 			var selectedNode = treeTables.SelectedNode;
 			selectTop1000ToolStripMenuItem.Enabled = selectToolStripMenuItem.Enabled = selectedNode != null &&
 				selectedNode.Tag != null && (selectedNode.Tag is Table || selectedNode.Tag is Library.DatabaseObjects.View);
+
+			newForeignKeyToolStripMenuItem.Visible = selectedNode.Tag is Table || selectedNode.Tag is Column;
+			newColumnToolStripMenuItem.Visible = selectedNode.Tag is Table;
+			deleteToolStripMenuItem.Visible = selectedNode.Tag is DatabaseObjectBase;
 		}
 
 
@@ -600,10 +605,14 @@ namespace PaJaMa.Database.Studio.Query
 				switch (schemaNode.SchemaNodeType)
 				{
 					case SchemaNodeType.Tables:
+						schemaNode.Schema.Tables.Clear();
+						treeTables.SelectedNode.Nodes.Clear();
 						schemaNode.Schema.Database.PopulateTables(schemaNode.Schema);
 						refreshTableNodes(schemaNode.Schema, treeTables.SelectedNode);
 						break;
 					case SchemaNodeType.Views:
+						schemaNode.Schema.Views.Clear();
+						treeTables.SelectedNode.Nodes.Clear();
 						schemaNode.Schema.Database.PopulateViews(schemaNode.Schema);
 						refreshViewNodes(schemaNode.Schema, treeTables.SelectedNode);
 						break;
@@ -615,6 +624,56 @@ namespace PaJaMa.Database.Studio.Query
 				db.Schemas.Clear();
 				refreshSchemaNodes(treeTables.SelectedNode);
 			}
+		}
+
+		private void newForeignKeyToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var tag = treeTables.SelectedNode.Tag;
+			if (tag is Table || tag is Column)
+			{
+				var table = tag is Table ? tag as Table : (tag as Column).Table;
+				var col = tag is Column ? tag as Column : null;
+
+				using (var frm = new frmForeignKey())
+				{
+					frm.Tables = table.Schema.Tables;
+					frm.ChildTable = table;
+					if (col != null)
+						frm.ChildColumn = col;
+					if (frm.ShowDialog() == DialogResult.OK)
+					{
+						var uc = addQueryOutput(null, table.Database.DatabaseName);
+						uc.txtQuery.Text = frm.GetScript();
+					}
+				}
+			}
+		}
+
+		private void newColumnToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var tag = treeTables.SelectedNode.Tag;
+			if (tag is Table)
+			{
+				var table = tag as Table;
+				using (var frm = new frmColumn())
+				{
+					frm.Tables = table.Schema.Tables;
+					frm.Table = table;
+					if (frm.ShowDialog() == DialogResult.OK)
+					{
+						var uc = addQueryOutput(null, table.Database.DatabaseName);
+						uc.txtQuery.Text = frm.GetScript();
+					}
+				}
+			}
+		}
+
+		private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var tag = treeTables.SelectedNode.Tag as DatabaseObjectBase;
+			var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
+			var uc = addQueryOutput(null, tag.Database.DatabaseName);
+			uc.txtQuery.Text = syncItem.GetRawDropText();
 		}
 	}
 }

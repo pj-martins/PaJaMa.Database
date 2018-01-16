@@ -52,7 +52,7 @@ where type = 'table'
 		protected override Type connectionType => typeof(SQLiteConnection);
 
 		private List<ColumnType> _columnTypes;
-		internal override List<ColumnType> ColumnTypes
+		public override List<ColumnType> ColumnTypes
 		{
 			get
 			{

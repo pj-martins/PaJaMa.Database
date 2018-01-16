@@ -221,6 +221,18 @@
     <Compile Include="Monitor\ucMonitor.Designer.cs">
       <DependentUpon>ucMonitor.cs</DependentUpon>
     </Compile>
+    <Compile Include="Query\QueryBuilder\frmColumn.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmColumn.Designer.cs">
+      <DependentUpon>frmColumn.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmForeignKey.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmForeignKey.Designer.cs">
+      <DependentUpon>frmForeignKey.cs</DependentUpon>
+    </Compile>
     <Compile Include="Query\QueryBuilder\frmQueryBuilder.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -323,6 +335,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Monitor\ucMonitor.resx">
       <DependentUpon>ucMonitor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\QueryBuilder\frmColumn.resx">
+      <DependentUpon>frmColumn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\QueryBuilder\frmForeignKey.resx">
+      <DependentUpon>frmForeignKey.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Query\QueryBuilder\frmQueryBuilder.resx">
       <DependentUpon>frmQueryBuilder.cs</DependentUpon>

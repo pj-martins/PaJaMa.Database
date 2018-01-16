@@ -48,6 +48,9 @@
 			this.splitMain = new System.Windows.Forms.SplitContainer();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
 			this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.newForeignKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.newColumnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -181,9 +184,12 @@
             this.selectTop1000ToolStripMenuItem,
             this.scriptCreateToolStripMenuItem,
             this.buildQueryToolStripMenuItem,
-            this.refreshToolStripMenuItem});
+            this.refreshToolStripMenuItem,
+            this.newForeignKeyToolStripMenuItem,
+            this.newColumnToolStripMenuItem,
+            this.deleteToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(156, 136);
+			this.mnuTree.Size = new System.Drawing.Size(164, 202);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
@@ -253,6 +259,27 @@
 			this.refreshToolStripMenuItem.Text = "&Refresh";
 			this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
 			// 
+			// newForeignKeyToolStripMenuItem
+			// 
+			this.newForeignKeyToolStripMenuItem.Name = "newForeignKeyToolStripMenuItem";
+			this.newForeignKeyToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newForeignKeyToolStripMenuItem.Text = "New &Foreign Key";
+			this.newForeignKeyToolStripMenuItem.Click += new System.EventHandler(this.newForeignKeyToolStripMenuItem_Click);
+			// 
+			// newColumnToolStripMenuItem
+			// 
+			this.newColumnToolStripMenuItem.Name = "newColumnToolStripMenuItem";
+			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newColumnToolStripMenuItem.Text = "New C&olumn";
+			this.newColumnToolStripMenuItem.Click += new System.EventHandler(this.newColumnToolStripMenuItem_Click);
+			// 
+			// deleteToolStripMenuItem
+			// 
+			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.deleteToolStripMenuItem.Text = "&Delete";
+			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+			// 
 			// ucWorkspace
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -297,6 +324,9 @@
 		private System.Windows.Forms.CheckBox chkUseDummyDA;
 		private System.Windows.Forms.ToolStripMenuItem buildQueryToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem newForeignKeyToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem newColumnToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
 	}
 }
 

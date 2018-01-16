@@ -187,7 +187,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 		protected override Type connectionType => typeof(NpgsqlConnection);
 
 		private List<ColumnType> _columnTypes;
-		internal override List<ColumnType> ColumnTypes
+		public override List<ColumnType> ColumnTypes
 		{
 			get
 			{

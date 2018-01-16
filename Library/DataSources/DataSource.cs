@@ -21,6 +21,7 @@ namespace PaJaMa.Database.Library.DataSources
 		public string ConnectionString { get; private set; }
 		public abstract string DefaultSchemaName { get; }
 		public abstract string GetConvertedObjectName(string objectName);
+		public abstract List<ColumnType> ColumnTypes { get; }
 
 		protected abstract Type connectionType { get; }
 
@@ -43,8 +44,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal virtual string ExtensionSQL => "";
 		internal virtual List<string> SystemSchemaNames => new List<string>();
 		internal abstract string DatabaseSQL { get; }
-		internal abstract List<ColumnType> ColumnTypes { get; }
-
+		
 		internal virtual bool MatchConstraintsByColumns => false;
 		internal virtual bool ForeignKeyDropsWithColumns => false;
 		internal virtual bool BypassKeyConstraints => false;

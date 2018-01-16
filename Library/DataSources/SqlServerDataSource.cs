@@ -202,7 +202,7 @@ left join sys.server_principals sp on sp.sid = dp.sid
 		protected override Type connectionType => typeof(SqlConnection);
 
 		private List<ColumnType> _columnTypes;
-		internal override List<ColumnType> ColumnTypes
+		public override List<ColumnType> ColumnTypes
 		{
 			get
 			{
