@@ -94,6 +94,23 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 					populateObjects<Table>(cmd, string.Format(qry, this.DataSource.TableSQL), true, null);
 					if (!DataSource.PopulateColumns(this, cmd, true, null))
 						populateObjects<Column>(cmd, string.Format(qry, this.DataSource.ColumnSQL), true, null);
+
+					if (schema.Tables.Count > 0)
+					{
+						qry = $"select * from ({{0}}) z where ChildTableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+
+						if (!DataSource.PopulateForeignKeys(this, cmd, true, null))
+							populateObjects<ForeignKey>(cmd, string.Format(qry, this.DataSource.ForeignKeySQL), true, null);
+
+						qry = $"select * from ({{0}}) z where TableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+
+						if (!DataSource.PopulateKeyConstraints(this, cmd, true, null))
+							populateObjects<KeyConstraint>(cmd, string.Format(qry, this.DataSource.KeyConstraintSQL), true, null);
+						if (!DataSource.PopulateIndexes(this, cmd, true, null))
+							populateObjects<Index>(cmd, string.Format(qry, this.DataSource.IndexSQL), true, null);
+						populateObjects<DefaultConstraint>(cmd, string.Format(qry, this.DataSource.DefaultConstraintSQL), true, null);
+						populateObjects<Trigger>(cmd, string.Format(qry, this.DataSource.TriggerSQL), true, null);
+					}
 				}
 				conn.Close();
 			}

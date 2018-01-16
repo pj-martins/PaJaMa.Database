@@ -29,7 +29,6 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ucWorkspace));
 			this.txtConnectionString = new System.Windows.Forms.ComboBox();
 			this.pnlConnect = new System.Windows.Forms.Panel();
 			this.chkUseDummyDA = new System.Windows.Forms.CheckBox();
@@ -48,6 +47,7 @@
 			this.buildQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
+			this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -180,9 +180,10 @@
             this.selectToolStripMenuItem,
             this.selectTop1000ToolStripMenuItem,
             this.scriptCreateToolStripMenuItem,
-            this.buildQueryToolStripMenuItem});
+            this.buildQueryToolStripMenuItem,
+            this.refreshToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(156, 92);
+			this.mnuTree.Size = new System.Drawing.Size(156, 136);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
@@ -245,6 +246,13 @@
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
+			// refreshToolStripMenuItem
+			// 
+			this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
+			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.refreshToolStripMenuItem.Text = "&Refresh";
+			this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
+			// 
 			// ucWorkspace
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -288,6 +296,7 @@
 		private System.Windows.Forms.ToolStripMenuItem scriptCreateToolStripMenuItem;
 		private System.Windows.Forms.CheckBox chkUseDummyDA;
 		private System.Windows.Forms.ToolStripMenuItem buildQueryToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem refreshToolStripMenuItem;
 	}
 }
 

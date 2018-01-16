@@ -211,13 +211,13 @@ left join sys.server_principals sp on sp.sid = dp.sid
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, "(newid())", new Map("newid", "(newid())")));
 					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
-                    _columnTypes.Add(new ColumnType("datetime2", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
-                    _columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("datetime2", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", new Map("now", "(getdate())")));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, "''"));
-                    _columnTypes.Add(new ColumnType("nvarchar", DataType.VaryingChar, "''"));
-                    _columnTypes.Add(new ColumnType("char", DataType.Char, "''"));
-                    _columnTypes.Add(new ColumnType("nchar", DataType.Char, "''"));
-                    _columnTypes.Add(new ColumnType("int", DataType.Integer, "((0))"));
+					_columnTypes.Add(new ColumnType("nvarchar", DataType.VaryingChar, "''"));
+					_columnTypes.Add(new ColumnType("char", DataType.Char, "''"));
+					_columnTypes.Add(new ColumnType("nchar", DataType.Char, "''"));
+					_columnTypes.Add(new ColumnType("int", DataType.Integer, "((0))"));
 					_columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "((0))"));
 					_columnTypes.Add(new ColumnType("tinyint", DataType.SmallInteger, "0"));
 					_columnTypes.Add(new ColumnType("real", DataType.Real, "((0))"));
@@ -245,6 +245,21 @@ left join sys.server_principals sp on sp.sid = dp.sid
 				return _columnTypes;
 			}
 		}
+
+		internal override List<string> SystemSchemaNames => new List<string>() {
+"guest",
+"INFORMATION_SCHEMA",
+"sys",
+"db_owner",
+"db_accessadmin",
+"db_securityadmin",
+"db_ddladmin",
+"db_backupoperator",
+"db_datareader",
+"db_datawriter",
+"db_denydatareader",
+"db_denydatawriter"
+		};
 
 		public override string GetConvertedObjectName(string objectName)
 		{

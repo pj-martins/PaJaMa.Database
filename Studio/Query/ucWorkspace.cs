@@ -313,6 +313,93 @@ namespace PaJaMa.Database.Studio.Query
 			splitMain.Panel1Collapsed = !splitMain.Panel1Collapsed;
 		}
 
+		private void refreshTableNodes(Schema schema, TreeNode parentNode)
+		{
+			foreach (var table in from t in schema.Tables
+								  orderby t.TableName
+								  select t)
+			{
+				var node2 = parentNode.Nodes.Add(table.TableName);
+				node2.Tag = table;
+				var node3 = node2.Nodes.Add("Columns");
+				foreach (var column in table.Columns)
+				{
+					var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
+								+ (column.IsNullable ? "null" : "not null") + ")");
+					node4.Tag = column;
+				}
+
+				node3 = node2.Nodes.Add("Keys");
+				foreach (var key in table.KeyConstraints)
+				{
+					var node4 = node3.Nodes.Add(key.ConstraintName);
+					node4.Tag = key;
+				}
+
+				node3 = node2.Nodes.Add("ForeignKeys");
+				foreach (var key in table.ForeignKeys)
+				{
+					var node4 = node3.Nodes.Add(key.ForeignKeyName);
+					node4.Tag = key;
+				}
+
+				node3 = node2.Nodes.Add("Constraints");
+				foreach (var key in table.DefaultConstraints)
+				{
+					var node4 = node3.Nodes.Add(key.ConstraintName);
+					node4.Tag = key;
+				}
+
+				node3 = node2.Nodes.Add("Triggers");
+				foreach (var key in table.Triggers)
+				{
+					var node4 = node3.Nodes.Add(key.TriggerName);
+					node4.Tag = key;
+				}
+
+				node3 = node2.Nodes.Add("Indexes");
+				foreach (var key in table.Indexes)
+				{
+					var node4 = node3.Nodes.Add(key.IndexName);
+					node4.Tag = key;
+				}
+			}
+		}
+
+		private void refreshViewNodes(Schema schema, TreeNode parentNode)
+		{
+			foreach (var view in from v in schema.Views
+								 orderby v.ViewName
+								 select v)
+			{
+				var node2 = parentNode.Nodes.Add(view.ViewName);
+				node2.Tag = view;
+				var node3 = node2.Nodes.Add("Columns");
+				foreach (var column in view.Columns)
+				{
+					var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
+								+ (column.IsNullable ? "null" : "not null") + ")");
+					node4.Tag = column;
+				}
+			}
+		}
+
+		private void refreshSchemaNodes(TreeNode node)
+		{
+			var db = node.Tag as Library.DatabaseObjects.Database;
+			db.PopulateSchemas(false);
+			foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
+			{
+				var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);
+				foreach (var val in Common.EnumHelper.GetEnumValues<SchemaNodeType>())
+				{
+					var node3 = node2.Nodes.Add(val.ToString());
+					node3.Nodes.Add(NONE);
+					node3.Tag = new SchemaNode(schema, val);
+				}
+			}
+		}
+
 		private void treeTables_BeforeExpand(object sender, TreeViewCancelEventArgs e)
 		{
 			var node = e.Node;
@@ -321,55 +408,21 @@ namespace PaJaMa.Database.Studio.Query
 				node.Nodes.Clear();
 				if (node.Tag is Library.DatabaseObjects.Database)
 				{
-					var db = node.Tag as Library.DatabaseObjects.Database;
-					db.PopulateSchemas(true);
-					foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
-					{
-						var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);
-
-						var node3 = node2.Nodes.Add("Tables");
-						node3.Nodes.Add(NONE);
-						node3.Tag = schema;
-
-						node3 = node2.Nodes.Add("Views");
-						node3.Nodes.Add(NONE);
-						node3.Tag = schema;
-					}
+					refreshSchemaNodes(node);
 				}
-				else if (node.Tag is Schema)
+				else if (node.Tag is SchemaNode)
 				{
-					var schema = node.Tag as Schema;
-					if (node.Text == "Tables")
+					var schemaNode = node.Tag as SchemaNode;
+					switch (schemaNode.SchemaNodeType)
 					{
-						schema.Database.PopulateTables(schema);
-						foreach (var table in from t in schema.Tables
-											  orderby t.TableName
-											  select t)
-						{
-							var node4 = node.Nodes.Add(table.TableName);
-							foreach (var column in table.Columns)
-							{
-								node4.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
-											+ (column.IsNullable ? "null" : "not null") + ")");
-							}
-							node4.Tag = table;
-						}
-					}
-					else if (node.Text == "Views")
-					{
-						schema.Database.PopulateViews(schema);
-						foreach (var view in from v in schema.Views
-											 orderby v.ViewName
-											 select v)
-						{
-							var node4 = node.Nodes.Add(view.ViewName);
-							foreach (var column in view.Columns)
-							{
-								node4.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
-											+ (column.IsNullable ? "null" : "not null") + ")");
-							}
-							node4.Tag = view;
-						}
+						case SchemaNodeType.Tables:
+							schemaNode.Schema.Database.PopulateTables(schemaNode.Schema);
+							refreshTableNodes(schemaNode.Schema, node);
+							break;
+						case SchemaNodeType.Views:
+							schemaNode.Schema.Database.PopulateViews(schemaNode.Schema);
+							refreshViewNodes(schemaNode.Schema, node);
+							break;
 					}
 				}
 			}
@@ -535,6 +588,33 @@ namespace PaJaMa.Database.Studio.Query
 		private void tabOutputs_TabAdding(object sender, WinControls.TabControl.TabEventArgs e)
 		{
 			addQueryOutput(e.TabPage, _currentConnection.Database);
+		}
+
+		private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var tag = treeTables.SelectedNode.Tag;
+			var isExpanded = treeTables.SelectedNode.IsExpanded;
+			if (tag is SchemaNode)
+			{
+				var schemaNode = tag as SchemaNode;
+				switch (schemaNode.SchemaNodeType)
+				{
+					case SchemaNodeType.Tables:
+						schemaNode.Schema.Database.PopulateTables(schemaNode.Schema);
+						refreshTableNodes(schemaNode.Schema, treeTables.SelectedNode);
+						break;
+					case SchemaNodeType.Views:
+						schemaNode.Schema.Database.PopulateViews(schemaNode.Schema);
+						refreshViewNodes(schemaNode.Schema, treeTables.SelectedNode);
+						break;
+				}
+			}
+			else if (treeTables.SelectedNode.Tag is Library.DatabaseObjects.Database)
+			{
+				var db = treeTables.SelectedNode.Tag as Library.DatabaseObjects.Database;
+				db.Schemas.Clear();
+				refreshSchemaNodes(treeTables.SelectedNode);
+			}
 		}
 	}
 }

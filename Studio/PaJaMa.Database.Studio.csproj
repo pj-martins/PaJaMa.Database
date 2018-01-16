@@ -278,6 +278,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Query\WorkspaceNode.cs" />
     <Compile Include="Search\ucSearch.cs">
       <SubType>UserControl</SubType>
     </Compile>
