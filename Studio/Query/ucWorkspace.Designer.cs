@@ -175,6 +175,7 @@
 			this.treeTables.TabIndex = 8;
 			this.treeTables.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeTables_BeforeExpand);
 			this.treeTables.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeTables_NodeMouseClick);
+			this.treeTables.KeyUp += new System.Windows.Forms.KeyEventHandler(this.treeTables_KeyUp);
 			// 
 			// mnuTree
 			// 
@@ -189,7 +190,7 @@
             this.newColumnToolStripMenuItem,
             this.deleteToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(164, 202);
+			this.mnuTree.Size = new System.Drawing.Size(164, 180);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem

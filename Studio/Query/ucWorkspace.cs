@@ -378,8 +378,7 @@ namespace PaJaMa.Database.Studio.Query
 				var node3 = node2.Nodes.Add("Columns");
 				foreach (var column in view.Columns)
 				{
-					var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
-								+ (column.IsNullable ? "null" : "not null") + ")");
+					var node4 = node3.Nodes.Add(column.ColumnName);
 					node4.Tag = column;
 				}
 			}
@@ -671,9 +670,18 @@ namespace PaJaMa.Database.Studio.Query
 		private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			var tag = treeTables.SelectedNode.Tag as DatabaseObjectBase;
-			var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
-			var uc = addQueryOutput(null, tag.Database.DatabaseName);
-			uc.txtQuery.Text = syncItem.GetRawDropText();
+			if (tag != null)
+			{
+				var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
+				var uc = addQueryOutput(null, tag.Database.DatabaseName);
+				uc.txtQuery.Text = syncItem.GetRawDropText();
+			}
+		}
+
+		private void treeTables_KeyUp(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Delete)
+				deleteToolStripMenuItem_Click(sender, e);
 		}
 	}
 }
