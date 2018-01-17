@@ -233,6 +233,12 @@
     <Compile Include="Query\QueryBuilder\frmForeignKey.Designer.cs">
       <DependentUpon>frmForeignKey.cs</DependentUpon>
     </Compile>
+    <Compile Include="Query\QueryBuilder\frmNewTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmNewTable.Designer.cs">
+      <DependentUpon>frmNewTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Query\QueryBuilder\frmQueryBuilder.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -341,6 +347,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Query\QueryBuilder\frmForeignKey.resx">
       <DependentUpon>frmForeignKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\QueryBuilder\frmNewTable.resx">
+      <DependentUpon>frmNewTable.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Query\QueryBuilder\frmQueryBuilder.resx">
       <DependentUpon>frmQueryBuilder.cs</DependentUpon>

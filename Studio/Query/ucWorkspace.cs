@@ -391,6 +391,7 @@ namespace PaJaMa.Database.Studio.Query
 			foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
 			{
 				var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);
+				node2.Tag = schema;
 				foreach (var val in Common.EnumHelper.GetEnumValues<SchemaNodeType>())
 				{
 					var node3 = node2.Nodes.Add(val.ToString());
@@ -437,6 +438,8 @@ namespace PaJaMa.Database.Studio.Query
 			newForeignKeyToolStripMenuItem.Visible = selectedNode.Tag is Table || selectedNode.Tag is Column;
 			newColumnToolStripMenuItem.Visible = selectedNode.Tag is Table;
 			deleteToolStripMenuItem.Visible = selectedNode.Tag is DatabaseObjectBase;
+			newTableToolStripMenuItem.Visible = selectedNode.Tag is Library.DatabaseObjects.Schema ||
+				(selectedNode.Tag is SchemaNode && (selectedNode.Tag as SchemaNode).SchemaNodeType == SchemaNodeType.Tables);
 		}
 
 
@@ -682,6 +685,20 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			if (e.KeyCode == Keys.Delete)
 				deleteToolStripMenuItem_Click(sender, e);
+		}
+
+		private void newTableToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			using (var frm = new frmNewTable())
+			{
+				var tag = treeTables.SelectedNode.Tag;
+				frm.Schema = tag is Schema ? (tag as Schema) : (tag as SchemaNode).Schema;
+				if (frm.ShowDialog() == DialogResult.OK)
+				{
+					var uc = addQueryOutput(null, frm.Schema.Database.DatabaseName);
+					uc.txtQuery.Text = frm.GetScript();
+				}
+			}
 		}
 	}
 }

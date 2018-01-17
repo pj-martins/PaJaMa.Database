@@ -45,12 +45,13 @@
 			this.selectTop1000ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.scriptCreateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.buildQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.splitMain = new System.Windows.Forms.SplitContainer();
-			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
 			this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newForeignKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newColumnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.splitMain = new System.Windows.Forms.SplitContainer();
+			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
+			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -188,38 +189,67 @@
             this.refreshToolStripMenuItem,
             this.newForeignKeyToolStripMenuItem,
             this.newColumnToolStripMenuItem,
-            this.deleteToolStripMenuItem});
+            this.deleteToolStripMenuItem,
+            this.newTableToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(164, 180);
+			this.mnuTree.Size = new System.Drawing.Size(164, 224);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
 			// 
 			this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-			this.selectToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.selectToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.selectToolStripMenuItem.Text = "Select";
 			this.selectToolStripMenuItem.Click += new System.EventHandler(this.selectToolStripMenuItem_Click);
 			// 
 			// selectTop1000ToolStripMenuItem
 			// 
 			this.selectTop1000ToolStripMenuItem.Name = "selectTop1000ToolStripMenuItem";
-			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.selectTop1000ToolStripMenuItem.Text = "Select Top 1000";
 			this.selectTop1000ToolStripMenuItem.Click += new System.EventHandler(this.selectTop1000ToolStripMenuItem_Click);
 			// 
 			// scriptCreateToolStripMenuItem
 			// 
 			this.scriptCreateToolStripMenuItem.Name = "scriptCreateToolStripMenuItem";
-			this.scriptCreateToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.scriptCreateToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.scriptCreateToolStripMenuItem.Text = "Script &Create";
 			this.scriptCreateToolStripMenuItem.Click += new System.EventHandler(this.scriptCreateToolStripMenuItem_Click);
 			// 
 			// buildQueryToolStripMenuItem
 			// 
 			this.buildQueryToolStripMenuItem.Name = "buildQueryToolStripMenuItem";
-			this.buildQueryToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.buildQueryToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.buildQueryToolStripMenuItem.Text = "&Build Query";
 			this.buildQueryToolStripMenuItem.Click += new System.EventHandler(this.buildQueryToolStripMenuItem_Click);
+			// 
+			// refreshToolStripMenuItem
+			// 
+			this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
+			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.refreshToolStripMenuItem.Text = "&Refresh";
+			this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
+			// 
+			// newForeignKeyToolStripMenuItem
+			// 
+			this.newForeignKeyToolStripMenuItem.Name = "newForeignKeyToolStripMenuItem";
+			this.newForeignKeyToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newForeignKeyToolStripMenuItem.Text = "New &Foreign Key";
+			this.newForeignKeyToolStripMenuItem.Click += new System.EventHandler(this.newForeignKeyToolStripMenuItem_Click);
+			// 
+			// newColumnToolStripMenuItem
+			// 
+			this.newColumnToolStripMenuItem.Name = "newColumnToolStripMenuItem";
+			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newColumnToolStripMenuItem.Text = "New C&olumn";
+			this.newColumnToolStripMenuItem.Click += new System.EventHandler(this.newColumnToolStripMenuItem_Click);
+			// 
+			// deleteToolStripMenuItem
+			// 
+			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.deleteToolStripMenuItem.Text = "&Delete";
+			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
 			// 
 			// splitMain
 			// 
@@ -253,33 +283,12 @@
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
-			// refreshToolStripMenuItem
+			// newTableToolStripMenuItem
 			// 
-			this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
-			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
-			this.refreshToolStripMenuItem.Text = "&Refresh";
-			this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
-			// 
-			// newForeignKeyToolStripMenuItem
-			// 
-			this.newForeignKeyToolStripMenuItem.Name = "newForeignKeyToolStripMenuItem";
-			this.newForeignKeyToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
-			this.newForeignKeyToolStripMenuItem.Text = "New &Foreign Key";
-			this.newForeignKeyToolStripMenuItem.Click += new System.EventHandler(this.newForeignKeyToolStripMenuItem_Click);
-			// 
-			// newColumnToolStripMenuItem
-			// 
-			this.newColumnToolStripMenuItem.Name = "newColumnToolStripMenuItem";
-			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
-			this.newColumnToolStripMenuItem.Text = "New C&olumn";
-			this.newColumnToolStripMenuItem.Click += new System.EventHandler(this.newColumnToolStripMenuItem_Click);
-			// 
-			// deleteToolStripMenuItem
-			// 
-			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
-			this.deleteToolStripMenuItem.Text = "&Delete";
-			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+			this.newTableToolStripMenuItem.Name = "newTableToolStripMenuItem";
+			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newTableToolStripMenuItem.Text = "New &Table";
+			this.newTableToolStripMenuItem.Click += new System.EventHandler(this.newTableToolStripMenuItem_Click);
 			// 
 			// ucWorkspace
 			// 
@@ -328,6 +337,7 @@
 		private System.Windows.Forms.ToolStripMenuItem newForeignKeyToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newColumnToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem newTableToolStripMenuItem;
 	}
 }
 
