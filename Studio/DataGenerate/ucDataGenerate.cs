@@ -86,7 +86,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 
                 // TODO:
 				_generatorHelper = new GeneratorHelper(typeof(SqlConnection), connString, worker);
-				_generatorHelper.Prompt += delegate (object s3, DialogEventArgs e3)
+				_generatorHelper.Prompt += delegate (object s3, PromptEventArgs e3)
 				{
 					e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error", ScrollableMessageBoxButtons.YesNo);
 				};
@@ -192,7 +192,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 
 			if (ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be populated:\r\n\r\n{2}\r\n\r\nContinue?", _generatorHelper.DataSource.DataSourceName,
 					_generatorHelper.DataSource.CurrentDatabase.DatabaseName,
-				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.YesNo) != Common.DialogResult.Yes)
+				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.YesNo) != Common.PromptResult.Yes)
 				return;
 
 

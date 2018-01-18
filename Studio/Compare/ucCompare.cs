@@ -89,7 +89,7 @@ namespace PaJaMa.Database.Studio.Compare
 					}
 
 					_compareHelper = new CompareHelper(fromDataSource, toDataSource, worker);
-					_compareHelper.Prompt += delegate (object s3, Common.DialogEventArgs e3)
+					_compareHelper.Prompt += delegate (object s3, Common.PromptEventArgs e3)
 					{
 						e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error!");
 						//switch (dlgResult)
@@ -353,7 +353,7 @@ namespace PaJaMa.Database.Studio.Compare
 
 			if (ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be changed, continue?:\r\n \r\n{2}", _compareHelper.ToDataSource.DataSourceName,
 					_compareHelper.ToDataSource.CurrentDatabase.DatabaseName,
-				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.YesNo) != Common.DialogResult.Yes)
+				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.YesNo) != Common.PromptResult.Yes)
 				return;
 
 
@@ -394,7 +394,7 @@ namespace PaJaMa.Database.Studio.Compare
 		private bool synchronize(BackgroundWorker worker, List<WorkspaceBase> workspaces, List<TableWorkspace> dataSpaces, List<TableWorkspace> truncDelete)
 		{
 			var sync = new SynchronizationHelper();
-			sync.DisplayMessage += delegate (object sender, Common.DialogEventArgs e)
+			sync.DisplayMessage += delegate (object sender, Common.PromptEventArgs e)
 			{
 				MessageBox.Show("Failed to synchronize: " + e.Message);
 			};

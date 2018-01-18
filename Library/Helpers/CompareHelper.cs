@@ -17,7 +17,7 @@ namespace PaJaMa.Database.Library.Helpers
 {
 	public class CompareHelper
 	{
-		public event DialogEventHandler Prompt;
+		public event PromptEventHandler Prompt;
 
 		public bool IsFrom2000OrLess { get; private set; }
 		public bool IsTo2000OrLess { get; private set; }
@@ -131,16 +131,16 @@ namespace PaJaMa.Database.Library.Helpers
 						{
 							if (!ignorePrompt)
 							{
-								var args = new DialogEventArgs("Failed to synchronize \"" + (kvp.Key is WorkspaceWithSourceBase && kvp.Key.TargetObject == null ? (kvp.Key as WorkspaceWithSourceBase).SourceObject.ObjectName : kvp.Key.TargetObject.ObjectName)
+								var args = new PromptEventArgs("Failed to synchronize \"" + (kvp.Key is WorkspaceWithSourceBase && kvp.Key.TargetObject == null ? (kvp.Key as WorkspaceWithSourceBase).SourceObject.ObjectName : kvp.Key.TargetObject.ObjectName)
 									+ "\": " + ex.Message + "\r\n\r\n" + script + ".");
 								Prompt(this, args);
 								switch (args.Result)
 								{
-									case DialogResult.No:
+									case PromptResult.No:
 										return false;
-									case DialogResult.Yes:
+									case PromptResult.Yes:
 										break;
-									case DialogResult.YesToAll:
+									case PromptResult.YesToAll:
 										ignorePrompt = true;
 										break;
 								}
@@ -165,17 +165,17 @@ namespace PaJaMa.Database.Library.Helpers
 						{
 							if (!ignorePrompt)
 							{
-								var args = new DialogEventArgs("Failed to synchronize \"" + key.ToString()
+								var args = new PromptEventArgs("Failed to synchronize \"" + key.ToString()
 									+ "\": " + ex.Message + ".");
 								Prompt(this, args);
 								switch (args.Result)
 								{
-									case DialogResult.No:
+									case PromptResult.No:
 										return false;
-									case DialogResult.YesToAll:
+									case PromptResult.YesToAll:
 										ignorePrompt = true;
 										break;
-									case DialogResult.Yes:
+									case PromptResult.Yes:
 										break;
 								}
 							}

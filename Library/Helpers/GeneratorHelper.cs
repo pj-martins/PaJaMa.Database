@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.Helpers
 {
 	public class GeneratorHelper
 	{
-		public event DialogEventHandler Prompt;
+		public event PromptEventHandler Prompt;
 
 		public DataSource DataSource { get; set; }
 		public GeneratorHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
@@ -177,9 +177,9 @@ namespace PaJaMa.Database.Library.Helpers
 						}
 						catch (Exception ex)
 						{
-							var args = new DialogEventArgs("Failed to generate data for " + ws.Table.TableName + ": " + ex.Message + ". Continue?");
+							var args = new PromptEventArgs("Failed to generate data for " + ws.Table.TableName + ": " + ex.Message + ". Continue?");
 							Prompt(this, args);
-							if (args.Result == DialogResult.No)
+							if (args.Result == PromptResult.No)
 							{
 								trans.Rollback();
 								return false;

@@ -195,7 +195,7 @@ namespace PaJaMa.Database.Studio.Compare
 		private void btnSync_Click(object sender, EventArgs e)
 		{
 			if (WinControls.ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be changed:\r\n\r\nContinue?", SelectedWorkspace.TargetTable.Schema.Database.DataSource,
-					SelectedWorkspace.TargetTable.Schema.Database.DatabaseName), "Proceed", WinControls.ScrollableMessageBoxButtons.YesNo) != Common.DialogResult.Yes)
+					SelectedWorkspace.TargetTable.Schema.Database.DatabaseName), "Proceed", WinControls.ScrollableMessageBoxButtons.YesNo) != Common.PromptResult.Yes)
 				return;
 
 			List<DataRow> drs = new List<DataRow>();

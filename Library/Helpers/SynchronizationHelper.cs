@@ -13,7 +13,7 @@ namespace PaJaMa.Database.Library.Helpers
 {
 	public class SynchronizationHelper
 	{
-		public event DialogEventHandler DisplayMessage;
+		public event PromptEventHandler DisplayMessage;
 
 		public bool Synchronize(CompareHelper compareHelper, List<WorkspaceBase> workspaces, List<TableWorkspace> dataSpaces, 
 			List<TableWorkspace> truncDelete, BackgroundWorker worker)
@@ -80,7 +80,7 @@ namespace PaJaMa.Database.Library.Helpers
 							table.TargetTable.ResetForeignKeys();
 						}
 
-						DisplayMessage(this, new DialogEventArgs(ex.Message));
+						DisplayMessage(this, new PromptEventArgs(ex.Message));
 						return false;
 					}
 
@@ -92,7 +92,7 @@ namespace PaJaMa.Database.Library.Helpers
 						}
 						catch (Exception ex)
 						{
-							DisplayMessage(this, new DialogEventArgs(ex.Message));
+							DisplayMessage(this, new PromptEventArgs(ex.Message));
 							trans.Rollback();
 							return false;
 						}
@@ -107,7 +107,7 @@ namespace PaJaMa.Database.Library.Helpers
 						}
 						catch (Exception ex)
 						{
-							DisplayMessage(this, new DialogEventArgs(ex.Message));
+							DisplayMessage(this, new PromptEventArgs(ex.Message));
 						}
 
 						if (!success)
@@ -147,7 +147,7 @@ namespace PaJaMa.Database.Library.Helpers
 								table.TargetTable.ResetForeignKeys();
 							}
 
-							DisplayMessage(this, new DialogEventArgs(ex.Message));
+							DisplayMessage(this, new PromptEventArgs(ex.Message));
 							return false;
 						}
 					}
