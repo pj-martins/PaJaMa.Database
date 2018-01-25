@@ -80,7 +80,7 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			try
 			{
-                _server = server;
+				_server = server;
 				if (useDummyDA)
 					_currentConnection = connection;
 				else
@@ -161,8 +161,8 @@ namespace PaJaMa.Database.Studio.Query
 				{
 					if (_currentConnection.State != ConnectionState.Open)
 						_currentConnection.Open();
-					
-						_currentCommand.CommandText = part;
+
+					_currentCommand.CommandText = part;
 					_currentCommand.CommandTimeout = 600000;
 					using (var dr = _currentCommand.ExecuteReader())
 					{
@@ -410,21 +410,21 @@ namespace PaJaMa.Database.Studio.Query
 			}
 
 			string objName = string.Empty;
-            var dbName = string.Empty;
+			var dbName = string.Empty;
 			string[] columns = null;
 
 			if (selectedNode.Tag is Library.DatabaseObjects.View)
 			{
 				var view = selectedNode.Tag as Library.DatabaseObjects.View;
-                dbName = view.Database.DataSource.GetConvertedObjectName(view.Database.DatabaseName);
-                objName = view.GetObjectNameWithSchema(view.Database.DataSource);
+				dbName = view.Database.DataSource.GetConvertedObjectName(view.Database.DatabaseName);
+				objName = view.GetObjectNameWithSchema(view.Database.DataSource);
 				columns = view.Columns.Select(c => c.ColumnName).ToArray();
 			}
 			else
 			{
 				var tbl = selectedNode.Tag as Table;
-                dbName = tbl.Database.DataSource.GetConvertedObjectName(tbl.Database.DatabaseName);
-                objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
+				dbName = tbl.Database.DataSource.GetConvertedObjectName(tbl.Database.DatabaseName);
+				objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
 				columns = tbl.Columns.Select(c => c.ColumnName).ToArray();
 			}
 
@@ -433,17 +433,25 @@ namespace PaJaMa.Database.Studio.Query
 				_server.GetColumnSelectList(columns),
 				objName,
 				topN != null ? _server.GetPostTopN(topN.Value) : string.Empty,
-                string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
+				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 		}
 
 		public void PopulateScript(string script, TreeNode selectedNode)
 		{
-			if (selectedNode.Parent != null && _currentConnection.Database != selectedNode.Parent.Parent.Text)
-				_currentConnection.ChangeDatabase(selectedNode.Parent.Parent.Text);
+			var dbName = string.Empty;
+			if (selectedNode.Tag is DatabaseObjectBase)
+			{
+				dbName = (selectedNode.Tag as DatabaseObjectBase).Database.DatabaseName;
+			}
+			else if (selectedNode.Parent != null && _currentConnection.Database != selectedNode.Parent.Parent.Text)
+			{
+				dbName = selectedNode.Parent.Parent.Text;
+			}
 
-			if (_currentConnection.GetType().Equals(typeof(SqlConnection)))
-				txtQuery.Text = script;
+			_currentConnection.ChangeDatabase(dbName);
+
+			txtQuery.Text = script;
 		}
 
 		private void btnStop_Click(object sender, EventArgs e)

@@ -131,7 +131,7 @@ namespace PaJaMa.Database.Library.Helpers
 						{
 							if (!ignorePrompt)
 							{
-								var args = new PromptEventArgs("Failed to synchronize \"" + (kvp.Key is WorkspaceWithSourceBase && kvp.Key.TargetObject == null ? (kvp.Key as WorkspaceWithSourceBase).SourceObject.ObjectName : kvp.Key.TargetObject.ObjectName)
+								var args = new PromptEventArgs("Failed to synchronize. Continue? \"" + (kvp.Key is WorkspaceWithSourceBase && kvp.Key.TargetObject == null ? (kvp.Key as WorkspaceWithSourceBase).SourceObject.ObjectName : kvp.Key.TargetObject.ObjectName)
 									+ "\": " + ex.Message + "\r\n\r\n" + script + ".");
 								Prompt(this, args);
 								switch (args.Result)

@@ -318,12 +318,12 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 		internal override string GetColumnDefault(Column column, string columnDefault)
 		{
 			var def = base.GetColumnDefault(column, columnDefault);
-			if (!string.IsNullOrEmpty(columnDefault) && columnDefault.Contains("::"))
-			{
-				var match = Regex.Match(columnDefault, "'(.*)'::.*");
-				if (match.Success)
-					def = match.Groups[1].Value;
-			}
+			//if (!string.IsNullOrEmpty(columnDefault) && columnDefault.Contains("::"))
+			//{
+			//	var match = Regex.Match(columnDefault, "'(.*)'::.*");
+			//	if (match.Success)
+			//		def = match.Groups[1].Value;
+			//}
 			return def;
 		}
 

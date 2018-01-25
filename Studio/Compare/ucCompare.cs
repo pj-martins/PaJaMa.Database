@@ -91,7 +91,7 @@ namespace PaJaMa.Database.Studio.Compare
 					_compareHelper = new CompareHelper(fromDataSource, toDataSource, worker);
 					_compareHelper.Prompt += delegate (object s3, Common.PromptEventArgs e3)
 					{
-						e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error!");
+						e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error!", ScrollableMessageBoxButtons.YesToAll, ScrollableMessageBoxButtons.Yes, ScrollableMessageBoxButtons.No);
 						//switch (dlgResult)
 						//{
 						//	case WinControls.YesNoMessageDialogResult.No:
@@ -353,7 +353,7 @@ namespace PaJaMa.Database.Studio.Compare
 
 			if (ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be changed, continue?:\r\n \r\n{2}", _compareHelper.ToDataSource.DataSourceName,
 					_compareHelper.ToDataSource.CurrentDatabase.DatabaseName,
-				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.YesNo) != Common.PromptResult.Yes)
+				string.Join("\r\n", changes.ToArray())), "Proceed", ScrollableMessageBoxButtons.Yes, ScrollableMessageBoxButtons.No) != Common.PromptResult.Yes)
 				return;
 
 
