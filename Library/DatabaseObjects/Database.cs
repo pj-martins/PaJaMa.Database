@@ -40,7 +40,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			{
 				query = $@"select * from (
 				{query}
-				) z where SchemaName not in ({string.Join(", ", DataSource.SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
+				) z where SchemaName is null or SchemaName not in ({string.Join(", ", DataSource.SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
 			}
 			cmd.CommandText = query;
 			using (var rdr = cmd.ExecuteReader())
@@ -129,7 +129,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			}
 		}
 
-		public void PopulateChildren(bool condensed, bool includeSystemSchemas, BackgroundWorker worker)
+		public void PopulateChildren(bool condensed, BackgroundWorker worker)
 		{
 			ExtendedProperties = new List<ExtendedProperty>();
 			Schemas = new List<Schema>();
@@ -143,8 +143,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			{
 				using (var cmd = conn.CreateCommand())
 				{
-					populateObjects<ExtendedProperty>(cmd, this.DataSource.ExtendedPropertySQL, includeSystemSchemas, worker);
-					populateObjects<DatabasePrincipal>(cmd, this.DataSource.DatabasePrincipalSQL, includeSystemSchemas, worker);
+					populateObjects<ExtendedProperty>(cmd, this.DataSource.ExtendedPropertySQL, false, worker);
+					populateObjects<DatabasePrincipal>(cmd, this.DataSource.DatabasePrincipalSQL, true, worker);
 					foreach (var dp in this.Principals)
 					{
 						if (dp.OwningPrincipalID > 0)
@@ -156,26 +156,26 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 					if (string.IsNullOrEmpty(this.DataSource.SchemaSQL))
 						Schemas.Add(new Schema(this) { SchemaName = "" });
 					else
-						populateObjects<Schema>(cmd, this.DataSource.SchemaSQL, includeSystemSchemas, worker);
+						populateObjects<Schema>(cmd, this.DataSource.SchemaSQL, false, worker);
 
-					populateObjects<RoutineSynonym>(cmd, this.DataSource.RoutineSynonymSQL, includeSystemSchemas, worker);
-					populateObjects<View>(cmd, this.DataSource.ViewSQL, includeSystemSchemas, worker);
+					populateObjects<RoutineSynonym>(cmd, this.DataSource.RoutineSynonymSQL, false, worker);
+					populateObjects<View>(cmd, this.DataSource.ViewSQL, false, worker);
 					if (!condensed)
 					{
-						populateObjects<ServerLogin>(cmd, this.DataSource.ServerLoginSQL, includeSystemSchemas, worker);
-						populateObjects<Permission>(cmd, this.DataSource.PermissionSQL, includeSystemSchemas, worker);
-						populateObjects<Credential>(cmd, this.DataSource.CredentialSQL, includeSystemSchemas, worker);
+						populateObjects<ServerLogin>(cmd, this.DataSource.ServerLoginSQL, true, worker);
+						populateObjects<Permission>(cmd, this.DataSource.PermissionSQL, true, worker);
+						populateObjects<Credential>(cmd, this.DataSource.CredentialSQL, true, worker);
 					}
-					populateObjects<Table>(cmd, this.DataSource.TableSQL, includeSystemSchemas, worker);
-					if (!DataSource.PopulateColumns(this, cmd, includeSystemSchemas, worker)) populateObjects<Column>(cmd, this.DataSource.ColumnSQL, includeSystemSchemas, worker);
-					if (!DataSource.PopulateForeignKeys(this, cmd, includeSystemSchemas, worker)) populateObjects<ForeignKey>(cmd, this.DataSource.ForeignKeySQL, includeSystemSchemas, worker);
-					if (!DataSource.PopulateKeyConstraints(this, cmd, includeSystemSchemas, worker)) populateObjects<KeyConstraint>(cmd, this.DataSource.KeyConstraintSQL, includeSystemSchemas, worker);
-					if (!DataSource.PopulateIndexes(this, cmd, includeSystemSchemas, worker))
-						populateObjects<Index>(cmd, this.DataSource.IndexSQL, includeSystemSchemas, worker);
-					populateObjects<DefaultConstraint>(cmd, this.DataSource.DefaultConstraintSQL, includeSystemSchemas, worker);
-					populateObjects<Trigger>(cmd, this.DataSource.TriggerSQL, includeSystemSchemas, worker);
-					populateObjects<Sequence>(cmd, this.DataSource.SequenceSQL, includeSystemSchemas, worker);
-					populateObjects<Extension>(cmd, this.DataSource.ExtensionSQL, includeSystemSchemas, worker);
+					populateObjects<Table>(cmd, this.DataSource.TableSQL, false, worker);
+					if (!DataSource.PopulateColumns(this, cmd, false, worker)) populateObjects<Column>(cmd, this.DataSource.ColumnSQL, false, worker);
+					if (!DataSource.PopulateForeignKeys(this, cmd, false, worker)) populateObjects<ForeignKey>(cmd, this.DataSource.ForeignKeySQL, false, worker);
+					if (!DataSource.PopulateKeyConstraints(this, cmd, false, worker)) populateObjects<KeyConstraint>(cmd, this.DataSource.KeyConstraintSQL, false, worker);
+					if (!DataSource.PopulateIndexes(this, cmd, false, worker))
+						populateObjects<Index>(cmd, this.DataSource.IndexSQL, false, worker);
+					populateObjects<DefaultConstraint>(cmd, this.DataSource.DefaultConstraintSQL, false, worker);
+					populateObjects<Trigger>(cmd, this.DataSource.TriggerSQL, false, worker);
+					populateObjects<Sequence>(cmd, this.DataSource.SequenceSQL, false, worker);
+					populateObjects<Extension>(cmd, this.DataSource.ExtensionSQL, false, worker);
 				}
 				conn.Close();
 			}

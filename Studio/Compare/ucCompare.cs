@@ -274,6 +274,7 @@ namespace PaJaMa.Database.Studio.Compare
 			}
 
 			gridTables.DataSource = new BindingList<TableWorkspace>(lst.Workspaces.OrderBy(w => w.SourceTable.ToString()).ToList());
+            this.Invalidate();
 		}
 
 		private void refreshObjects(List<DropWorkspace> dropWorkspaces)

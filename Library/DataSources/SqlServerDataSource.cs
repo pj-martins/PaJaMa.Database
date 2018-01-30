@@ -44,6 +44,7 @@ join sys.schemas s on s.schema_id = v.schema_id";
 
 		internal override string ServerLoginSQL => @"
 select p.name as LoginName, 
+    p.name as SchemaName,
 	p.default_database_name as DefaultDatabaseName,
 	p.default_language_name as DefaultLanguageName,
 	replace(p.type_desc, '_', '') as LoginType,
@@ -58,7 +59,7 @@ where p.type in ('U', 'S') and p.name not in ('INFORMATION_SCHEMA', 'sys', 'gues
 
 		internal override string PermissionSQL => @"select s.name as SchemaName, s2.name as PermissionSchemaName,
 					coalesce(s2.name, o.name) as PermissionName, state_desc as GrantType, 
-					permission_name as PermissionType, class_desc as PermissionType, pr.Name as PrincipalName
+					permission_name as PermissionType, pr.Name as PrincipalName
 				from sys.database_permissions p
 				join sys.database_principals pr on pr.principal_id = p.grantee_principal_id
 				join sys.objects o on o.object_id = p.major_id
@@ -91,7 +92,8 @@ select fk.name as ForeignKeyName, ct.name as ChildTableName, cc.name as ChildCol
 	replace(delete_referential_action_desc, '_', ' ') as DeleteRule,
 	case when is_not_trusted = 1 then 'NO' else '' end as WithCheck,
 	ps.name as ParentTableSchema,
-	cs.name as ChildTableSchema
+	cs.name as ChildTableSchema,
+    ps.name as SchemaName
 from sys.foreign_keys fk
 join sys.tables ct on ct.object_id = fk.parent_object_id
 join sys.tables pt on pt.object_id = fk.referenced_object_id
@@ -191,7 +193,7 @@ where ep.class_desc = 'SCHEMA'
 
 		internal override string DatabasePrincipalSQL => @"
 select dp.principal_id as PrincipalID, dp.owning_principal_id as OwningPrincipalID, dp.name as PrincipalName, replace(dp.type_desc, '_', '') as PrincipalType, 
-	dp.default_schema_name as DefaultSchema, sp.name as LoginName, dp.is_fixed_role as IsFixedRole
+	dp.default_schema_name as DefaultSchema, dp.default_schema_name as SchemaName, sp.name as LoginName, dp.is_fixed_role as IsFixedRole
 from sys.database_principals dp
 left join sys.server_principals sp on sp.sid = dp.sid
 -- where dp.name not in ('INFORMATION_SCHEMA', 'sys', 'guest', 'public')

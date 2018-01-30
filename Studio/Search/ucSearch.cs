@@ -220,7 +220,7 @@ namespace PaJaMa.Database.Studio.Search
 				var worker = new BackgroundWorker();
 				worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 				{
-					_searchHelper.DataSource.CurrentDatabase.PopulateChildren(true, false, worker);
+					_searchHelper.DataSource.CurrentDatabase.PopulateChildren(true, worker);
 				};
 				WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
 			}

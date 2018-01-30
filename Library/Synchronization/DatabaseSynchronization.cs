@@ -15,7 +15,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public DatabaseSynchronization(DatabaseObjects.Database database)
 		{
 			_database = database;
-			_database.PopulateChildren(false, false, null);
+			_database.PopulateChildren(false, null);
 		}
 
 		private List<Table> getSortedTables()
