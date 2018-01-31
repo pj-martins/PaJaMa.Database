@@ -60,7 +60,7 @@ where t.xtype = 'U'";
 select fk.CONSTRAINT_NAME as ForeignKeyName, fk.TABLE_NAME as ChildTableName, cc.COLUMN_NAME as ChildColumnName, 
 	tc.TABLE_NAME as ParentTableName, tcc.COLUMN_NAME as ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
 	WithCheck = case when OBJECTPROPERTY(OBJECT_ID(QUOTENAME(c.CONSTRAINT_SCHEMA) + '.' + QUOTENAME(c.CONSTRAINT_NAME)), 'CnstIsNotTrusted') = 1 then 'NO' else '' end,
-	tc.CONSTRAINT_SCHEMA as ParentTableSchema, fk.CONSTRAINT_SCHEMA as ChildTableSchema
+	tc.CONSTRAINT_SCHEMA as ParentTableSchema, fk.CONSTRAINT_SCHEMA as ChildTableSchema, tc.CONSTRAINT_SCHEMA as SchemaName
 from INFORMATION_SCHEMA.TABLE_CONSTRAINTS fk
 join INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c on c.CONSTRAINT_NAME = fk.CONSTRAINT_NAME
 	and c.CONSTRAINT_SCHEMA = fk.CONSTRAINT_SCHEMA
@@ -70,7 +70,6 @@ join INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc on tc.CONSTRAINT_NAME = c.UNIQUE_CO
 join INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE tcc on tcc.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
 	and tcc.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
 WHERE fk.CONSTRAINT_TYPE = 'FOREIGN KEY'
-order by ForeignKeyName, ChildTableName
 ";
 
 		internal override string KeyConstraintSQL => @"

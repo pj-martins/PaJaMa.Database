@@ -88,7 +88,15 @@ namespace PaJaMa.Database.Studio.Compare
 						return;
 					}
 
-					_compareHelper = new CompareHelper(fromDataSource, toDataSource, worker);
+					try
+					{
+						_compareHelper = new CompareHelper(fromDataSource, toDataSource, worker);
+					}
+					catch (Exception ex)
+					{
+						exception = ex;
+					}
+
 					_compareHelper.Prompt += delegate (object s3, Common.PromptEventArgs e3)
 					{
 						e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error!", ScrollableMessageBoxButtons.YesToAll, ScrollableMessageBoxButtons.Yes, ScrollableMessageBoxButtons.No);
