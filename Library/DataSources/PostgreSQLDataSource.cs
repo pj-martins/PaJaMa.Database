@@ -264,6 +264,16 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			return sb.ToString();
 		}
 
+		internal override string GetIdentityInsertOn(Table table)
+		{
+			return string.Empty;
+		}
+
+		internal override string GetIdentityInsertOff(Table table)
+		{
+			return string.Empty;
+		}
+
 		internal override string GetPreTableCreateScript(Table table)
 		{
 			var schema = table.Schema.SchemaName == table.Database.DataSource.DefaultSchemaName ?

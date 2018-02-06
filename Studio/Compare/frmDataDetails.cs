@@ -32,9 +32,9 @@ namespace PaJaMa.Database.Studio.Compare
 			new GridHelper().DecorateGrid(gridMain);
 
 			PaJaMa.Common.FormSettings.LoadSettings(this);
-			this.Text = SelectedWorkspace.SourceTable.TableName + ": " + SelectedWorkspace.SourceTable.Schema.Database.DataSource + " - " +
+			this.Text = SelectedWorkspace.SourceTable.TableName + ": " + SelectedWorkspace.SourceTable.Schema.Database.DataSource.DataSourceName + " - " +
 					SelectedWorkspace.SourceTable.Schema.Database.DatabaseName + " <> " +
-					SelectedWorkspace.TargetTable.Schema.Database.DataSource + " - " +
+					SelectedWorkspace.TargetTable.Schema.Database.DataSource.DataSourceName + " - " +
 					SelectedWorkspace.TargetTable.Schema.Database.DatabaseName;
 
 			cboOverrideKeyField.Items.Add("");
@@ -115,7 +115,7 @@ namespace PaJaMa.Database.Studio.Compare
 					);
 
 			var take = rows
-				.OrderBy(dr => gridMain.SortedColumn == null ? 0 : dr[gridMain.SortedColumn.DataPropertyName])
+				.OrderBy(dr => gridMain.SortedColumn == null ? "0" : (dr[gridMain.SortedColumn.DataPropertyName] ?? string.Empty).ToString())
 				.Skip((_currentPage - 1) * _pageSize)
 				.Take(_pageSize);
 
@@ -194,7 +194,7 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void btnSync_Click(object sender, EventArgs e)
 		{
-			if (WinControls.ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be changed:\r\n\r\nContinue?", SelectedWorkspace.TargetTable.Schema.Database.DataSource,
+			if (WinControls.ScrollableMessageBox.ShowDialog(string.Format("{0} - {1} will be changed:\r\n\r\nContinue?", SelectedWorkspace.TargetTable.Schema.Database.DataSource.DataSourceName,
 					SelectedWorkspace.TargetTable.Schema.Database.DatabaseName), "Proceed", WinControls.ScrollableMessageBoxButtons.Yes, WinControls.ScrollableMessageBoxButtons.No) !=
 					Common.PromptResult.Yes)
 				return;
