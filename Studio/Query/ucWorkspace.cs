@@ -117,8 +117,11 @@ namespace PaJaMa.Database.Studio.Query
 
 			foreach (var page in tabOutputs.TabPages)
 			{
-				var uc = page.Controls[0] as ucQueryOutput;
-				uc.Disconnect();
+				if (page.Controls.Count > 0)
+				{
+					var uc = page.Controls[0] as ucQueryOutput;
+					uc.Disconnect();
+				}
 			}
 
 			splitMain.Enabled = false;

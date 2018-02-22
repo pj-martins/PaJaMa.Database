@@ -200,7 +200,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, "uuid_generate_v4()", new Map("newid", "uuid_generate_v4()")));
 					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTime, "now()", dtMaps));
-					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, "now()", dtMaps));
+					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.DateTime, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("character varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
@@ -219,6 +219,8 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("bytea", DataType.Binary, "0") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "now()", dtMaps));
+					_columnTypes.Add(new ColumnType("time without time zone", DataType.TimeOnly, "now()", dtMaps));
+					_columnTypes.Add(new ColumnType("time with time zone", DataType.TimeOnly, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
 					_columnTypes.Add(new ColumnType("serial", DataType.RowVersion, ""));
 
