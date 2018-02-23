@@ -189,16 +189,19 @@ namespace PaJaMa.Database.Library.DataSources
 			return string.Format(" IDENTITY(1,{0})", column.Increment.GetValueOrDefault(1));
 		}
 
-		internal virtual string GetColumnAddAlterScript(Column column, bool add, string postScript, string defaultValue)
+		internal virtual string GetColumnAddAlterScript(Column column, Column targetColumn, string postScript, string defaultValue)
 		{
+			var colType = this.GetConvertedColumnType(column.ColumnType.DataType, true);
+			if (targetColumn != null && targetColumn.Database.DataSource.GetType() == column.Database.DataSource.GetType())
+				colType = column.ColumnType.TypeName;
 			return string.Format("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
 				   column.Table.GetObjectNameWithSchema(this),
 				   column.GetQueryObjectName(this),
-				   this.GetConvertedColumnType(column.ColumnType.DataType, true),
+				   colType,
 				   postScript,
 				   column.IsNullable ? "NULL" : "NOT NULL",
 				   defaultValue,
-				   add ? "ADD" : "ALTER COLUMN");
+				   targetColumn == null ? "ADD" : "ALTER COLUMN");
 		}
 
 		internal virtual string GetIndexCreateScript(Index index)

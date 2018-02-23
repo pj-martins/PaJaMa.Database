@@ -77,7 +77,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				if (type.GetGenericArguments().Any())
 					type = type.GetGenericArguments().First();
 
-				if (!type.IsPrimitive && !type.Equals(typeof(string)) && !type.IsSubclassOf(typeof(DatabaseObjectBase)))
+				if (type != typeof(ColumnType) && !type.IsPrimitive && !type.Equals(typeof(string)) && !type.IsSubclassOf(typeof(DatabaseObjectBase)))
 					continue;
 
 				if (propInf.HasAttribute<IgnoreAttribute>())
@@ -85,6 +85,9 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				var targetVal = propInf.GetValue(target, null);
 				var sourceVal = propInf.GetValue(DatabaseObject, null);
+
+				if (sourceVal is ColumnType) sourceVal = (sourceVal as ColumnType).CreateTypeName;
+				if (targetVal is ColumnType) targetVal = (targetVal as ColumnType).CreateTypeName;
 
 				if (targetVal is DatabaseObjectBase)
 					targetVal = (targetVal as DatabaseObjectBase).ObjectName;

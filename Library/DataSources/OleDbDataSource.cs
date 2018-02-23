@@ -45,7 +45,7 @@ namespace PaJaMa.Database.Library.DataSources
 			throw new NotImplementedException();
 		}
 
-		internal override string GetColumnAddAlterScript(Column column, bool add, string defaultValue, string postScript)
+		internal override string GetColumnAddAlterScript(Column column, Column targetColumn, string defaultValue, string postScript)
 		{
 			throw new NotImplementedException();
 		}

@@ -130,10 +130,10 @@ namespace PaJaMa.Database.Library.Synchronization
 				}
 			}
 
-			sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn == null, part2, def));
+			sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn, part2, def));
 
 			if (!string.IsNullOrEmpty(tempConstraint))
-				sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, false, part2, string.Empty));
+				sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn, part2, string.Empty));
 
 			item = new SynchronizationItem(DatabaseObject);
 			item.AddScript(2, sb.ToString());

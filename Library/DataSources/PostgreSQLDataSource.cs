@@ -239,11 +239,13 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			return string.Format(" DEFAULT NEXTVAL('{0}')", column.Table.TableName + "_" + column.ColumnName + "_seq");
 		}
 
-		internal override string GetColumnAddAlterScript(Column column, bool add, string postScript, string defaultValue)
+		internal override string GetColumnAddAlterScript(Column column, Column targetColumn, string postScript, string defaultValue)
 		{
 			var dataType = this.GetConvertedColumnType(column.ColumnType.DataType, true);
+			if (targetColumn != null && targetColumn.Database.DataSource.GetType() == column.Database.DataSource.GetType())
+				dataType = column.ColumnType.TypeName;
 			var sb = new StringBuilder();
-			if (add)
+			if (targetColumn == null)
 			{
 				sb.AppendLineFormat("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
 				   column.Table.GetObjectNameWithSchema(this),
@@ -252,7 +254,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 				   postScript,
 				   column.IsNullable ? "NULL" : "NOT NULL",
 				   defaultValue,
-				   add ? "ADD COLUMN" : "ALTER COLUMN"
+				   "ADD COLUMN"
 			   );
 			}
 			else

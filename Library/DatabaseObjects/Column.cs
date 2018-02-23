@@ -26,7 +26,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		public Table Table { get; set; }
 
-		[Ignore]
 		public ColumnType ColumnType { get; set; }
 
         public string ColumnName { get; set; }
