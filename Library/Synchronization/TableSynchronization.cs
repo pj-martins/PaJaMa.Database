@@ -42,7 +42,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 				sb.AppendLine("\t" + (firstIn ? string.Empty : ",") + string.Format("{0} {1}{2} {3} {4}",
 					TargetDatabase.DataSource.GetConvertedObjectName(col.ColumnName),
-					TargetDatabase.DataSource.GetConvertedColumnType(col.ColumnType.DataType, true),
+					TargetDatabase.DataSource.GetConvertedColumnType(col, true),
 					part2,
 					col.IsNullable ? "NULL" : "NOT NULL",
 					def));

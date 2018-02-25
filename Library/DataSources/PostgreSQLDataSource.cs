@@ -241,8 +241,8 @@ from INFORMATION_SCHEMA.SEQUENCES";
 
 		internal override string GetColumnAddAlterScript(Column column, Column targetColumn, string postScript, string defaultValue)
 		{
-			var dataType = this.GetConvertedColumnType(column.ColumnType.DataType, true);
-			if (targetColumn != null && targetColumn.Database.DataSource.GetType() == column.Database.DataSource.GetType())
+			var dataType = this.GetConvertedColumnType(column, true);
+			if (this.GetType() == column.Database.DataSource.GetType())
 				dataType = column.ColumnType.TypeName;
 			var sb = new StringBuilder();
 			if (targetColumn == null)

@@ -192,7 +192,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal virtual string GetColumnAddAlterScript(Column column, Column targetColumn, string postScript, string defaultValue)
 		{
 			var colType = this.GetConvertedColumnType(column.ColumnType.DataType, true);
-			if (targetColumn != null && targetColumn.Database.DataSource.GetType() == column.Database.DataSource.GetType())
+			if (this.GetType() == column.Database.DataSource.GetType())
 				colType = column.ColumnType.TypeName;
 			return string.Format("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
 				   column.Table.GetObjectNameWithSchema(this),
@@ -296,6 +296,14 @@ ON UPDATE {6}
 			}
 
 			return columnDefault;
+		}
+
+		internal string GetConvertedColumnType(Column column, bool forCreate)
+		{
+			if (column.Database.DataSource.GetType() == this.GetType())
+				return forCreate ? column.ColumnType.CreateTypeName : column.ColumnType.TypeName;
+
+			return GetConvertedColumnType(column.ColumnType.DataType, forCreate);
 		}
 
 		internal string GetConvertedColumnType(DataType dataType, bool forCreate)
