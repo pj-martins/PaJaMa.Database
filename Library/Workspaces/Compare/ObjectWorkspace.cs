@@ -23,8 +23,8 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		public string Source { get { return SourceObject.ToString(); } }
 		public string Target { get { return TargetObject == null ? string.Empty : TargetObject.ToString(); } }
 
-		public ObjectWorkspace(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject, bool ignoreCase) 
-            : base(sourceObject, targetDatabase, targetObject, ignoreCase)
+		public ObjectWorkspace(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject, bool ignoreCase)
+			: base(sourceObject, targetDatabase, targetObject, ignoreCase)
 		{
 		}
 
@@ -82,8 +82,8 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 
 			foreach (var def in fromObjs)
 			{
-				if (def.ObjectType == typeof(Schema).Name && (
-					!compareHelper.FromDataSource.CurrentDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))
+				if (def.ObjectType == typeof(Schema).Name && compareHelper.FromDataSource.GetType() != compareHelper.ToDataSource.GetType() &&
+					(!compareHelper.FromDataSource.CurrentDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))
 					|| !compareHelper.ToDataSource.CurrentDatabase.Schemas.Any(s => string.IsNullOrEmpty(s.SchemaName))))
 					continue;
 

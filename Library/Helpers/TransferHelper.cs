@@ -102,38 +102,44 @@ namespace PaJaMa.Database.Library.Helpers
 								}
 								else
 								{
-									var batchSize = table.TransferBatchSize == 0 ? TableWorkspace.DEFAULT_BATCH_SIZE : table.TransferBatchSize;
-									DataTable dt = new DataTable();
-									dt.Load(rdr);
-									var insertQry = $@"insert into {table.TargetTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)} 
-            ({string.Join(", ", dt.Columns.OfType<DataColumn>().Select(dc => table.TargetObject.Database.DataSource.GetConvertedObjectName(dc.ColumnName)).ToArray())}) values ";
-									cmd.CommandText = insertQry;
-									bool firstIn = true;
-									int counter = 0;
-									int rowsCopied = 0;
-									foreach (DataRow dr in dt.Rows)
+									if (rdr.HasRows)
 									{
-										rowsCopied++;
-										if (_worker.CancellationPending)
-											return false;
-										_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0} {1} of {2}",
-											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount));
-
-										cmd.CommandText += (firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
-											dt.Columns.OfType<DataColumn>().Select(dc => dr[dc] == DBNull.Value ? "NULL" : "'" + dr[dc].ToString().Replace("'", "''") + "'").ToArray()) + ")";
-										counter++;
-										firstIn = false;
-										if (counter >= batchSize)
+										List<string> columns = new List<string>();
+										for (int j = 0; j < rdr.FieldCount; j++)
 										{
-											cmd.ExecuteNonQuery();
-											cmd.CommandText = insertQry;
-											counter = 0;
-											firstIn = true;
+											columns.Add(rdr.GetName(j));
 										}
-									}
+										var batchSize = table.TransferBatchSize == 0 ? TableWorkspace.DEFAULT_BATCH_SIZE : table.TransferBatchSize;
+										var insertQry = $@"insert into {table.TargetTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)} 
+            ({string.Join(", ", columns.Select(dc => table.TargetObject.Database.DataSource.GetConvertedObjectName(dc)).ToArray())}) values ";
+										cmd.CommandText = insertQry;
+										bool firstIn = true;
+										int counter = 0;
+										int rowsCopied = 0;
+										while (rdr.Read())
+										{
+											rowsCopied++;
+											if (_worker.CancellationPending)
+												return false;
+											_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0} {1} of {2}",
+												table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount));
 
-									if (!firstIn)
-										cmd.ExecuteNonQuery();
+											cmd.CommandText += (firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
+												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("'", "''") + "'").ToArray()) + ")";
+											counter++;
+											firstIn = false;
+											if (counter >= batchSize)
+											{
+												cmd.ExecuteNonQuery();
+												cmd.CommandText = insertQry;
+												counter = 0;
+												firstIn = true;
+											}
+										}
+
+										if (!firstIn)
+											cmd.ExecuteNonQuery();
+									}
 								}
 							}
 						}
@@ -157,6 +163,26 @@ namespace PaJaMa.Database.Library.Helpers
 			}
 
 			return true;
+		}
+
+		private object getReaderValue(DbDataReader rdr, string columnName)
+		{
+			try
+			{
+				return rdr[columnName];
+			}
+			catch (Exception ex)
+			{
+				// TODO: log
+				for (int i = 0; i < rdr.FieldCount; i++)
+				{
+					if (rdr.GetName(i) == columnName)
+						return Activator.CreateInstance(rdr.GetFieldType(i));
+				}
+				
+				// shouldn't get here
+				return DBNull.Value;
+			}
 		}
 
 		private List<TableWorkspace> getSortedWorkspaces(List<TableWorkspace> workspaces)

@@ -35,7 +35,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return new List<SynchronizationItem>();
 		}
 
-		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems, 
+		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,
 			bool isForDrop, bool ignoreCase)
 		{
 			if (!isForDrop)
@@ -68,7 +68,9 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return getStandardItems(string.Format(@"CREATE SCHEMA [{0}] AUTHORIZATION [{1}]", DatabaseObject.SchemaName, DatabaseObject.SchemaOwner));
+			return getStandardItems(string.Format(@"CREATE SCHEMA {0} AUTHORIZATION {1}",
+				DatabaseObject.Database.DataSource.GetConvertedObjectName(DatabaseObject.SchemaName),
+				DatabaseObject.Database.DataSource.GetConvertedObjectName(DatabaseObject.SchemaOwner)));
 		}
 	}
 }

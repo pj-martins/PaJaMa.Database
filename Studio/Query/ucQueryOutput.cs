@@ -26,7 +26,7 @@ namespace PaJaMa.Database.Studio.Query
 		private DbCommand _currentCommand;
 		private DataSource _server;
 		private string _query;
-		private bool _somethingPrinted = false;
+		private Dictionary<int, Dictionary<int, string>> _errorDict;
 
 		public ucQueryOutput()
 		{
@@ -117,7 +117,6 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void ucQueryOutput_InfoMessage(object sender, SqlInfoMessageEventArgs e)
 		{
-			_somethingPrinted = true;
 			this.Invoke(new Action(() =>
 				{
 					txtMessages.Text += e.Message + "\r\n\r\n";
@@ -148,6 +147,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void execute()
 		{
+			_errorDict = new Dictionary<int, Dictionary<int, string>>();
 			int totalResults = 0;
 			int recordsAffected = 0;
 			var parts = _query.Split(new string[] { "\r\ngo\r\n", "\r\nGO\r\n", "\r\nGo\r\n", "\r\ngO\r\n",
@@ -262,7 +262,10 @@ namespace PaJaMa.Database.Studio.Query
 										}
 										catch (Exception ex)
 										{
-											row[j] = "ERR! " + ex.Message;
+											// TODO: log
+											if (!_errorDict.ContainsKey(i))
+												_errorDict.Add(i, new Dictionary<int, string>());
+											_errorDict[i].Add(j, "ERR! " + ex.Message);
 										}
 									}
 
@@ -358,6 +361,12 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				e.CellStyle.BackColor = Color.LightYellow;
 				e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
+			}
+
+			if (_errorDict.ContainsKey(e.RowIndex) && _errorDict[e.RowIndex].ContainsKey(e.ColumnIndex))
+			{
+				e.CellStyle.BackColor = Color.Red;
+				e.Value = _errorDict[e.RowIndex][e.ColumnIndex];
 			}
 		}
 
