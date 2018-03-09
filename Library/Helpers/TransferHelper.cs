@@ -120,7 +120,7 @@ namespace PaJaMa.Database.Library.Helpers
 											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount));
 
 										cmd.CommandText += (firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
-											dt.Columns.OfType<DataColumn>().Select(dc => dr[dc] == DBNull.Value ? "NULL" : "'" + dr[dc].ToString().Replace("'", "''") + "'").ToArray()) + ")";
+											dt.Columns.OfType<DataColumn>().Select(dc => getInsertValue(dr[dc])).ToArray()) + ")";
 										counter++;
 										firstIn = false;
 										if (counter >= batchSize)
@@ -157,6 +157,17 @@ namespace PaJaMa.Database.Library.Helpers
 			}
 
 			return true;
+		}
+
+		private string getInsertValue(object value)
+		{
+			if (value == null || value == DBNull.Value) return "NULL";
+			if (value is Array)
+			{
+				// only postgres I think
+				return "'{" + string.Join(", ", ((Array)value).OfType<object>()) + "}'";
+			}
+			return "'" + value.ToString().Replace("'", "''") + "'";
 		}
 
 		private List<TableWorkspace> getSortedWorkspaces(List<TableWorkspace> workspaces)

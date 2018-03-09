@@ -193,7 +193,7 @@ namespace PaJaMa.Database.Studio.Query
 								{
 									// int existingCount = dt.Columns.OfType<DataColumn>().Count(c => c.ColumnName == row["ColumnName"].ToString());
 									var colType = Type.GetType(row["DataType"].ToString());
-									if (colType == null || colType.Equals(typeof(byte[])))
+									if (colType == null || colType.Equals(typeof(byte[])) || colType == typeof(Array))
 										colType = typeof(string);
 									string colName = row["ColumnName"].ToString();
 									int curr = 1;
@@ -258,7 +258,19 @@ namespace PaJaMa.Database.Studio.Query
 									{
 										try
 										{
-											row[j] = dr[j] is byte[] ? Convert.ToBase64String(dr[j] as byte[]) : dr[j];
+											if (dr[j] is byte[])
+											{
+												row[j] = Convert.ToBase64String(dr[j] as byte[]);
+											}
+											else if (dr[j].GetType().IsArray)
+											{
+												List<string> stringVals = new List<string>();
+												row[j] = string.Join(",", ((Array)dr[j]).OfType<object>().Select(o => o.ToString()));
+											}
+											else
+											{
+												row[j] = dr[j];
+											}
 										}
 										catch (Exception ex)
 										{

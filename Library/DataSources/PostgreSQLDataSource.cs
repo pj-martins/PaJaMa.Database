@@ -223,6 +223,7 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					_columnTypes.Add(new ColumnType("time with time zone", DataType.TimeOnly, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
 					_columnTypes.Add(new ColumnType("serial", DataType.RowVersion, ""));
+					_columnTypes.Add(new ColumnType("ARRAY", DataType.Array, "array[]"));
 
 				}
 				return _columnTypes;

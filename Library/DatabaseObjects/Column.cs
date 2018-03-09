@@ -107,6 +107,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		TimeOnly,
 		BigInt,
 		RowVersion,
+		Array,
 	}
 
 	public class Map
