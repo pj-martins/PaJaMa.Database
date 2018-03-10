@@ -72,7 +72,7 @@ namespace PaJaMa.Database.Studio.Compare
 					}
 					catch (Exception ex)
 					{
-						exception = new Exception("Error opening source connection: " + 
+						exception = new Exception("Error opening source connection: " +
 							(ex is TargetInvocationException && ex.InnerException != null ? ex.InnerException.Message : ex.Message));
 						return;
 					}
@@ -83,7 +83,7 @@ namespace PaJaMa.Database.Studio.Compare
 					}
 					catch (Exception ex)
 					{
-						exception = new Exception("Error opening target connection: " + 
+						exception = new Exception("Error opening target connection: " +
 							(ex is TargetInvocationException && ex.InnerException != null ? ex.InnerException.Message : ex.Message));
 						return;
 					}
@@ -97,22 +97,25 @@ namespace PaJaMa.Database.Studio.Compare
 						exception = ex;
 					}
 
-					_compareHelper.Prompt += delegate (object s3, Common.PromptEventArgs e3)
+					if (_compareHelper != null)
 					{
-						e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error!", ScrollableMessageBoxButtons.YesToAll, ScrollableMessageBoxButtons.Yes, ScrollableMessageBoxButtons.No);
-						//switch (dlgResult)
-						//{
-						//	case WinControls.YesNoMessageDialogResult.No:
-						//		e3.Result = Common.YesYesToAllNo.No;
-						//		break;
-						//	case WinControls.YesNoMessageDialogResult.Yes:
-						//		e3.Result = Common.YesYesToAllNo.Yes;
-						//		break;
-						//	case WinControls.YesNoMessageDialogResult.YesToAll:
-						//		e3.Result = Common.YesYesToAllNo.YesToAll;
-						//		break;
-						//}
-					};
+						_compareHelper.Prompt += delegate (object s3, Common.PromptEventArgs e3)
+						{
+							e3.Result = ScrollableMessageBox.ShowDialog(e3.Message, "Error!", ScrollableMessageBoxButtons.YesToAll, ScrollableMessageBoxButtons.Yes, ScrollableMessageBoxButtons.No);
+							//switch (dlgResult)
+							//{
+							//	case WinControls.YesNoMessageDialogResult.No:
+							//		e3.Result = Common.YesYesToAllNo.No;
+							//		break;
+							//	case WinControls.YesNoMessageDialogResult.Yes:
+							//		e3.Result = Common.YesYesToAllNo.Yes;
+							//		break;
+							//	case WinControls.YesNoMessageDialogResult.YesToAll:
+							//		e3.Result = Common.YesYesToAllNo.YesToAll;
+							//		break;
+							//}
+						};
+					}
 				};
 
 			WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
@@ -282,7 +285,7 @@ namespace PaJaMa.Database.Studio.Compare
 			}
 
 			gridTables.DataSource = new BindingList<TableWorkspace>(lst.Workspaces.OrderBy(w => w.SourceTable.ToString()).ToList());
-            this.Invalidate();
+			this.Invalidate();
 		}
 
 		private void refreshObjects(List<DropWorkspace> dropWorkspaces)

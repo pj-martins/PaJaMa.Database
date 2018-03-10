@@ -83,7 +83,7 @@ where t.TABLE_TYPE = 'BASE TABLE'
 SELECT distinct
     tc.constraint_name as ForeignKeyName, tc.table_name as ChildTableName, kcu.column_name as ChildColumnName, 
     ccu.table_name AS ParentTableName, ccu.column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
-	tc.CONSTRAINT_SCHEMA as ParentTableSchema, tc.CONSTRAINT_SCHEMA as ChildTableSchema, tc.CONSTRAINT_SCHEMA as SchemaName
+	ccu.TABLE_SCHEMA as ParentTableSchema, tc.TABLE_SCHEMA as ChildTableSchema, tc.CONSTRAINT_SCHEMA as SchemaName
 FROM 
     information_schema.table_constraints AS tc 
 JOIN information_schema.key_column_usage AS kcu
