@@ -171,7 +171,6 @@ namespace PaJaMa.Database.Library.Helpers
 			try
 			{
 				var value = rdr[columnName];
-				if (value == null || value == DBNull.Value) return "NULL";
 				if (value is Array)
 				{
 					// only postgres I think
