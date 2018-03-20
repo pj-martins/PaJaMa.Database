@@ -81,35 +81,41 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			}
 		}
 
-		public void PopulateTables(Schema schema)
+		public void PopulateTables(Schema[] schemas)
 		{
 			using (var conn = OpenConnection())
 			{
 				using (var cmd = conn.CreateCommand())
 				{
-					var qry = "select * from ({0}) z ";
-					if (!string.IsNullOrEmpty(schema.SchemaName))
-						qry += "where SchemaName = '" + schema.SchemaName + "'";
-
-					populateObjects<Table>(cmd, string.Format(qry, this.DataSource.TableSQL), true, null);
-					if (!DataSource.PopulateColumns(this, cmd, true, null))
-						populateObjects<Column>(cmd, string.Format(qry, this.DataSource.ColumnSQL), true, null);
-
-					if (schema.Tables.Count > 0)
+					foreach (var schema in schemas)
 					{
-						qry = $"select * from ({{0}}) z where ChildTableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+						var qry = "select * from ({0}) z ";
+						if (!string.IsNullOrEmpty(schema.SchemaName))
+							qry += "where SchemaName = '" + schema.SchemaName + "'";
 
-						if (!DataSource.PopulateForeignKeys(this, cmd, true, null))
-							populateObjects<ForeignKey>(cmd, string.Format(qry, this.DataSource.ForeignKeySQL), true, null);
+						populateObjects<Table>(cmd, string.Format(qry, this.DataSource.TableSQL), true, null);
+						if (!DataSource.PopulateColumns(this, cmd, true, null))
+							populateObjects<Column>(cmd, string.Format(qry, this.DataSource.ColumnSQL), true, null);
+					}
 
-						qry = $"select * from ({{0}}) z where TableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+					foreach (var schema in schemas)
+					{
+						if (schema.Tables.Count > 0)
+						{
+							var qry = $"select * from ({{0}}) z where ChildTableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
 
-						if (!DataSource.PopulateKeyConstraints(this, cmd, true, null))
-							populateObjects<KeyConstraint>(cmd, string.Format(qry, this.DataSource.KeyConstraintSQL), true, null);
-						if (!DataSource.PopulateIndexes(this, cmd, true, null))
-							populateObjects<Index>(cmd, string.Format(qry, this.DataSource.IndexSQL), true, null);
-						populateObjects<DefaultConstraint>(cmd, string.Format(qry, this.DataSource.DefaultConstraintSQL), true, null);
-						populateObjects<Trigger>(cmd, string.Format(qry, this.DataSource.TriggerSQL), true, null);
+							if (!DataSource.PopulateForeignKeys(this, cmd, true, null))
+								populateObjects<ForeignKey>(cmd, string.Format(qry, this.DataSource.ForeignKeySQL), true, null);
+
+							qry = $"select * from ({{0}}) z where TableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+
+							if (!DataSource.PopulateKeyConstraints(this, cmd, true, null))
+								populateObjects<KeyConstraint>(cmd, string.Format(qry, this.DataSource.KeyConstraintSQL), true, null);
+							if (!DataSource.PopulateIndexes(this, cmd, true, null))
+								populateObjects<Index>(cmd, string.Format(qry, this.DataSource.IndexSQL), true, null);
+							populateObjects<DefaultConstraint>(cmd, string.Format(qry, this.DataSource.DefaultConstraintSQL), true, null);
+							populateObjects<Trigger>(cmd, string.Format(qry, this.DataSource.TriggerSQL), true, null);
+						}
 					}
 				}
 				conn.Close();

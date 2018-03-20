@@ -420,7 +420,7 @@ namespace PaJaMa.Database.Studio.Query
 					switch (schemaNode.SchemaNodeType)
 					{
 						case SchemaNodeType.Tables:
-							schemaNode.Schema.Database.PopulateTables(schemaNode.Schema);
+							schemaNode.Schema.Database.PopulateTables(schemaNode.Schema.Database.Schemas.Where(s => s.Tables.Count < 1).ToArray());
 							refreshTableNodes(schemaNode.Schema, node);
 							break;
 						case SchemaNodeType.Views:
@@ -610,9 +610,12 @@ namespace PaJaMa.Database.Studio.Query
 				switch (schemaNode.SchemaNodeType)
 				{
 					case SchemaNodeType.Tables:
-						schemaNode.Schema.Tables.Clear();
+						foreach (var s in schemaNode.Schema.Database.Schemas)
+						{
+							s.Tables.Clear();
+						}
 						treeTables.SelectedNode.Nodes.Clear();
-						schemaNode.Schema.Database.PopulateTables(schemaNode.Schema);
+						schemaNode.Schema.Database.PopulateTables(schemaNode.Schema.Database.Schemas.ToArray());
 						refreshTableNodes(schemaNode.Schema, treeTables.SelectedNode);
 						break;
 					case SchemaNodeType.Views:
