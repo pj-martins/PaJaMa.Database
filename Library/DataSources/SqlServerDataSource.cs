@@ -216,7 +216,8 @@ left join sys.server_principals sp on sp.sid = dp.sid
 					_columnTypes.Add(new ColumnType("datetime2", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
 					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", new Map("now", "(getdate())")));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, "''"));
-					_columnTypes.Add(new ColumnType("nvarchar", DataType.VaryingChar, "''"));
+					_columnTypes.Add(new ColumnType("varchar", DataType.VarChar, "''"));
+					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVarChar, "''"));
 					_columnTypes.Add(new ColumnType("char", DataType.Char, "''"));
 					_columnTypes.Add(new ColumnType("nchar", DataType.Char, "''"));
 					_columnTypes.Add(new ColumnType("int", DataType.Integer, "((0))"));

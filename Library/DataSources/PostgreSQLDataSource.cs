@@ -59,7 +59,7 @@ select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION a
 	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
     case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then true else false end as IsNullable, case when is_identity = 'NO' then false else true end as IsIdentity,
 	COLUMN_DEFAULT as ColumnDefault, ConstraintName, null as Formula, NUMERIC_PRECISION as NumericPrecision, NUMERIC_SCALE as NumericScale,
-	co.TABLE_SCHEMA as SchemaName
+	co.TABLE_SCHEMA as SchemaName, udt_name as UDTName
 from INFORMATION_SCHEMA.COLUMNS co
 join INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME
 left join
@@ -201,8 +201,14 @@ from INFORMATION_SCHEMA.SEQUENCES";
 					_columnTypes.Add(new ColumnType("uuid", DataType.UniqueIdentifier, "uuid_generate_v4()", new Map("newid", "uuid_generate_v4()")));
 					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.DateTime, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.DateTime, "now()", dtMaps));
+					_columnTypes.Add(new ColumnType("timestamp with time zone", DataType.SmallDateTime, "now()", dtMaps));
+					_columnTypes.Add(new ColumnType("timestamp without time zone", DataType.SmallDateTime, "now()", dtMaps));
 					_columnTypes.Add(new ColumnType("varchar varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("character varying", DataType.VaryingChar, "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("varchar varying", DataType.VarChar, "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("character varying", DataType.VarChar, "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("varchar varying", DataType.NVarChar, "''") { CreateTypeName = "varchar" });
+					_columnTypes.Add(new ColumnType("character varying", DataType.NVarChar, "''") { CreateTypeName = "varchar" });
 					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
 					_columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "0"));
 					_columnTypes.Add(new ColumnType("real", DataType.Real, "0"));
@@ -245,6 +251,14 @@ from INFORMATION_SCHEMA.SEQUENCES";
 			var dataType = this.GetConvertedColumnType(column, true);
 			if (this.GetType() == column.Database.DataSource.GetType())
 				dataType = column.ColumnType.TypeName;
+			if (dataType == "ARRAY" && !string.IsNullOrEmpty(column.UDTName))
+			{
+				// TODO: TEST
+				var arrayType = column.UDTName;
+				if (arrayType.StartsWith("_"))
+					arrayType = arrayType.Substring(1);
+				dataType = arrayType + "[]";
+			}
 			var sb = new StringBuilder();
 			if (targetColumn == null)
 			{
@@ -354,7 +368,7 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 					if (difference.TargetValue.StartsWith("nextval") || difference.SourceValue.StartsWith("nextval"))
 						return true;
 				}
-				else if (difference.PropertyName == "NumericPrecision" || difference.PropertyName == "IsIdentity")
+				else if (difference.PropertyName == "NumericPrecision" || difference.PropertyName == "IsIdentity" || difference.PropertyName == "UDTName")
 				{
 					return true;
 				}

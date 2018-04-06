@@ -41,6 +41,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public int? NumericPrecision { get; set; }
 		public int? NumericScale { get; set; }
 		public decimal? Increment { get; set; }
+		public string UDTName { get; set; }
 
 		[Ignore]
 		public string ConstraintName { get; set; }
@@ -108,6 +109,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		BigInt,
 		RowVersion,
 		Array,
+		VarChar,
+		NVarChar
 	}
 
 	public class Map

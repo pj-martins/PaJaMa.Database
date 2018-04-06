@@ -337,7 +337,7 @@ ON UPDATE {6}
 				}
 				else if (difference.PropertyName == "ColumnType")
 				{
-					if (difference.TargetValue == this.GetConvertedColumnType((DataType)Enum.Parse(typeof(DataType), difference.SourceValue), false))
+					if (difference.TargetValue == this.GetConvertedColumnType((DataType)Enum.Parse(typeof(DataType), difference.SourceValue, true), false))
 						return true;
 				}
 				else if (difference.PropertyName == "ColumnDefault")
