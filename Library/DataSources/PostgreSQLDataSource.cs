@@ -249,16 +249,6 @@ from INFORMATION_SCHEMA.SEQUENCES";
 		internal override string GetColumnAddAlterScript(Column column, Column targetColumn, string postScript, string defaultValue)
 		{
 			var dataType = this.GetConvertedColumnType(column, true);
-			if (this.GetType() == column.Database.DataSource.GetType())
-				dataType = column.ColumnType.TypeName;
-			if (dataType == "ARRAY" && !string.IsNullOrEmpty(column.UDTName))
-			{
-				// TODO: TEST
-				var arrayType = column.UDTName;
-				if (arrayType.StartsWith("_"))
-					arrayType = arrayType.Substring(1);
-				dataType = arrayType + "[]";
-			}
 			var sb = new StringBuilder();
 			if (targetColumn == null)
 			{
@@ -291,6 +281,22 @@ from INFORMATION_SCHEMA.SEQUENCES";
 		internal override string GetIdentityInsertOff(Table table)
 		{
 			return string.Empty;
+		}
+
+		public override string GetConvertedColumnType(Column column, bool forCreate)
+		{
+			var dataType = base.GetConvertedColumnType(column, forCreate);
+			if (!forCreate && this.GetType() == column.Database.DataSource.GetType())
+				dataType = column.ColumnType.TypeName;
+			if (dataType == "ARRAY" && !string.IsNullOrEmpty(column.UDTName))
+			{
+				// TODO: TEST
+				var arrayType = column.UDTName;
+				if (arrayType.StartsWith("_"))
+					arrayType = arrayType.Substring(1);
+				dataType = arrayType + "[]";
+			}
+			return dataType;
 		}
 
 		internal override string GetPreTableCreateScript(Table table)

@@ -48,6 +48,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal virtual bool MatchConstraintsByColumns => false;
 		internal virtual bool ForeignKeyDropsWithColumns => false;
 		internal virtual bool BypassKeyConstraints => false;
+		internal virtual bool NamedConstraints => false;
 
 		public DataSource(string connectionString)
 		{
@@ -298,7 +299,7 @@ ON UPDATE {6}
 			return columnDefault;
 		}
 
-		internal string GetConvertedColumnType(Column column, bool forCreate)
+		public virtual string GetConvertedColumnType(Column column, bool forCreate)
 		{
 			if (column.Database.DataSource.GetType() == this.GetType())
 				return forCreate ? column.ColumnType.CreateTypeName : column.ColumnType.TypeName;
@@ -306,7 +307,7 @@ ON UPDATE {6}
 			return GetConvertedColumnType(column.ColumnType.DataType, forCreate);
 		}
 
-		internal string GetConvertedColumnType(DataType dataType, bool forCreate)
+		public string GetConvertedColumnType(DataType dataType, bool forCreate)
 		{
 			return forCreate ? this.ColumnTypes.First(t => t.DataType == dataType).CreateTypeName :
 				this.ColumnTypes.First(t => t.DataType == dataType).TypeName;
