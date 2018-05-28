@@ -15,7 +15,7 @@ namespace PaJaMa.Database.Library.DataSources
 		{
 		}
 
-		public override string DefaultSchemaName => throw new NotImplementedException();
+		public override string DefaultSchemaName => "";
 
 		internal override string SchemaSQL => "";
 
@@ -58,7 +58,8 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public override string GetConvertedObjectName(string objectName)
 		{
-			throw new NotImplementedException();
+			if (objectName == CurrentDatabase.DatabaseName) return string.Empty;
+			return string.Format("[{0}]", objectName);
 		}
 
 		internal override string GetColumnAddAlterScript(Column column, Column targetColumn, string defaultValue, string postScript)
