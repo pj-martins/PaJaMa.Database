@@ -72,7 +72,7 @@ where type = 'table'
 			}
 		}
 
-		internal override bool PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override void PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating columns for {database.DatabaseName}...");
 
@@ -116,11 +116,9 @@ where type = 'table'
 					rdr.Close();
 				}
 			}
-
-			return true;
 		}
 
-		internal override bool PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override void PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating foreign keys for {database.DatabaseName}...");
 
@@ -148,11 +146,9 @@ where type = 'table'
 					}
 				}
 			}
-
-			return true;
 		}
 
-		internal override bool PopulateKeyConstraints(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override void PopulateKeyConstraints(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating key constraints for {database.DatabaseName}...");
 
@@ -182,11 +178,9 @@ where type = 'table'
 					rdr.Close();
 				}
 			}
-
-			return true;
 		}
 
-		internal override bool PopulateIndexes(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override void PopulateIndexes(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, "Populating indexes for " + database.DatabaseName + "...");
 			
@@ -250,8 +244,6 @@ where type = 'table'
 					}
 				}
 			}
-
-			return true;
 		}
 	}
 }

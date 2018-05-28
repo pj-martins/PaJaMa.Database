@@ -14,13 +14,13 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 	{
 		public DataSource DataSource { get; private set; }
 		public string DatabaseName { get; private set; }
-		public List<Schema> Schemas { get; private set; }
-		public List<ServerLogin> ServerLogins { get; private set; }
-		public List<DatabasePrincipal> Principals { get; private set; }
-		public List<Permission> Permissions { get; private set; }
-		public List<Credential> Credentials { get; private set; }
-		public List<Extension> Extensions { get; private set; }
-		public List<ExtendedProperty> ExtendedProperties { get; private set; }
+		public List<Schema> Schemas { get; internal set; }
+		public List<ServerLogin> ServerLogins { get; internal set; }
+		public List<DatabasePrincipal> Principals { get; internal set; }
+		public List<Permission> Permissions { get; internal set; }
+		public List<Credential> Credentials { get; internal set; }
+		public List<Extension> Extensions { get; internal set; }
+		public List<ExtendedProperty> ExtendedProperties { get; internal set; }
 
 		public Database(DataSource dataSource, string databaseName)
 		{
@@ -28,163 +28,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			this.DatabaseName = databaseName;
 		}
 
-		private List<TDatabaseObject> populateObjects<TDatabaseObject>(DbCommand cmd, string query, bool includeSystemSchemas, BackgroundWorker worker)
-			where TDatabaseObject : DatabaseObjectBase
-		{
-			if (string.IsNullOrEmpty(query)) return new List<TDatabaseObject>();
-
-			if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {DatabaseName}...");
-
-			var objs = new List<TDatabaseObject>();
-			if (!includeSystemSchemas && DataSource.SystemSchemaNames.Count > 0)
-			{
-				query = $@"select * from (
-				{query}
-				) z where SchemaName is null or SchemaName not in ({string.Join(", ", DataSource.SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
-			}
-			cmd.CommandText = query;
-			using (var rdr = cmd.ExecuteReader())
-			{
-				if (rdr.HasRows)
-				{
-					while (rdr.Read())
-					{
-						var obj = rdr.ToObject<TDatabaseObject>(this);
-						obj.setObjectProperties(rdr);
-						objs.Add(obj);
-					}
-				}
-				rdr.Close();
-			}
-			return objs;
-		}
-
 		public DbConnection OpenConnection()
 		{
 			return DataSource.OpenConnection(this.DatabaseName);
-		}
-
-		public void PopulateSchemas(bool includeSystemSchemas)
-		{
-			Schemas = new List<Schema>();
-			if (string.IsNullOrEmpty(this.DataSource.SchemaSQL))
-				Schemas.Add(new Schema(this) { SchemaName = "" });
-			else
-			{
-				using (var conn = OpenConnection())
-				{
-					using (var cmd = conn.CreateCommand())
-					{
-						populateObjects<Schema>(cmd, this.DataSource.SchemaSQL, includeSystemSchemas, null);
-					}
-				}
-			}
-		}
-
-		public void PopulateTables(Schema[] schemas)
-		{
-			using (var conn = OpenConnection())
-			{
-				using (var cmd = conn.CreateCommand())
-				{
-					foreach (var schema in schemas)
-					{
-						var qry = "select * from ({0}) z ";
-						if (!string.IsNullOrEmpty(schema.SchemaName))
-							qry += "where SchemaName = '" + schema.SchemaName + "'";
-
-						populateObjects<Table>(cmd, string.Format(qry, this.DataSource.TableSQL), true, null);
-						if (!DataSource.PopulateColumns(this, cmd, true, null))
-							populateObjects<Column>(cmd, string.Format(qry, this.DataSource.ColumnSQL), true, null);
-					}
-
-					foreach (var schema in schemas)
-					{
-						if (schema.Tables.Count > 0)
-						{
-							var qry = $"select * from ({{0}}) z where ChildTableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
-
-							if (!DataSource.PopulateForeignKeys(this, cmd, true, null))
-								populateObjects<ForeignKey>(cmd, string.Format(qry, this.DataSource.ForeignKeySQL), true, null);
-
-							qry = $"select * from ({{0}}) z where TableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
-
-							if (!DataSource.PopulateKeyConstraints(this, cmd, true, null))
-								populateObjects<KeyConstraint>(cmd, string.Format(qry, this.DataSource.KeyConstraintSQL), true, null);
-							if (!DataSource.PopulateIndexes(this, cmd, true, null))
-								populateObjects<Index>(cmd, string.Format(qry, this.DataSource.IndexSQL), true, null);
-							populateObjects<DefaultConstraint>(cmd, string.Format(qry, this.DataSource.DefaultConstraintSQL), true, null);
-							populateObjects<Trigger>(cmd, string.Format(qry, this.DataSource.TriggerSQL), true, null);
-						}
-					}
-				}
-				conn.Close();
-			}
-		}
-
-		public void PopulateViews(Schema schema)
-		{
-			using (var conn = OpenConnection())
-			{
-				using (var cmd = conn.CreateCommand())
-				{
-					var qry = "select * from ({0}) z where SchemaName = '" + schema.SchemaName + "'";
-					populateObjects<View>(cmd, string.Format(qry, this.DataSource.ViewSQL), true, null);
-				}
-				conn.Close();
-			}
-		}
-
-		public void PopulateChildren(bool condensed, BackgroundWorker worker)
-		{
-			ExtendedProperties = new List<ExtendedProperty>();
-			Schemas = new List<Schema>();
-			ServerLogins = new List<ServerLogin>();
-			Principals = new List<DatabasePrincipal>();
-			Permissions = new List<Permission>();
-			Credentials = new List<Credential>();
-			Extensions = new List<Extension>();
-
-			using (var conn = OpenConnection())
-			{
-				using (var cmd = conn.CreateCommand())
-				{
-					populateObjects<ExtendedProperty>(cmd, this.DataSource.ExtendedPropertySQL, false, worker);
-					populateObjects<DatabasePrincipal>(cmd, this.DataSource.DatabasePrincipalSQL, true, worker);
-					foreach (var dp in this.Principals)
-					{
-						if (dp.OwningPrincipalID > 0)
-						{
-							dp.Owner = this.Principals.First(p => p.PrincipalID == dp.OwningPrincipalID);
-							dp.Owner.Ownings.Add(dp);
-						}
-					}
-					if (string.IsNullOrEmpty(this.DataSource.SchemaSQL))
-						Schemas.Add(new Schema(this) { SchemaName = "" });
-					else
-						populateObjects<Schema>(cmd, this.DataSource.SchemaSQL, false, worker);
-
-					populateObjects<RoutineSynonym>(cmd, this.DataSource.RoutineSynonymSQL, false, worker);
-					populateObjects<View>(cmd, this.DataSource.ViewSQL, false, worker);
-					if (!condensed)
-					{
-						populateObjects<ServerLogin>(cmd, this.DataSource.ServerLoginSQL, true, worker);
-						populateObjects<Permission>(cmd, this.DataSource.PermissionSQL, true, worker);
-						populateObjects<Credential>(cmd, this.DataSource.CredentialSQL, true, worker);
-					}
-					populateObjects<Table>(cmd, this.DataSource.TableSQL, false, worker);
-					if (!DataSource.PopulateColumns(this, cmd, false, worker)) populateObjects<Column>(cmd, this.DataSource.ColumnSQL, false, worker);
-					if (!DataSource.PopulateForeignKeys(this, cmd, false, worker)) populateObjects<ForeignKey>(cmd, this.DataSource.ForeignKeySQL, false, worker);
-					if (!DataSource.PopulateKeyConstraints(this, cmd, false, worker)) populateObjects<KeyConstraint>(cmd, this.DataSource.KeyConstraintSQL, false, worker);
-					if (!DataSource.PopulateIndexes(this, cmd, false, worker))
-						populateObjects<Index>(cmd, this.DataSource.IndexSQL, false, worker);
-					populateObjects<DefaultConstraint>(cmd, this.DataSource.DefaultConstraintSQL, false, worker);
-					populateObjects<Trigger>(cmd, this.DataSource.TriggerSQL, false, worker);
-					populateObjects<Sequence>(cmd, this.DataSource.SequenceSQL, false, worker);
-					populateObjects<Extension>(cmd, this.DataSource.ExtensionSQL, false, worker);
-				}
-				conn.Close();
-			}
 		}
 
 		public List<DatabaseObjectBase> GetDatabaseObjects(bool filter)

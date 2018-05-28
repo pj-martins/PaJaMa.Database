@@ -119,24 +119,175 @@ namespace PaJaMa.Database.Library.DataSources
 			CurrentDatabase = Databases.First(d => d.DatabaseName == newDatabase);
 		}
 
-		internal virtual bool PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		private List<TDatabaseObject> populateObjects<TDatabaseObject>(DatabaseObjects.Database database, DbCommand cmd, string query, bool includeSystemSchemas, BackgroundWorker worker)
+			where TDatabaseObject : DatabaseObjectBase
 		{
-			return false;
+			if (string.IsNullOrEmpty(query)) return new List<TDatabaseObject>();
+
+			if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName}...");
+
+			var objs = new List<TDatabaseObject>();
+			if (!includeSystemSchemas && SystemSchemaNames.Count > 0)
+			{
+				query = $@"select * from (
+				{query}
+				) z where SchemaName is null or SchemaName not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
+			}
+			cmd.CommandText = query;
+			using (var rdr = cmd.ExecuteReader())
+			{
+				if (rdr.HasRows)
+				{
+					while (rdr.Read())
+					{
+						var obj = rdr.ToObject<TDatabaseObject>(database);
+						obj.setObjectProperties(rdr);
+						objs.Add(obj);
+					}
+				}
+				rdr.Close();
+			}
+			return objs;
 		}
 
-		internal virtual bool PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		public virtual void PopulateTables(Schema[] schemas)
 		{
-			return false;
+			using (var conn = OpenConnection())
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					foreach (var schema in schemas)
+					{
+						var qry = "select * from ({0}) z ";
+						if (!string.IsNullOrEmpty(schema.SchemaName))
+							qry += "where SchemaName = '" + schema.SchemaName + "'";
+
+						populateObjects<Table>(schema.Database, cmd, string.Format(qry, this.TableSQL), true, null);
+						PopulateColumns(schema.Database, cmd, true, null);
+					}
+
+					foreach (var schema in schemas)
+					{
+						if (schema.Tables.Count > 0)
+						{
+							var qry = $"select * from ({{0}}) z where ChildTableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+
+							PopulateForeignKeys(schema.Database, cmd, true, null);
+
+							qry = $"select * from ({{0}}) z where TableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+
+							PopulateKeyConstraints(schema.Database, cmd, true, null);
+							PopulateIndexes(schema.Database, cmd, true, null);
+							populateObjects<DefaultConstraint>(schema.Database, cmd, string.Format(qry, this.DefaultConstraintSQL), true, null);
+							populateObjects<Trigger>(schema.Database, cmd, string.Format(qry, this.TriggerSQL), true, null);
+						}
+					}
+				}
+				conn.Close();
+			}
 		}
 
-		internal virtual bool PopulateKeyConstraints(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		public void PopulateSchemas(DatabaseObjects.Database database, bool includeSystemSchemas)
 		{
-			return false;
+			database.Schemas = new List<Schema>();
+			if (string.IsNullOrEmpty(this.SchemaSQL))
+				database.Schemas.Add(new Schema(database) { SchemaName = "" });
+			else
+			{
+				using (var conn = OpenConnection())
+				{
+					using (var cmd = conn.CreateCommand())
+					{
+						populateObjects<Schema>(database, cmd, this.SchemaSQL, includeSystemSchemas, null);
+					}
+				}
+			}
 		}
 
-		internal virtual bool PopulateIndexes(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		public void PopulateViews(Schema schema)
 		{
-			return false;
+			using (var conn = OpenConnection())
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					var qry = "select * from ({0}) z where SchemaName = '" + schema.SchemaName + "'";
+					populateObjects<View>(schema.Database, cmd, string.Format(qry, this.ViewSQL), true, null);
+				}
+				conn.Close();
+			}
+		}
+
+		public void PopulateChildren(DatabaseObjects.Database database, bool condensed, BackgroundWorker worker)
+		{
+			if (database == null) database = CurrentDatabase;
+			database.ExtendedProperties = new List<ExtendedProperty>();
+			database.Schemas = new List<Schema>();
+			database.ServerLogins = new List<ServerLogin>();
+			database.Principals = new List<DatabasePrincipal>();
+			database.Permissions = new List<Permission>();
+			database.Credentials = new List<Credential>();
+			database.Extensions = new List<Extension>();
+
+			using (var conn = OpenConnection())
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					populateObjects<ExtendedProperty>(database, cmd, this.ExtendedPropertySQL, false, worker);
+					populateObjects<DatabasePrincipal>(database, cmd, this.DatabasePrincipalSQL, true, worker);
+					foreach (var dp in database.Principals)
+					{
+						if (dp.OwningPrincipalID > 0)
+						{
+							dp.Owner = database.Principals.First(p => p.PrincipalID == dp.OwningPrincipalID);
+							dp.Owner.Ownings.Add(dp);
+						}
+					}
+					if (string.IsNullOrEmpty(this.SchemaSQL))
+						database.Schemas.Add(new Schema(database) { SchemaName = "" });
+					else
+						populateObjects<Schema>(database, cmd, this.SchemaSQL, false, worker);
+
+					populateObjects<RoutineSynonym>(database, cmd, this.RoutineSynonymSQL, false, worker);
+					populateObjects<View>(database, cmd, this.ViewSQL, false, worker);
+					if (!condensed)
+					{
+						populateObjects<ServerLogin>(database, cmd, this.ServerLoginSQL, true, worker);
+						populateObjects<Permission>(database, cmd, this.PermissionSQL, true, worker);
+						populateObjects<Credential>(database, cmd, this.CredentialSQL, true, worker);
+					}
+					populateObjects<Table>(database, cmd, this.TableSQL, false, worker);
+					PopulateColumns(database, cmd, false, worker);
+					PopulateForeignKeys(database, cmd, false, worker);
+					PopulateKeyConstraints(database, cmd, false, worker);
+					PopulateIndexes(database, cmd, false, worker);
+						
+					populateObjects<DefaultConstraint>(database, cmd, this.DefaultConstraintSQL, false, worker);
+					populateObjects<Trigger>(database, cmd, this.TriggerSQL, false, worker);
+					populateObjects<Sequence>(database, cmd, this.SequenceSQL, false, worker);
+					populateObjects<Extension>(database, cmd, this.ExtensionSQL, false, worker);
+				}
+				conn.Close();
+			}
+		}
+
+		internal virtual void PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		{
+			populateObjects<Column>(database, cmd, this.ColumnSQL, false, worker);
+		}
+
+		internal virtual void PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		{
+			populateObjects<ForeignKey>(database, cmd, this.ForeignKeySQL, false, worker);
+		}
+
+		internal virtual void PopulateKeyConstraints(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		{
+			populateObjects<KeyConstraint>(database, cmd, this.KeyConstraintSQL, false, worker);
+		}
+
+		internal virtual void PopulateIndexes(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		{
+			populateObjects<Index>(database, cmd, this.IndexSQL, false, worker);
 		}
 
 		internal ColumnType GetColumnType(string dataType, string columnDefault)

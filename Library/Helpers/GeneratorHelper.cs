@@ -22,7 +22,7 @@ namespace PaJaMa.Database.Library.Helpers
 		public GeneratorHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
 		{
 			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DataSource;
-            DataSource.CurrentDatabase.PopulateChildren(false, worker);
+            DataSource.PopulateChildren(null, false, worker);
 		}
 
 		public Dictionary<Table, List<Table>> GetMissingDependencies(List<TableWorkspace> selectedWorkspaces)

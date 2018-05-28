@@ -32,14 +32,14 @@ namespace PaJaMa.Database.Library.Helpers
 		{
 			FromDataSource = fromDataSource;
 			ToDataSource = toDataSource;
-			FromDataSource.CurrentDatabase.PopulateChildren(false, worker);
-			ToDataSource.CurrentDatabase.PopulateChildren(false, worker);
+			FromDataSource.PopulateChildren(null, false, worker);
+			ToDataSource.PopulateChildren(null, false, worker);
 		}
 
 		public void Init(BackgroundWorker worker)
 		{
-			FromDataSource.CurrentDatabase.PopulateChildren(false, worker);
-			ToDataSource.CurrentDatabase.PopulateChildren(false, worker);
+			FromDataSource.PopulateChildren(null, false, worker);
+			ToDataSource.PopulateChildren(null, false, worker);
 		}
 
 		public bool Synchronize(BackgroundWorker worker, List<WorkspaceBase> workspaces, DbTransaction trans)

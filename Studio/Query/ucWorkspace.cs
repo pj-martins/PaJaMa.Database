@@ -390,7 +390,7 @@ namespace PaJaMa.Database.Studio.Query
 		private void refreshSchemaNodes(TreeNode node)
 		{
 			var db = node.Tag as Library.DatabaseObjects.Database;
-			db.PopulateSchemas(false);
+			db.DataSource.PopulateSchemas(db, false);
 			foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
 			{
 				var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);
@@ -420,11 +420,11 @@ namespace PaJaMa.Database.Studio.Query
 					switch (schemaNode.SchemaNodeType)
 					{
 						case SchemaNodeType.Tables:
-							schemaNode.Schema.Database.PopulateTables(schemaNode.Schema.Database.Schemas.Where(s => s.Tables.Count < 1).ToArray());
+							_dataSource.PopulateTables(schemaNode.Schema.Database.Schemas.Where(s => s.Tables.Count < 1).ToArray());
 							refreshTableNodes(schemaNode.Schema, node);
 							break;
 						case SchemaNodeType.Views:
-							schemaNode.Schema.Database.PopulateViews(schemaNode.Schema);
+							_dataSource.PopulateViews(schemaNode.Schema);
 							refreshViewNodes(schemaNode.Schema, node);
 							break;
 					}
@@ -615,13 +615,13 @@ namespace PaJaMa.Database.Studio.Query
 							s.Tables.Clear();
 						}
 						treeTables.SelectedNode.Nodes.Clear();
-						schemaNode.Schema.Database.PopulateTables(schemaNode.Schema.Database.Schemas.ToArray());
+						_dataSource.PopulateTables(schemaNode.Schema.Database.Schemas.ToArray());
 						refreshTableNodes(schemaNode.Schema, treeTables.SelectedNode);
 						break;
 					case SchemaNodeType.Views:
 						schemaNode.Schema.Views.Clear();
 						treeTables.SelectedNode.Nodes.Clear();
-						schemaNode.Schema.Database.PopulateViews(schemaNode.Schema);
+						_dataSource.PopulateViews(schemaNode.Schema);
 						refreshViewNodes(schemaNode.Schema, treeTables.SelectedNode);
 						break;
 				}

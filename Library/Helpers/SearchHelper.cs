@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.Helpers
 		public SearchHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
 		{
 			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DataSource;
-			DataSource.CurrentDatabase.PopulateChildren(true, worker);
+			DataSource.PopulateChildren(null, true, worker);
 		}
 
 		//public void Init(BackgroundWorker worker)
