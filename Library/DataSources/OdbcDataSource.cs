@@ -51,6 +51,7 @@ namespace PaJaMa.Database.Library.DataSources
 					_columnTypes.Add(new ColumnType("Number", DataType.Numeric, "0"));
 					_columnTypes.Add(new ColumnType("Timestamp", DataType.DateTime, "getdate()"));
 					_columnTypes.Add(new ColumnType("Short", DataType.Float, "0"));
+					_columnTypes.Add(new ColumnType("Long", DataType.Decimal, "0"));
 				}
 				return _columnTypes;
 			}
