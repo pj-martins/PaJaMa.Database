@@ -420,7 +420,7 @@ namespace PaJaMa.Database.Studio.Query
 					switch (schemaNode.SchemaNodeType)
 					{
 						case SchemaNodeType.Tables:
-							_dataSource.PopulateTables(schemaNode.Schema.Database.Schemas.Where(s => s.Tables.Count < 1).ToArray());
+							_dataSource.PopulateTables(new Schema[] { schemaNode.Schema });
 							refreshTableNodes(schemaNode.Schema, node);
 							break;
 						case SchemaNodeType.Views:
