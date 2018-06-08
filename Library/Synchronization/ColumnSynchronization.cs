@@ -116,6 +116,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			string def = string.Empty;
 
 			var tempConstraint = "";
+			bool hasTempConstraint = false;
 
 			// default constraints for existing cols need to be created after the fact
 			if (targetColumn == null)
@@ -125,21 +126,27 @@ namespace PaJaMa.Database.Library.Synchronization
 				if (!DatabaseObject.IsNullable && !DatabaseObject.IsIdentity && string.IsNullOrEmpty(def) && DatabaseObject.ColumnType.DataType != DataType.RowVersion)
 				{
 					var colType = TargetDatabase.DataSource.ColumnTypes.First(c => c.DataType == DatabaseObject.ColumnType.DataType);
-					tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");
+					hasTempConstraint = true;
+					if (TargetDatabase.DataSource.NamedConstraints)
+					{
+						tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");
+						DatabaseObject.ConstraintName = tempConstraint;
+					}
 					DatabaseObject.ColumnDefault = colType.DefaultValue;
-					DatabaseObject.ConstraintName = tempConstraint;
+
 					def = GetDefaultScript();
 				}
 			}
 
 			sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn, part2, def));
 
-			if (!string.IsNullOrEmpty(tempConstraint))
+			if (hasTempConstraint)
 			{
 				// sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn, part2, string.Empty));
 				var defConstraint = new DefaultConstraint(TargetDatabase);
 				defConstraint.ConstraintName = tempConstraint;
 				defConstraint.Table = DatabaseObject.Table;
+				defConstraint.Column = DatabaseObject;
 				var defSync = new DefaultConstraintSynchronization(TargetDatabase, defConstraint);
 				sb.AppendLine(defSync.GetRawDropText());
 			}

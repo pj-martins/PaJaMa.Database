@@ -24,6 +24,10 @@ namespace PaJaMa.Database.Library.Synchronization
 				if (DatabaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == DatabaseObject.ObjectName))
 					return new List<SynchronizationItem>();
 			}
+
+			if (!TargetDatabase.DataSource.NamedConstraints)
+				return new List<SynchronizationItem>();
+
 			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
 				DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)), sourceParent);
 		}
@@ -43,6 +47,17 @@ namespace PaJaMa.Database.Library.Synchronization
 			return getStandardItems(string.Format(@"ALTER TABLE {0} ADD  CONSTRAINT {1}  DEFAULT {2} FOR {3};",
 				DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource), def, DatabaseObject.Column.GetQueryObjectName(TargetDatabase.DataSource)
 				), 7);
+		}
+
+		public override string GetRawDropText()
+		{
+			// TODO: what else applies to?
+			if (!TargetDatabase.DataSource.NamedConstraints)
+			{
+				return string.Format(@"ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT;",
+					DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.Column.GetQueryObjectName(TargetDatabase.DataSource));
+			}
+			return base.GetRawDropText();
 		}
 	}
 }
