@@ -61,6 +61,7 @@
     <Compile Include="DatabaseObjects\DatabaseObjectBase.cs" />
     <Compile Include="DatabaseObjects\DatabasePrincipal.cs" />
     <Compile Include="DataSources\MySqlDataSource.cs" />
+    <Compile Include="DataSources\AccessDataSource.cs" />
     <Compile Include="DataSources\OdbcDataSource.cs" />
     <Compile Include="DataSources\OleDbDataSource.cs" />
     <Compile Include="DataSources\PostgreSQLDataSource.cs" />
