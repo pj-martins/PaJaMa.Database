@@ -44,7 +44,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal virtual string ExtensionSQL => "";
 		internal virtual List<string> SystemSchemaNames => new List<string>();
 		internal abstract string DatabaseSQL { get; }
-		
+
 		internal virtual bool MatchConstraintsByColumns => false;
 		internal virtual bool ForeignKeyDropsWithColumns => false;
 		internal virtual bool BypassKeyConstraints => false;
@@ -260,7 +260,7 @@ namespace PaJaMa.Database.Library.DataSources
 					PopulateForeignKeys(database, cmd, false, worker);
 					PopulateKeyConstraints(database, cmd, false, worker);
 					PopulateIndexes(database, cmd, false, worker);
-						
+
 					populateObjects<DefaultConstraint>(database, cmd, this.DefaultConstraintSQL, false, worker);
 					populateObjects<Trigger>(database, cmd, this.TriggerSQL, false, worker);
 					populateObjects<Sequence>(database, cmd, this.SequenceSQL, false, worker);
@@ -382,6 +382,13 @@ includeCols.Select(c =>
 	));
 
 			return sb.ToString();
+		}
+
+		internal virtual string GetIndexDropScript(Index index)
+		{
+			return string.Format("DROP INDEX {0}.{1}",
+				index.Table.GetObjectNameWithSchema(this),
+				index.GetQueryObjectName(this));
 		}
 
 		internal virtual string GetKeyConstraintCreateScript(KeyConstraint keyConstraint)

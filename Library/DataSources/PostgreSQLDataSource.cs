@@ -112,7 +112,7 @@ select
     a.attname as ColumnName,
 	-- TODO: case when ix.indisclustered = true then 'CLUSTERED' else 'NONCLUSTERED' end as IndexType,
     '' as IndexType,
-	row_number() over (partition by t.relname, i.relname)::integer as Ordinal,
+	row_number() over (partition by t.relname, i.relname, a.attname)::integer as Ordinal,
 	ix.indisunique as IsUnique,
 	n.nspname as SchemaName,
 	-- TODO:
@@ -339,6 +339,11 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 	);
 
 			return sb.ToString();
+		}
+
+		internal override string GetIndexDropScript(Index index)
+		{
+			return string.Format("DROP INDEX {0}", index.GetQueryObjectName(this));
 		}
 
 		internal override string GetColumnPostPart(Column column)
