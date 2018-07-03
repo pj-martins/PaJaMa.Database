@@ -41,7 +41,7 @@ ALTER TABLE {0} DROP CONSTRAINT {1};
 				var syncItem = new SynchronizationItem(DatabaseObject);
 				syncItem.Differences.AddRange(diffs);
 				syncItem.AddScript(0, GetRawDropText());
-				syncItem.AddScript(1, GetRawCreateText());
+				syncItem.AddScript(100, GetRawCreateText());
 				return new List<SynchronizationItem>() { syncItem };
 			}
 

@@ -231,6 +231,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(TargetDatabase, column, targetTable == null ? null : targetTable.Columns.FirstOrDefault(c => c.ColumnName == column.ColumnName)));
 			}
+			TargetDatabase.DataSource.CheckUnnecessaryItems(items);
 			return items;
 		}
 

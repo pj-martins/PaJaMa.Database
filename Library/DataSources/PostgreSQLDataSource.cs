@@ -404,6 +404,28 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 			return false;
 		}
 
+		internal override void CheckUnnecessaryItems(List<SynchronizationItem> items)
+		{
+			base.CheckUnnecessaryItems(items);
+			for (int i = items.Count - 1; i >= 0; i--)
+			{
+				var item = items[i];
+				if (item.DatabaseObject is ForeignKey && item.Differences.Any(d => d.DifferenceType == DifferenceType.Drop))
+				{
+					var fk = item.DatabaseObject as ForeignKey;
+					var dropcols = items.Where(c => c.DatabaseObject is Column && c.Differences.Any(d => d.DifferenceType == DifferenceType.Drop));
+					foreach (var fkc in fk.Columns)
+					{
+						if (dropcols.Any(dc => dc.DatabaseObject.ObjectName == fkc.ParentColumn.ObjectName || dc.DatabaseObject.ObjectName == fkc.ChildColumn.ObjectName))
+						{
+							items.RemoveAt(i);
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		public override string GetColumnSelectList(string[] columns)
 		{
 			return "\"" + string.Join("\",\r\n\t\"", columns) + "\"";

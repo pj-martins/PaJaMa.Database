@@ -58,6 +58,7 @@ namespace PaJaMa.Database.Library.DataSources
 		}
 
 		internal virtual string GetPreTableCreateScript(Table table) { return string.Empty; }
+		internal virtual void CheckUnnecessaryItems(List<SynchronizationItem> items) { }
 
 		protected List<DatabaseObjects.Database> getDatabases()
 		{
