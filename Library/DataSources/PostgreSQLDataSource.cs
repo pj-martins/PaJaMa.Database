@@ -25,7 +25,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal override List<string> SystemSchemaNames => new List<string>() { "pg_catalog", "information_schema" };
 
 		#region SQLS
-		internal override string SchemaSQL => @"select schema_name as SchemaName, schema_owner as SchemaOwner from information_schema.schemata
+		internal override string SchemaSQL => @"select schema_name as SchemaName, schema_owner as SchemaOwner from {0}.information_schema.schemata
 ";
 
 		internal override string RoutineSynonymSQL => @"
@@ -34,7 +34,7 @@ select
 	ROUTINE_NAME as Name, 
 	ROUTINE_TYPE as Type,
 	ROUTINE_DEFINITION as Definition
-from INFORMATION_SCHEMA.ROUTINES
+from {0}.INFORMATION_SCHEMA.ROUTINES
 ";
 
 		internal override string ViewSQL => @"select distinct
@@ -46,12 +46,12 @@ from INFORMATION_SCHEMA.ROUTINES
 	c.CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength,
 	case when c.IS_NULLABLE = 'YES' then true else false end as IsNullable,
 	VIEW_DEFINITION as Definition
-from INFORMATION_SCHEMA.VIEW_COLUMN_USAGE vcu
-join INFORMATION_SCHEMA.COLUMNS c on c.TABLE_SCHEMA = vcu.VIEW_SCHEMA
+from {0}.INFORMATION_SCHEMA.VIEW_COLUMN_USAGE vcu
+join {0}.INFORMATION_SCHEMA.COLUMNS c on c.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 	and c.TABLE_NAME = c.TABLE_NAME and c.COLUMN_NAME = vcu.COLUMN_NAME
-join INFORMATION_SCHEMA.VIEWS v on v.TABLE_NAME = vcu.VIEW_NAME and v.TABLE_SCHEMA = vcu.VIEW_SCHEMA
+join {0}.INFORMATION_SCHEMA.VIEWS v on v.TABLE_NAME = vcu.VIEW_NAME and v.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 ";
-		internal override string TableSQL => @"select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES 
+		internal override string TableSQL => @"select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from {0}.INFORMATION_SCHEMA.TABLES 
 where TABLE_TYPE = 'BASE TABLE'";
 
 		internal override string ColumnSQL => @"
@@ -60,8 +60,8 @@ select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION a
     case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then true else false end as IsNullable, case when is_identity = 'NO' then false else true end as IsIdentity,
 	COLUMN_DEFAULT as ColumnDefault, ConstraintName, null as Formula, NUMERIC_PRECISION as NumericPrecision, NUMERIC_SCALE as NumericScale,
 	co.TABLE_SCHEMA as SchemaName, udt_name as UDTName
-from INFORMATION_SCHEMA.COLUMNS co
-join INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME
+from {0}.INFORMATION_SCHEMA.COLUMNS co
+join {0}.INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME
 left join
 (
 	select 
@@ -85,21 +85,21 @@ SELECT distinct
     ccu.table_name AS ParentTableName, ccu.column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
 	ccu.TABLE_SCHEMA as ParentTableSchema, tc.TABLE_SCHEMA as ChildTableSchema, tc.CONSTRAINT_SCHEMA as SchemaName
 FROM 
-    information_schema.table_constraints AS tc 
-JOIN information_schema.key_column_usage AS kcu
+    {0}.information_schema.table_constraints AS tc 
+JOIN {0}.information_schema.key_column_usage AS kcu
 	ON tc.constraint_name = kcu.constraint_name
 	AND tc.table_name = kcu.table_name
-JOIN information_schema.constraint_column_usage AS ccu
+JOIN {0}.information_schema.constraint_column_usage AS ccu
 	ON ccu.constraint_name = tc.constraint_name
-join INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c on c.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+join {0}.INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c on c.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
 	and c.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
 WHERE constraint_type = 'FOREIGN KEY'
 ";
 		internal override string KeyConstraintSQL => @"
 select ku.CONSTRAINT_NAME as ConstraintName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as Ordinal, 
 	ku.TABLE_NAME as TableName, tc.TABLE_SCHEMA as SchemaName, '' as ClusteredNonClustered, true as IsPrimaryKey, false as Descending
-FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
-INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
+FROM {0}.INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+INNER JOIN {0}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
 ON tc.CONSTRAINT_TYPE = 'PRIMARY KEY' 
 AND tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
 and ku.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
@@ -139,7 +139,7 @@ where
 	c.column_name as ColumnName, 
 	c.column_default as ColumnDefault, 
 	c.table_schema as SchemaName
-from INFORMATION_SCHEMA.COLUMNS c
+from {0}.INFORMATION_SCHEMA.COLUMNS c
 left join
 (
 	select 
@@ -165,7 +165,7 @@ SELECT
 	event_manipulation as OnInsertUpdateDelete,
 	action_statement as Definition,
 	action_timing as BeforeAfter
-FROM information_schema.triggers
+FROM {0}.information_schema.triggers
 ";
 
 		internal override string SequenceSQL => @"select 
@@ -176,7 +176,7 @@ FROM information_schema.triggers
     maximum_value as MaxValue,
     start_value as Start,
     cycle_option as Cycle
-from INFORMATION_SCHEMA.SEQUENCES";
+from {0}.INFORMATION_SCHEMA.SEQUENCES";
 
 		internal override string ExtensionSQL => "select *, ''::text as SchemaName from pg_available_extensions where installed_version <> ''";
 

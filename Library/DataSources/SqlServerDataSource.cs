@@ -21,13 +21,13 @@ namespace PaJaMa.Database.Library.DataSources
 		internal override bool NamedConstraints => true;
 
 		#region SQLS
-		internal override string SchemaSQL => @"select SCHEMA_NAME as SchemaName, SCHEMA_OWNER as SchemaOwner from INFORMATION_SCHEMA.SCHEMATA";
+		internal override string SchemaSQL => @"select SCHEMA_NAME as SchemaName, SCHEMA_OWNER as SchemaOwner from {0}.INFORMATION_SCHEMA.SCHEMATA";
 
 		internal override string RoutineSynonymSQL => @"select ROUTINE_SCHEMA as SchemaName, ROUTINE_NAME as Name, ROUTINE_TYPE as Type, Definition = OBJECT_DEFINITION(OBJECT_ID(ROUTINE_SCHEMA + '.' + ROUTINE_NAME)) 
-					from INFORMATION_SCHEMA.ROUTINES
+					from {0}.INFORMATION_SCHEMA.ROUTINES
 				union all
 				select s.name, sy.name, 'SYNONYM', 'CREATE SYNONYM [' + s.name + '].[' + sy.name + '] FOR ' + replace(base_object_name, '[' + db_name(parent_object_id) + '].', '') from sys.synonyms sy
-				join sys.schemas s on s.schema_id = sy.schema_id";
+				join {0}.sys.schemas s on s.schema_id = sy.schema_id";
 
 		internal override string ViewSQL => @"select
 	s.name as SchemaName,
@@ -38,10 +38,10 @@ namespace PaJaMa.Database.Library.DataSources
 	columnproperty(vc.object_id, vc.name, 'charmaxlen') as CharacterMaximumLength,
 	vc.is_nullable as IsNullable,
 	OBJECT_DEFINITION(OBJECT_ID(s.name + '.' + v.name)) as Definition
-from sys.views v
-join sys.columns vc on vc.object_id = v.object_id
-join sys.types t on t.user_type_id = vc.system_type_id
-join sys.schemas s on s.schema_id = v.schema_id";
+from {0}.sys.views v
+join {0}.sys.columns vc on vc.object_id = v.object_id
+join {0}.sys.types t on t.user_type_id = vc.system_type_id
+join {0}.sys.schemas s on s.schema_id = v.schema_id";
 
 		internal override string ServerLoginSQL => @"
 select p.name as LoginName, 
@@ -52,39 +52,39 @@ select p.name as LoginName,
 	isnull(l.is_expiration_checked, 0) as IsExpirationChecked, 
 	isnull(l.is_disabled, 0) as IsDisabled, 
 	isnull(l.is_policy_checked, 0) as IsPolicyChecked
-from sys.server_principals p
-left join sys.sql_logins l on l.principal_id = p.principal_id
+from {0}.sys.server_principals p
+left join {0}.sys.sql_logins l on l.principal_id = p.principal_id
 where p.type in ('U', 'S') and p.name not in ('INFORMATION_SCHEMA', 'sys', 'guest', 'public', 'dbo')
--- and p.sid in (select sid from sys.database_principals)
+-- and p.sid in (select sid from {0}.sys.database_principals)
 ";
 
 		internal override string PermissionSQL => @"select s.name as SchemaName, s2.name as PermissionSchemaName,
 					coalesce(s2.name, o.name) as PermissionName, state_desc as GrantType, 
 					permission_name as PermissionType, pr.Name as PrincipalName
-				from sys.database_permissions p
-				join sys.database_principals pr on pr.principal_id = p.grantee_principal_id
-				join sys.objects o on o.object_id = p.major_id
-				join sys.schemas s on s.schema_id = o.schema_id
-				left join sys.schemas s2 on s2.schema_id = p.major_id
+				from {0}.sys.database_permissions p
+				join {0}.sys.database_principals pr on pr.principal_id = p.grantee_principal_id
+				join {0}.sys.objects o on o.object_id = p.major_id
+				join {0}.sys.schemas s on s.schema_id = o.schema_id
+				left join {0}.sys.schemas s2 on s2.schema_id = p.major_id
 ";
 
-		internal override string CredentialSQL => "select name as CredentialName, credential_identity as CredentialIdentity from sys.credentials";
+		internal override string CredentialSQL => "select name as CredentialName, credential_identity as CredentialIdentity from {0}.sys.credentials";
 
-		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
+		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from {0}.INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
 
 		internal override string ColumnSQL => @"select TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
 	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
     IsNullable = convert(bit, case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then 1 else 0 end), convert(bit, COLUMNPROPERTY(object_id(co.TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME, 'IsIdentity')) as IsIdentity, d.name as ConstraintName,
 	isnull(d.definition, COLUMN_DEFAULT) as ColumnDefault, cm.definition as Formula, convert(int, NUMERIC_PRECISION) as NumericPrecision, NUMERIC_SCALE as NumericScale,
 	SchemaName = co.TABLE_SCHEMA, IDENT_INCR(co.TABLE_SCHEMA + '.' + TABLE_NAME) AS Increment
-from INFORMATION_SCHEMA.COLUMNS co
-join sys.all_columns c on c.name = co.column_name
-join sys.tables t on t.object_id = c.object_id
+from {0}.INFORMATION_SCHEMA.COLUMNS co
+join {0}.sys.all_columns c on c.name = co.column_name
+join {0}.sys.tables t on t.object_id = c.object_id
 	and t.name = co.TABLE_NAME
-join sys.schemas sc on sc.schema_id = t.schema_id
+join {0}.sys.schemas sc on sc.schema_id = t.schema_id
 	and sc.name = co.TABLE_SCHEMA
-left join sys.default_constraints d on d.object_id = c.default_object_id
-left join sys.computed_columns cm on cm.name = co.column_name and c.is_computed = 1 and cm.object_id = t.object_id";
+left join {0}.sys.default_constraints d on d.object_id = c.default_object_id
+left join {0}.sys.computed_columns cm on cm.name = co.column_name and c.is_computed = 1 and cm.object_id = t.object_id";
 
 		internal override string ForeignKeySQL => @"
 select fk.name as ForeignKeyName, ct.name as ChildTableName, cc.name as ChildColumnName, pt.name as ParentTableName, 
@@ -95,27 +95,27 @@ select fk.name as ForeignKeyName, ct.name as ChildTableName, cc.name as ChildCol
 	ps.name as ParentTableSchema,
 	cs.name as ChildTableSchema,
     ps.name as SchemaName
-from sys.foreign_keys fk
-join sys.tables ct on ct.object_id = fk.parent_object_id
-join sys.tables pt on pt.object_id = fk.referenced_object_id
-join sys.foreign_key_columns fkc on fkc.constraint_object_id = fk.object_id
-join sys.all_columns cc on cc.object_id = fkc.parent_object_id
+from {0}.sys.foreign_keys fk
+join {0}.sys.tables ct on ct.object_id = fk.parent_object_id
+join {0}.sys.tables pt on pt.object_id = fk.referenced_object_id
+join {0}.sys.foreign_key_columns fkc on fkc.constraint_object_id = fk.object_id
+join {0}.sys.all_columns cc on cc.object_id = fkc.parent_object_id
 	and cc.column_id = fkc.parent_column_id
-join sys.all_columns pc on pc.object_id = fkc.referenced_object_id
+join {0}.sys.all_columns pc on pc.object_id = fkc.referenced_object_id
 	and pc.column_id = fkc.referenced_column_id
-join sys.schemas cs on cs.schema_id = ct.schema_id
-join sys.schemas ps on ps.schema_id = pt.schema_id";
+join {0}.sys.schemas cs on cs.schema_id = ct.schema_id
+join {0}.sys.schemas ps on ps.schema_id = pt.schema_id";
 
 		internal override string KeyConstraintSQL => @"
 select kc.name as ConstraintName, c.name as ColumnName, key_ordinal as Ordinal, t.name as TableName, s.name as SchemaName,
 	i.type_desc as ClusteredNonClustered, i.is_primary_key as IsPrimaryKey, ic.is_descending_key as Descending
-from sys.key_constraints kc
-join sys.tables t on t.object_id = kc.parent_object_id
-join sys.schemas s on s.schema_id = t.schema_id
-join sys.index_columns ic on ic.object_id = t.object_id
+from {0}.sys.key_constraints kc
+join {0}.sys.tables t on t.object_id = kc.parent_object_id
+join {0}.sys.schemas s on s.schema_id = t.schema_id
+join {0}.sys.index_columns ic on ic.object_id = t.object_id
 	and ic.index_id = kc.unique_index_id
-join sys.columns c on c.column_id = ic.column_id and c.object_id = ic.object_id
-join sys.indexes i on i.index_id = ic.index_id and i.object_id = ic.object_id
+join {0}.sys.columns c on c.column_id = ic.column_id and c.object_id = ic.object_id
+join {0}.sys.indexes i on i.index_id = ic.index_id and i.object_id = ic.object_id
 ";
 
 		internal override string IndexSQL => @"SELECT 
@@ -128,75 +128,75 @@ join sys.indexes i on i.index_id = ic.index_id and i.object_id = ic.object_id
 	 Descending = is_descending_key,
 	 SchemaName = sc.name
 FROM 
-     sys.indexes ind 
+     {0}.sys.indexes ind 
 INNER JOIN 
-     sys.index_columns ic ON  ind.object_id = ic.object_id and ind.index_id = ic.index_id 
+     {0}.sys.index_columns ic ON  ind.object_id = ic.object_id and ind.index_id = ic.index_id 
 INNER JOIN 
-     sys.columns col ON ic.object_id = col.object_id and ic.column_id = col.column_id 
+     {0}.sys.columns col ON ic.object_id = col.object_id and ic.column_id = col.column_id 
 INNER JOIN 
-     sys.tables t ON ind.object_id = t.object_id 
-join sys.schemas sc on sc.schema_id = t.schema_id
+     {0}.sys.tables t ON ind.object_id = t.object_id 
+join {0}.sys.schemas sc on sc.schema_id = t.schema_id
 WHERE 
      t.is_ms_shipped = 0 and is_unique_constraint = 0 and is_primary_key = 0";
 
 		internal override string DefaultConstraintSQL => @"SELECT t.name as TableName, co.name as ConstraintName, c.Name as ColumnName, co.definition as ColumnDefault, s.name as SchemaName
-FROM sys.all_columns c
-INNER JOIN sys.tables t ON c.object_id = t.object_id
-INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
-INNER JOIN sys.default_constraints co ON c.default_object_id = co.object_id";
+FROM {0}.sys.all_columns c
+INNER JOIN {0}.sys.tables t ON c.object_id = t.object_id
+INNER JOIN {0}.sys.schemas s ON t.schema_id = s.schema_id
+INNER JOIN {0}.sys.default_constraints co ON c.default_object_id = co.object_id";
 
 		internal override string TriggerSQL => @"select Definition = OBJECT_DEFINITION(t.object_id), t.name as TriggerName, Disabled = is_disabled, o.name as TableName, SchemaName = sc.name
-From sys.triggers t
-join sys.tables o on o.object_id = t.parent_id
-join sys.schemas sc on sc.schema_id = o.schema_id
+From {0}.sys.triggers t
+join {0}.sys.tables o on o.object_id = t.parent_id
+join {0}.sys.schemas sc on sc.schema_id = o.schema_id
 ";
 
 		internal override string DatabaseSQL => "select [name] as DatabaseName from sys.databases where HAS_DBACCESS(name) = 1 order by [name]";
 
 		internal override string ExtendedPropertySQL => @"
 select ep.name as PropName, ep.value as PropValue, 'PROCEDURE' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, sc.name as SchemaName, IgnoreSchema = convert(bit, 0)
-FROM sys.extended_properties AS ep
-JOIN sys.procedures p on p.object_id = ep.major_id
-join sys.schemas sc on sc.schema_id = p.schema_id
+FROM {0}.sys.extended_properties AS ep
+JOIN {0}.sys.procedures p on p.object_id = ep.major_id
+join {0}.sys.schemas sc on sc.schema_id = p.schema_id
 union all
 select ep.name as PropName, ep.value as PropValue, 'VIEW' as Level1Type, v.name as Level1Object, null as Level2Type, null as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 0)
-FROM sys.extended_properties AS ep
-join sys.views v on v.object_id = ep.major_id
-join sys.schemas s on s.schema_id = v.schema_id
+FROM {0}.sys.extended_properties AS ep
+join {0}.sys.views v on v.object_id = ep.major_id
+join {0}.sys.schemas s on s.schema_id = v.schema_id
 union all
 select ep.name as PropName, ep.value as PropValue, 'FUNCTION' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, sc.name as SchemaName, IgnoreSchema = convert(bit, 0)
-FROM sys.extended_properties AS ep
-JOIN sys.objects p on p.object_id = ep.major_id
+FROM {0}.sys.extended_properties AS ep
+JOIN {0}.sys.objects p on p.object_id = ep.major_id
  and type in ('FN', 'IF', 'TF')
-join sys.schemas sc on sc.schema_id = p.schema_id
+join {0}.sys.schemas sc on sc.schema_id = p.schema_id
 union all
 select ep.name as PropName, ep.value as PropValue, 'SYNONYM' as Level1Type, sy.name as Level1Object, null as Level2Type, null as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 0)
-FROM sys.extended_properties AS ep
-JOIN sys.synonyms sy on sy.object_id = ep.major_id
-join sys.schemas s on s.schema_id = sy.schema_id
+FROM {0}.sys.extended_properties AS ep
+JOIN {0}.sys.synonyms sy on sy.object_id = ep.major_id
+join {0}.sys.schemas s on s.schema_id = sy.schema_id
 union all
 select ep.name as PropName, ep.value as PropValue, 'TABLE' as Level1Type, t.name as Level1Object, 'COLUMN' as Level2Type, c.name as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 0)
-FROM sys.extended_properties AS ep
-JOIN sys.tables AS t ON ep.major_id = t.object_id 
-join sys.schemas s on s.schema_id = t.schema_id
-left JOIN sys.columns AS c ON ep.major_id = c.object_id AND ep.minor_id = c.column_id
+FROM {0}.sys.extended_properties AS ep
+JOIN {0}.sys.tables AS t ON ep.major_id = t.object_id 
+join {0}.sys.schemas s on s.schema_id = t.schema_id
+left JOIN {0}.sys.columns AS c ON ep.major_id = c.object_id AND ep.minor_id = c.column_id
 union all
 select ep.name as PropName, ep.value as PropValue, 'USER' as Level1Type, p.name as Level1Object, null as Level2Type, null as Level2Object, p.default_schema_name as SchemaName, IgnoreSchema = convert(bit, 1)
-FROM sys.extended_properties AS ep
-join sys.database_principals p on p.principal_id = ep.major_id
+FROM {0}.sys.extended_properties AS ep
+join {0}.sys.database_principals p on p.principal_id = ep.major_id
 where ep.class = 4
 union all
 select ep.name as PropName, ep.value as PropValue, 'SCHEMA' as Level1Type, s.name as Level1Object, null as Level2Type, null as Level2Object, s.name as SchemaName, IgnoreSchema = convert(bit, 1)
-FROM sys.extended_properties AS ep
-join sys.schemas s on s.schema_id = ep.major_id
+FROM {0}.sys.extended_properties AS ep
+join {0}.sys.schemas s on s.schema_id = ep.major_id
 where ep.class_desc = 'SCHEMA'
 ";
 
 		internal override string DatabasePrincipalSQL => @"
 select dp.principal_id as PrincipalID, dp.owning_principal_id as OwningPrincipalID, dp.name as PrincipalName, replace(dp.type_desc, '_', '') as PrincipalType, 
 	dp.default_schema_name as DefaultSchema, dp.default_schema_name as SchemaName, sp.name as LoginName, dp.is_fixed_role as IsFixedRole
-from sys.database_principals dp
-left join sys.server_principals sp on sp.sid = dp.sid
+from {0}.sys.database_principals dp
+left join {0}.sys.server_principals sp on sp.sid = dp.sid
 -- where dp.name not in ('INFORMATION_SCHEMA', 'sys', 'guest', 'public')
 ";
 
