@@ -390,7 +390,7 @@ namespace PaJaMa.Database.Studio.Query
 		private void refreshSchemaNodes(TreeNode node)
 		{
 			var db = node.Tag as Library.DatabaseObjects.Database;
-			db.DataSource.PopulateSchemas(db, false);
+			db.DataSource.PopulateSchemas(db);
 			foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
 			{
 				var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);
@@ -406,29 +406,39 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void treeTables_BeforeExpand(object sender, TreeViewCancelEventArgs e)
 		{
-			var node = e.Node;
-			if (node.Nodes.Count == 1 && node.Nodes[0].Text == NONE)
+			try
 			{
-				node.Nodes.Clear();
-				if (node.Tag is Library.DatabaseObjects.Database)
+				var node = e.Node;
+				if (node.Nodes.Count == 1 && node.Nodes[0].Text == NONE)
 				{
-					refreshSchemaNodes(node);
-				}
-				else if (node.Tag is SchemaNode)
-				{
-					var schemaNode = node.Tag as SchemaNode;
-					switch (schemaNode.SchemaNodeType)
+					node.Nodes.Clear();
+					if (node.Tag is Library.DatabaseObjects.Database)
 					{
-						case SchemaNodeType.Tables:
-							_dataSource.PopulateTables(new Schema[] { schemaNode.Schema });
-							refreshTableNodes(schemaNode.Schema, node);
-							break;
-						case SchemaNodeType.Views:
-							_dataSource.PopulateViews(schemaNode.Schema);
-							refreshViewNodes(schemaNode.Schema, node);
-							break;
+						refreshSchemaNodes(node);
+					}
+					else if (node.Tag is SchemaNode)
+					{
+						var schemaNode = node.Tag as SchemaNode;
+						switch (schemaNode.SchemaNodeType)
+						{
+							case SchemaNodeType.Tables:
+								if (!schemaNode.Schema.Tables.Any())
+									_dataSource.PopulateTables(new Schema[] { schemaNode.Schema });
+								refreshTableNodes(schemaNode.Schema, node);
+								break;
+							case SchemaNodeType.Views:
+								if (!schemaNode.Schema.Views.Any())
+									_dataSource.PopulateViews(schemaNode.Schema);
+								refreshViewNodes(schemaNode.Schema, node);
+								break;
+						}
 					}
 				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+				e.Cancel = true;
 			}
 		}
 

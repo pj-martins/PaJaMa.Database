@@ -72,7 +72,7 @@ where type = 'table'
 			}
 		}
 
-		internal override void PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override void PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, string schemaName, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating columns for {database.DatabaseName}...");
 
@@ -118,7 +118,7 @@ where type = 'table'
 			}
 		}
 
-		internal override void PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
+		internal override void PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, string schemaName, bool includeSystemSchemas, BackgroundWorker worker)
 		{
 			if (worker != null) worker.ReportProgress(0, $"Populating foreign keys for {database.DatabaseName}...");
 
