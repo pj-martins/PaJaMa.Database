@@ -30,11 +30,14 @@ namespace PaJaMa.Database.Library.DataSources
 
 		internal override string RoutineSynonymSQL => @"
 select 
-	ROUTINE_SCHEMA as SchemaName, 
-	ROUTINE_NAME as Name, 
-	ROUTINE_TYPE as Type,
-	ROUTINE_DEFINITION as Definition
-from {0}.INFORMATION_SCHEMA.ROUTINES
+	n.nspname as SchemaName, 
+	proname as Name, 
+	-- t.typname as Type,
+	'Function' as Type,
+	pg_get_functiondef(p.oid) as Definition
+from pg_proc p
+-- JOIN pg_type t on p.prorettype = t.oid
+JOIN pg_namespace n on n.oid = p.pronamespace
 ";
 
 		internal override string ViewSQL => @"select distinct

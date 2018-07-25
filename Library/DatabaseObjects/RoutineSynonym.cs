@@ -41,9 +41,12 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
 			this.Definition = string.IsNullOrEmpty(this.Definition) ? string.Empty : this.Definition.Trim();
 			this.Schema = schema;
-			this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == ObjectName
-							&& ep.SchemaName == Schema.SchemaName
-							&& ep.Level1Type.ToLower() == ObjectType.ToLower()).ToList();
+			// TODO:
+			if (Database.ExtendedProperties != null)
+				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == ObjectName
+								&& ep.SchemaName == Schema.SchemaName
+								&& ep.Level1Type.ToLower() == ObjectType.ToLower()).ToList();
+			this.Schema.RoutinesSynonyms.Add(this);
 		}
 
 		public enum RoutineSynonymType

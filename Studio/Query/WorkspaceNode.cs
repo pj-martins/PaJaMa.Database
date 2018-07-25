@@ -21,6 +21,7 @@ namespace PaJaMa.Database.Studio.Query
 	public enum SchemaNodeType
 	{
 		Tables,
-		Views
+		Views,
+		Functions
 	}
 }

@@ -219,6 +219,18 @@ namespace PaJaMa.Database.Library.DataSources
 			}
 		}
 
+		public void PopulateRoutinesSynonyms(Schema schema)
+		{
+			using (var conn = OpenConnection())
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					populateObjects<RoutineSynonym>(schema.Database, cmd, string.Format(this.RoutineSynonymSQL, schema.Database.DatabaseName), schema.SchemaName, true, null);
+				}
+				conn.Close();
+			}
+		}
+
 		public void PopulateChildren(DatabaseObjects.Database database, bool condensed, BackgroundWorker worker)
 		{
 			if (database == null) database = CurrentDatabase;

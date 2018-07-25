@@ -387,6 +387,17 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
+		private void refreshFunctionNodes(Schema schema, TreeNode parentNode)
+		{
+			foreach (var routineSynonym in from rs in schema.RoutinesSynonyms
+								 orderby rs.Name
+								 select rs)
+			{
+				var node2 = parentNode.Nodes.Add(routineSynonym.Name);
+				node2.Tag = routineSynonym;
+			}
+		}
+
 		private void refreshSchemaNodes(TreeNode node)
 		{
 			var db = node.Tag as Library.DatabaseObjects.Database;
@@ -430,6 +441,11 @@ namespace PaJaMa.Database.Studio.Query
 								if (!schemaNode.Schema.Views.Any())
 									_dataSource.PopulateViews(schemaNode.Schema);
 								refreshViewNodes(schemaNode.Schema, node);
+								break;
+							case SchemaNodeType.Functions:
+								if (!schemaNode.Schema.RoutinesSynonyms.Any())
+									_dataSource.PopulateRoutinesSynonyms(schemaNode.Schema);
+								refreshFunctionNodes(schemaNode.Schema, node);
 								break;
 						}
 					}
@@ -640,6 +656,7 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				var db = treeTables.SelectedNode.Tag as Library.DatabaseObjects.Database;
 				db.Schemas.Clear();
+				treeTables.SelectedNode.Nodes.Clear();
 				refreshSchemaNodes(treeTables.SelectedNode);
 			}
 		}
