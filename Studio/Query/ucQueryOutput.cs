@@ -222,7 +222,20 @@ namespace PaJaMa.Database.Studio.Query
 								grid.RowCount = 0;
 								grid.CellValueNeeded += grid_CellValueNeeded;
 								grid.CellFormatting += grid_CellFormatting;
-								splitContainer.Panel1.Controls.Add(grid);
+
+								var splitDetails = new SplitContainer();
+								splitDetails.Dock = DockStyle.Fill;
+								splitDetails.Panel2Collapsed = true;
+								splitDetails.Panel2MinSize = 0;
+								var pnlDetail = new Panel();
+								pnlDetail.Dock = DockStyle.Fill;
+								pnlDetail.BorderStyle = BorderStyle.Fixed3D;
+								pnlDetail.AutoScroll = true;
+								splitDetails.Panel2.Controls.Add(pnlDetail);
+								splitDetails.Panel1.Controls.Add(grid);
+								grid.SelectionChanged += (object s, EventArgs e) => setDetailControls(splitDetails);
+								
+								splitContainer.Panel1.Controls.Add(splitDetails);
 								if (lastSplit != null)
 									lastSplit.Panel2.Controls.Add(splitContainer);
 								else
@@ -232,6 +245,7 @@ namespace PaJaMa.Database.Studio.Query
 								{
 									split.SplitterDistance = splitQuery.Panel2.Height / _splitContainers.Count;
 								}
+								splitDetails.SplitterDistance = (int)((double)splitDetails.Width * 0.7);
 								//grid.DataSource = dt;
 								grid.AutoGenerateColumns = true;
 								grid.Tag = new List<DataTable>() { dt };
@@ -343,6 +357,7 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.ReadOnly = false;
 				txtQuery.Focus();
 				this.Parent.Text = this.Parent.Text.Replace(" (Executing)", "");
+				populateDetailPanels();
 			}));
 		}
 
@@ -513,6 +528,83 @@ namespace PaJaMa.Database.Studio.Query
 			}
 			//else if (e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
 			//	(sender as TextBox).SelectAll();
+		}
+
+		private void chkDetail_CheckedChanged(object sender, EventArgs e)
+		{
+			populateDetailPanels();
+		}
+
+		private void populateDetailPanels()
+		{
+			foreach (var spc in _splitContainers)
+			{
+				var splitDetails = spc.Panel1.Controls[0] as SplitContainer;
+				splitDetails.Panel2Collapsed = !chkDetail.Checked;
+				setDetailControls(splitDetails);
+			}
+		}
+
+		private void setDetailControls(SplitContainer splitDetails)
+		{
+			var pnlDetail = splitDetails.Panel2.Controls[0] as Panel;
+			if (splitDetails.Panel2Collapsed) return;
+			var grid = splitDetails.Panel1.Controls[0] as DataGridView;
+			if (pnlDetail.Controls.Count < 1)
+			{
+				pnlDetail.SuspendLayout();
+				int top = 5;
+				int maxLabelWidth = 0;
+				var labels = new List<Label>();
+				foreach (DataGridViewColumn col in grid.Columns)
+				{
+					var lbl = new Label();
+					lbl.Text = col.HeaderText;
+					lbl.Location = new Point(1, top);
+					lbl.AutoSize = false;
+					lbl.TextAlign = ContentAlignment.MiddleRight;
+					if (lbl.Width > maxLabelWidth) maxLabelWidth = lbl.Width;
+					labels.Add(lbl);
+					pnlDetail.Controls.Add(lbl);
+					top += 25;
+				}
+				foreach (var lbl in labels)
+				{
+					lbl.Width = maxLabelWidth - 8;
+				}
+				top = 5;
+				foreach (DataGridViewColumn col in grid.Columns)
+				{
+					var txt = new TextBox();
+					txt.Location = new Point(maxLabelWidth, top);
+					txt.Width = pnlDetail.Width - maxLabelWidth - 7;
+					txt.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+					txt.Name = col.Name;
+					txt.ReadOnly = true;
+					pnlDetail.Controls.Add(txt);
+					top += 25;
+				}
+				pnlDetail.ResumeLayout();
+			}
+
+			foreach (var txt in pnlDetail.Controls.OfType<TextBox>())
+			{
+				txt.Text = string.Empty;
+				var rows = grid.SelectedCells.OfType<DataGridViewCell>().Select(c => c.OwningRow).Distinct();
+				if (rows.Count() != 1) continue;
+				var row = rows.First();
+				var col = grid.Columns[txt.Name];
+				txt.Text = row.Cells[col.Index].Value == null ? string.Empty : row.Cells[col.Index].Value.ToString();
+
+				// TODO: is it really null or just text?
+				txt.BackColor = Color.Empty;
+				txt.Font = new Font(txt.Font, FontStyle.Regular);
+				if (txt.Text == "NULL")
+				{
+					txt.BackColor = Color.LightYellow;
+					txt.Font = new Font(txt.Font, FontStyle.Italic);
+				}
+			}
 		}
 	}
 }

@@ -37,6 +37,7 @@
 			this.tabMessages = new System.Windows.Forms.TabPage();
 			this.txtMessages = new System.Windows.Forms.TextBox();
 			this.pnlButtons = new System.Windows.Forms.Panel();
+			this.chkDetail = new System.Windows.Forms.CheckBox();
 			this.lblDatabase = new System.Windows.Forms.Label();
 			this.cboDatabases = new System.Windows.Forms.ComboBox();
 			this.lblTime = new System.Windows.Forms.Label();
@@ -71,7 +72,7 @@
 			// 
 			this.splitQuery.Panel2.Controls.Add(this.pnlResults);
 			this.splitQuery.Panel2MinSize = 0;
-			this.splitQuery.Size = new System.Drawing.Size(926, 488);
+			this.splitQuery.Size = new System.Drawing.Size(1023, 488);
 			this.splitQuery.SplitterDistance = 216;
 			this.splitQuery.TabIndex = 8;
 			// 
@@ -82,7 +83,7 @@
 			this.txtQuery.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtQuery.Location = new System.Drawing.Point(0, 0);
 			this.txtQuery.Name = "txtQuery";
-			this.txtQuery.Size = new System.Drawing.Size(926, 216);
+			this.txtQuery.Size = new System.Drawing.Size(1023, 216);
 			this.txtQuery.TabIndex = 6;
 			this.txtQuery.Text = "";
 			this.txtQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtQuery_KeyDown);
@@ -94,7 +95,7 @@
 			this.pnlResults.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.pnlResults.Location = new System.Drawing.Point(0, 0);
 			this.pnlResults.Name = "pnlResults";
-			this.pnlResults.Size = new System.Drawing.Size(926, 268);
+			this.pnlResults.Size = new System.Drawing.Size(1023, 268);
 			this.pnlResults.TabIndex = 0;
 			// 
 			// tabControl1
@@ -105,7 +106,7 @@
 			this.tabControl1.Location = new System.Drawing.Point(0, 0);
 			this.tabControl1.Name = "tabControl1";
 			this.tabControl1.SelectedIndex = 0;
-			this.tabControl1.Size = new System.Drawing.Size(926, 268);
+			this.tabControl1.Size = new System.Drawing.Size(1023, 268);
 			this.tabControl1.TabIndex = 0;
 			// 
 			// tabResults
@@ -113,7 +114,7 @@
 			this.tabResults.Location = new System.Drawing.Point(4, 22);
 			this.tabResults.Name = "tabResults";
 			this.tabResults.Padding = new System.Windows.Forms.Padding(3);
-			this.tabResults.Size = new System.Drawing.Size(918, 242);
+			this.tabResults.Size = new System.Drawing.Size(1015, 242);
 			this.tabResults.TabIndex = 0;
 			this.tabResults.Text = "Results";
 			this.tabResults.UseVisualStyleBackColor = true;
@@ -143,6 +144,7 @@
 			// 
 			// pnlButtons
 			// 
+			this.pnlButtons.Controls.Add(this.chkDetail);
 			this.pnlButtons.Controls.Add(this.lblDatabase);
 			this.pnlButtons.Controls.Add(this.cboDatabases);
 			this.pnlButtons.Controls.Add(this.lblTime);
@@ -154,14 +156,26 @@
 			this.pnlButtons.Enabled = false;
 			this.pnlButtons.Location = new System.Drawing.Point(0, 488);
 			this.pnlButtons.Name = "pnlButtons";
-			this.pnlButtons.Size = new System.Drawing.Size(926, 39);
+			this.pnlButtons.Size = new System.Drawing.Size(1023, 39);
 			this.pnlButtons.TabIndex = 9;
+			// 
+			// chkDetail
+			// 
+			this.chkDetail.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.chkDetail.AutoSize = true;
+			this.chkDetail.Location = new System.Drawing.Point(450, 12);
+			this.chkDetail.Name = "chkDetail";
+			this.chkDetail.Size = new System.Drawing.Size(79, 17);
+			this.chkDetail.TabIndex = 10;
+			this.chkDetail.Text = "View Detail";
+			this.chkDetail.UseVisualStyleBackColor = true;
+			this.chkDetail.CheckedChanged += new System.EventHandler(this.chkDetail_CheckedChanged);
 			// 
 			// lblDatabase
 			// 
 			this.lblDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.lblDatabase.AutoSize = true;
-			this.lblDatabase.Location = new System.Drawing.Point(608, 13);
+			this.lblDatabase.Location = new System.Drawing.Point(705, 13);
 			this.lblDatabase.Name = "lblDatabase";
 			this.lblDatabase.Size = new System.Drawing.Size(53, 13);
 			this.lblDatabase.TabIndex = 9;
@@ -172,7 +186,7 @@
 			this.cboDatabases.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cboDatabases.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboDatabases.FormattingEnabled = true;
-			this.cboDatabases.Location = new System.Drawing.Point(667, 9);
+			this.cboDatabases.Location = new System.Drawing.Point(764, 9);
 			this.cboDatabases.Name = "cboDatabases";
 			this.cboDatabases.Size = new System.Drawing.Size(142, 21);
 			this.cboDatabases.TabIndex = 8;
@@ -183,7 +197,7 @@
 			this.lblTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.lblTime.AutoSize = true;
 			this.lblTime.BackColor = System.Drawing.Color.Transparent;
-			this.lblTime.Location = new System.Drawing.Point(386, 13);
+			this.lblTime.Location = new System.Drawing.Point(364, 13);
 			this.lblTime.Name = "lblTime";
 			this.lblTime.Size = new System.Drawing.Size(35, 13);
 			this.lblTime.TabIndex = 4;
@@ -194,7 +208,7 @@
 			// 
 			this.lblResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.lblResults.AutoSize = true;
-			this.lblResults.Location = new System.Drawing.Point(464, 13);
+			this.lblResults.Location = new System.Drawing.Point(535, 13);
 			this.lblResults.Name = "lblResults";
 			this.lblResults.Size = new System.Drawing.Size(42, 13);
 			this.lblResults.TabIndex = 3;
@@ -204,7 +218,7 @@
 			// btnStop
 			// 
 			this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnStop.Location = new System.Drawing.Point(815, 8);
+			this.btnStop.Location = new System.Drawing.Point(912, 8);
 			this.btnStop.Name = "btnStop";
 			this.btnStop.Size = new System.Drawing.Size(102, 23);
 			this.btnStop.TabIndex = 2;
@@ -219,7 +233,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.progMain.Location = new System.Drawing.Point(15, 8);
 			this.progMain.Name = "progMain";
-			this.progMain.Size = new System.Drawing.Size(365, 23);
+			this.progMain.Size = new System.Drawing.Size(343, 23);
 			this.progMain.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
 			this.progMain.TabIndex = 1;
 			this.progMain.Visible = false;
@@ -227,7 +241,7 @@
 			// btnGo
 			// 
 			this.btnGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnGo.Location = new System.Drawing.Point(815, 8);
+			this.btnGo.Location = new System.Drawing.Point(912, 8);
 			this.btnGo.Name = "btnGo";
 			this.btnGo.Size = new System.Drawing.Size(102, 23);
 			this.btnGo.TabIndex = 0;
@@ -247,7 +261,7 @@
 			this.Controls.Add(this.splitQuery);
 			this.Controls.Add(this.pnlButtons);
 			this.Name = "ucQueryOutput";
-			this.Size = new System.Drawing.Size(926, 527);
+			this.Size = new System.Drawing.Size(1023, 527);
 			this.splitQuery.Panel1.ResumeLayout(false);
 			this.splitQuery.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).EndInit();
@@ -280,5 +294,6 @@
 		private System.Windows.Forms.TabPage tabResults;
 		private System.Windows.Forms.TabPage tabMessages;
 		private System.Windows.Forms.TextBox txtMessages;
+		private System.Windows.Forms.CheckBox chkDetail;
 	}
 }
