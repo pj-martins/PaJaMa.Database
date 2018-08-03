@@ -76,7 +76,7 @@ namespace PaJaMa.Database.Library.DataSources
 		public override void PopulateTables(Schema[] schemas)
 		{
 			var schema = schemas.First();
-			using (var conn = OpenConnection())
+			using (var conn = OpenConnection(schema.Database.DatabaseName))
 			{
 				var dtTables = conn.GetSchema("Tables");
 				var dtColumns = conn.GetSchema("Columns");

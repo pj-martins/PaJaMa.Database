@@ -14,6 +14,7 @@ namespace PaJaMa.Database.Studio.Classes
 		public string LastCompareSourceConnString { get; set; }
 		public string LastCompareTargetConnString { get; set; }
 		public string LastSearchConnectionString { get; set; }
+		public string LastSearchServerType { get; set; }
 		public string LastCompareSourceDriver { get; set; }
 		public string LastCompareTargetDriver { get; set; }
 		public string LastQueryConnectionString { get; set; }

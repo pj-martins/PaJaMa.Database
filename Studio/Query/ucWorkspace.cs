@@ -141,7 +141,7 @@ namespace PaJaMa.Database.Studio.Query
 			try
 			{
 				_dataSource = Activator.CreateInstance(cboServer.SelectedItem as Type, new object[] { txtConnectionString.Text }) as DataSource;
-				_currentConnection = _dataSource.OpenConnection();
+				_currentConnection = _dataSource.OpenConnection(string.Empty);
 				if (chkUseDummyDA.Checked)
 				{
 					DbDataAdapter dummy;

@@ -63,7 +63,7 @@ namespace PaJaMa.Database.Library.DataSources
 		protected List<DatabaseObjects.Database> getDatabases()
 		{
 			var databases = new List<DatabaseObjects.Database>();
-			using (var conn = OpenConnection())
+			using (var conn = OpenConnection(string.Empty))
 			{
 				this.DataSourceName = conn.DataSource;
 				if (string.IsNullOrEmpty(DatabaseSQL))
@@ -99,7 +99,7 @@ namespace PaJaMa.Database.Library.DataSources
 			return databases;
 		}
 
-		public DbConnection OpenConnection(string database = null)
+		public DbConnection OpenConnection(string database)
 		{
 			var conn = Activator.CreateInstance(connectionType) as DbConnection;
 			conn.ConnectionString = ConnectionString;
@@ -159,7 +159,8 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public virtual void PopulateTables(Schema[] schemas)
 		{
-			using (var conn = OpenConnection())
+			// TODO: assumes all schemas are from same db
+			using (var conn = OpenConnection(schemas.First().Database.DatabaseName))
 			{
 				using (var cmd = conn.CreateCommand())
 				{
@@ -197,7 +198,7 @@ namespace PaJaMa.Database.Library.DataSources
 				database.Schemas.Add(new Schema(database) { SchemaName = "" });
 			else
 			{
-				using (var conn = OpenConnection())
+				using (var conn = OpenConnection(database.DatabaseName))
 				{
 					using (var cmd = conn.CreateCommand())
 					{
@@ -209,7 +210,7 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public void PopulateViews(Schema schema)
 		{
-			using (var conn = OpenConnection())
+			using (var conn = OpenConnection(schema.Database.DatabaseName))
 			{
 				using (var cmd = conn.CreateCommand())
 				{
@@ -221,7 +222,7 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public void PopulateRoutinesSynonyms(Schema schema)
 		{
-			using (var conn = OpenConnection())
+			using (var conn = OpenConnection(schema.Database.DatabaseName))
 			{
 				using (var cmd = conn.CreateCommand())
 				{
@@ -242,7 +243,7 @@ namespace PaJaMa.Database.Library.DataSources
 			database.Credentials = new List<Credential>();
 			database.Extensions = new List<Extension>();
 
-			using (var conn = OpenConnection())
+			using (var conn = OpenConnection(database.DatabaseName))
 			{
 				using (var cmd = conn.CreateCommand())
 				{

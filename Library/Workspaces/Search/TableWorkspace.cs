@@ -19,6 +19,7 @@ namespace PaJaMa.Database.Library.Workspaces.Search
 
 		public List<ColumnWorkspace> ColumnWorkspaces { get; private set; }
 
+		private bool? _selected;
 		public bool? SelectAll
 		{
 			get
@@ -29,14 +30,16 @@ namespace PaJaMa.Database.Library.Workspaces.Search
 				//	return true;
 				//return null;
 
-				return ColumnWorkspaces.Any(c => c.Select);
+				// return ColumnWorkspaces.Any(c => c.Select);
+				return _selected;
 			}
 			set
 			{
-				foreach (var col in ColumnWorkspaces)
-				{
-					col.Select = true;
-				}
+				_selected = value;
+				//foreach (var col in ColumnWorkspaces)
+				//{
+				//	col.Select = true;
+				//}
 			}
 		}
 
@@ -45,7 +48,7 @@ namespace PaJaMa.Database.Library.Workspaces.Search
 			_serachHelper = searchHelper;
 			Table = table;
 			var tables = new List<Table>();
-			ColumnWorkspaces = Table.Columns.OrderBy(c => c.OrdinalPosition).Select(c => new ColumnWorkspace(c)).ToList();
+			ColumnWorkspaces = Table.Columns.OrderBy(c => c.OrdinalPosition).Select(c => new ColumnWorkspace(this, c)).ToList();
 		}
 
 		public override string ToString()

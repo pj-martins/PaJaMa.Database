@@ -3,6 +3,7 @@ using PaJaMa.Database.Library.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public ColumnType ColumnType { get; set; }
 
-        public string ColumnName { get; set; }
+		public string ColumnName { get; set; }
 
 		[Ignore]
 		public int OrdinalPosition { get; set; }
@@ -65,6 +66,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public string CreateTypeName { get; set; }
 		public Type ClrType { get; private set; }
 		public DataType DataType { get; private set; }
+		public DbType DbType { get; private set; }
 		public string DefaultValue { get; private set; }
 		public Map[] MappedValues { get; private set; }
 		public bool IsFixedSize { get; set; }
@@ -76,6 +78,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			this.DataType = dataType;
 			this.MappedValues = maps;
 			this.DefaultValue = defaultValue;
+			var memInfo = typeof(DataType).GetMember(dataType.ToString())[0];
+			this.DbType = (memInfo.GetCustomAttributes(typeof(DbTypeAttribute), true).First() as DbTypeAttribute).DbType;
 		}
 
 		public override string ToString()
@@ -86,31 +90,65 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 	public enum DataType
 	{
+		[DbType(DbType.Guid)]
 		UniqueIdentifier,
+		[DbType(DbType.DateTime2)]
 		DateTime,
+		[DbType(DbType.DateTime2)]
 		SmallDateTime,
+		[DbType(DbType.Date)]
 		DateOnly,
+		[DbType(DbType.String)]
 		VaryingChar,
-        Char,
-        SmallInteger,
+		[DbType(DbType.String)]
+		Char,
+		[DbType(DbType.Int16)]
+		SmallInteger,
+		[DbType(DbType.Int32)]
 		Integer,
+		[DbType(DbType.Double)]
 		Real,
+		[DbType(DbType.Decimal)]
 		Money,
+		[DbType(DbType.Boolean)]
 		Boolean,
+		[DbType(DbType.Xml)]
 		Xml,
+		[DbType(DbType.String)]
 		Json,
+		[DbType(DbType.Double)]
 		Float,
+		[DbType(DbType.Binary)]
 		VarBinary,
+		[DbType(DbType.String)]
 		Text,
+		[DbType(DbType.Decimal)]
 		Decimal,
+		[DbType(DbType.Decimal)]
 		Numeric,
+		[DbType(DbType.Binary)]
 		Binary,
+		[DbType(DbType.Time)]
 		TimeOnly,
+		[DbType(DbType.Int64)]
 		BigInt,
+		[DbType(DbType.Object)]
 		RowVersion,
+		[DbType(DbType.Object)]
 		Array,
+		[DbType(DbType.String)]
 		VarChar,
+		[DbType(DbType.String)]
 		NVarChar
+	}
+
+	public class DbTypeAttribute : Attribute
+	{
+		public DbType DbType { get; private set; }
+		public DbTypeAttribute(DbType dbType)
+		{
+			DbType = dbType;
+		}
 	}
 
 	public class Map

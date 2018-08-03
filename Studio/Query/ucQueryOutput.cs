@@ -85,7 +85,7 @@ namespace PaJaMa.Database.Studio.Query
 					_currentConnection = connection;
 				else
 				{
-					_currentConnection = server.OpenConnection();
+					_currentConnection = server.OpenConnection(string.Empty);
 					// TODO: generic
 					if (_currentConnection is SqlConnection)
 						(_currentConnection as SqlConnection).InfoMessage += ucQueryOutput_InfoMessage;

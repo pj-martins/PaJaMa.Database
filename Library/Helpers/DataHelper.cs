@@ -46,7 +46,7 @@ namespace PaJaMa.Database.Library.Helpers
 
 			_cancel = false;
 
-			using (var conn = workspace.SourceTable.Database.DataSource.OpenConnection())
+			using (var conn = workspace.SourceTable.Database.DataSource.OpenConnection(workspace.SourceTable.Database.DatabaseName))
 			{
 				_currentCommand = conn.CreateCommand();
 				_currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));
@@ -59,7 +59,7 @@ namespace PaJaMa.Database.Library.Helpers
 
 			workspace.ComparedData.PrimaryKeyFields = primaryKeys;
 
-			using (var conn = workspace.TargetTable.Database.DataSource.OpenConnection())
+			using (var conn = workspace.TargetTable.Database.DataSource.OpenConnection(workspace.TargetTable.Database.DatabaseName))
 			{
 				_currentCommand = conn.CreateCommand();
 				_currentCommand.CommandText = string.Format("select * from {0}", workspace.TargetTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));

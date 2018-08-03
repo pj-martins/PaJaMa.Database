@@ -37,6 +37,8 @@
 			this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.selectTop1000ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.gridColumns = new System.Windows.Forms.DataGridView();
+			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Select = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.btnRefresh = new System.Windows.Forms.Button();
 			this.panel2 = new System.Windows.Forms.Panel();
 			this.txtSearch = new System.Windows.Forms.TextBox();
@@ -48,10 +50,9 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.cboConnectionString = new System.Windows.Forms.ComboBox();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.cboServer = new System.Windows.Forms.ComboBox();
 			this.tabResults = new System.Windows.Forms.TabControl();
 			this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Select = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
@@ -123,18 +124,18 @@
             this.selectToolStripMenuItem,
             this.selectTop1000ToolStripMenuItem});
 			this.mnuMain.Name = "mnuTree";
-			this.mnuMain.Size = new System.Drawing.Size(157, 48);
+			this.mnuMain.Size = new System.Drawing.Size(156, 48);
 			// 
 			// selectToolStripMenuItem
 			// 
 			this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-			this.selectToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+			this.selectToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
 			this.selectToolStripMenuItem.Text = "Select";
 			// 
 			// selectTop1000ToolStripMenuItem
 			// 
 			this.selectTop1000ToolStripMenuItem.Name = "selectTop1000ToolStripMenuItem";
-			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
 			this.selectTop1000ToolStripMenuItem.Text = "Select Top 1000";
 			// 
 			// gridColumns
@@ -151,6 +152,21 @@
 			this.gridColumns.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			this.gridColumns.Size = new System.Drawing.Size(261, 250);
 			this.gridColumns.TabIndex = 10;
+			this.gridColumns.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridColumns_CellValueChanged);
+			// 
+			// dataGridViewTextBoxColumn2
+			// 
+			this.dataGridViewTextBoxColumn2.DataPropertyName = "Column";
+			this.dataGridViewTextBoxColumn2.HeaderText = "Column";
+			this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+			this.dataGridViewTextBoxColumn2.ReadOnly = true;
+			this.dataGridViewTextBoxColumn2.Width = 220;
+			// 
+			// Select
+			// 
+			this.Select.DataPropertyName = "Select";
+			this.Select.HeaderText = "Select";
+			this.Select.Name = "Select";
 			// 
 			// btnRefresh
 			// 
@@ -246,7 +262,7 @@
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(8, 15);
+			this.label1.Location = new System.Drawing.Point(8, 17);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(91, 13);
 			this.label1.TabIndex = 7;
@@ -257,14 +273,15 @@
 			this.cboConnectionString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.cboConnectionString.FormattingEnabled = true;
-			this.cboConnectionString.Location = new System.Drawing.Point(105, 12);
+			this.cboConnectionString.Location = new System.Drawing.Point(105, 13);
 			this.cboConnectionString.Name = "cboConnectionString";
-			this.cboConnectionString.Size = new System.Drawing.Size(529, 21);
+			this.cboConnectionString.Size = new System.Drawing.Size(381, 21);
 			this.cboConnectionString.TabIndex = 6;
 			this.cboConnectionString.SelectedIndexChanged += new System.EventHandler(this.cboConnectionString_SelectedIndexChanged);
 			// 
 			// panel1
 			// 
+			this.panel1.Controls.Add(this.cboServer);
 			this.panel1.Controls.Add(this.btnRemoveConnString);
 			this.panel1.Controls.Add(this.cboDatabase);
 			this.panel1.Controls.Add(this.btnDisconnect);
@@ -276,6 +293,17 @@
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(865, 47);
 			this.panel1.TabIndex = 13;
+			// 
+			// cboServer
+			// 
+			this.cboServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.cboServer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cboServer.FormattingEnabled = true;
+			this.cboServer.Location = new System.Drawing.Point(492, 13);
+			this.cboServer.Name = "cboServer";
+			this.cboServer.Size = new System.Drawing.Size(142, 21);
+			this.cboServer.TabIndex = 13;
+			this.cboServer.Format += new System.Windows.Forms.ListControlConvertEventHandler(this.cboServer_Format);
 			// 
 			// tabResults
 			// 
@@ -304,20 +332,6 @@
 			this.splitContainer2.Size = new System.Drawing.Size(865, 501);
 			this.splitContainer2.SplitterDistance = 250;
 			this.splitContainer2.TabIndex = 17;
-			// 
-			// dataGridViewTextBoxColumn2
-			// 
-			this.dataGridViewTextBoxColumn2.DataPropertyName = "Column";
-			this.dataGridViewTextBoxColumn2.HeaderText = "Column";
-			this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-			this.dataGridViewTextBoxColumn2.ReadOnly = true;
-			this.dataGridViewTextBoxColumn2.Width = 220;
-			// 
-			// Select
-			// 
-			this.Select.DataPropertyName = "Select";
-			this.Select.HeaderText = "Select";
-			this.Select.Name = "Select";
 			// 
 			// ucSearch
 			// 
@@ -372,5 +386,6 @@
 		private System.Windows.Forms.SplitContainer splitContainer2;
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
 		private System.Windows.Forms.DataGridViewCheckBoxColumn Select;
+		private System.Windows.Forms.ComboBox cboServer;
 	}
 }
