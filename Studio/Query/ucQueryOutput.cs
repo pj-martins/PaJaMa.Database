@@ -166,29 +166,41 @@ namespace PaJaMa.Database.Studio.Query
 					_currentCommand.CommandTimeout = 600000;
 					using (var dr = _currentCommand.ExecuteReader())
 					{
-						this.Invoke(new Action(() =>
+						// this.Invoke(new Action(() =>
+						// {
+						//if (!_stopRequested && !dr.HasRows)
+						//{
+						//	lblResults.Text = "Complete.";
+						//	lblResults.Visible = true;
+						//	setDatabaseText();
+
+						//	return;
+						//}
+						bool hasNext = true;
+						while (!_stopRequested)
 						{
-							//if (!_stopRequested && !dr.HasRows)
+							DataTable dt = new DataTable();
+							//var timer = new System.Threading.Timer((object stateInfo) =>
 							//{
-							//	lblResults.Text = "Complete.";
-							//	lblResults.Visible = true;
-							//	setDatabaseText();
+							//	this.Invoke(new Action(() =>
+							//	{
+							//		dt.EndLoadData();
+							//		dt.BeginLoadData();
+							//		Application.DoEvents();
+							//	}));
+							//}, null, 3000, 3000);
 
-							//	return;
-							//}
-							bool hasNext = true;
-							while (!_stopRequested)
+							var schema = dr.GetSchemaTable();
+							if (schema == null || !hasNext)
 							{
-								DataTable dt = new DataTable();
-								var schema = dr.GetSchemaTable();
-								if (schema == null || !hasNext)
-								{
-									if (dr.RecordsAffected > 0)
-										recordsAffected += dr.RecordsAffected;
-									break;
-								}
+								if (dr.RecordsAffected > 0)
+									recordsAffected += dr.RecordsAffected;
+								break;
+							}
 
-								var grid = new DataGridView();
+							var grid = new DataGridView();
+							this.Invoke(new Action(() =>
+							{
 								foreach (var row in schema.Rows.OfType<DataRow>())
 								{
 									// int existingCount = dt.Columns.OfType<DataColumn>().Count(c => c.ColumnName == row["ColumnName"].ToString());
@@ -203,7 +215,7 @@ namespace PaJaMa.Database.Studio.Query
 										curr++;
 									}
 									dt.Columns.Add(colName, colType);
-									grid.Columns.Add(colName, row["ColumnName"].ToString());
+									// grid.Columns.Add(colName, row["ColumnName"].ToString());
 								}
 
 								var lastSplit = _splitContainers.LastOrDefault();
@@ -218,9 +230,9 @@ namespace PaJaMa.Database.Studio.Query
 								grid.Dock = DockStyle.Fill;
 								grid.AllowUserToAddRows = grid.AllowUserToDeleteRows = false;
 								grid.ReadOnly = true;
-								grid.VirtualMode = true;
-								grid.RowCount = 0;
-								grid.CellValueNeeded += grid_CellValueNeeded;
+								// grid.VirtualMode = true;
+								// grid.RowCount = 0;
+								// grid.CellValueNeeded += grid_CellValueNeeded;
 								grid.CellFormatting += grid_CellFormatting;
 
 								var splitDetails = new SplitContainer();
@@ -234,7 +246,7 @@ namespace PaJaMa.Database.Studio.Query
 								splitDetails.Panel2.Controls.Add(pnlDetail);
 								splitDetails.Panel1.Controls.Add(grid);
 								grid.SelectionChanged += (object s, EventArgs e) => setDetailControls(splitDetails);
-								
+
 								splitContainer.Panel1.Controls.Add(splitDetails);
 								if (lastSplit != null)
 									lastSplit.Panel2.Controls.Add(splitContainer);
@@ -246,9 +258,9 @@ namespace PaJaMa.Database.Studio.Query
 									split.SplitterDistance = splitQuery.Panel2.Height / _splitContainers.Count;
 								}
 								splitDetails.SplitterDistance = (int)((double)splitDetails.Width * 0.7);
-								//grid.DataSource = dt;
+								grid.DataSource = dt;
 								grid.AutoGenerateColumns = true;
-								grid.Tag = new List<DataTable>() { dt };
+								// grid.Tag = new List<DataTable>() { dt };
 
 								foreach (DataGridViewColumn col in grid.Columns)
 								{
@@ -258,76 +270,94 @@ namespace PaJaMa.Database.Studio.Query
 										col.ToolTipText = dtCol.DataType.Name;
 									}
 								}
+							}));
 
-								int i = 0;
-								var lastRefresh = DateTime.Now;
-								dt.BeginLoadData();
-								while (dr.Read())
+							int i = 0;
+							var lastRefresh = DateTime.Now;
+							dt.BeginLoadData();
+							while (dr.Read())
+							{
+								i++;
+								if (_stopRequested) break;
+								var row = dt.NewRow();
+								var cols = dt.Columns.OfType<DataColumn>();
+								for (int j = 0; j < cols.Count(); j++)
 								{
-									i++;
-									if (_stopRequested) break;
-									var row = dt.NewRow();
-									var cols = dt.Columns.OfType<DataColumn>();
-									for (int j = 0; j < cols.Count(); j++)
+									try
 									{
-										try
+										if (dr[j] is byte[])
 										{
-											if (dr[j] is byte[])
-											{
-												row[j] = Convert.ToBase64String(dr[j] as byte[]);
-											}
-											else if (dr[j].GetType().IsArray)
-											{
-												List<string> stringVals = new List<string>();
-												row[j] = string.Join(",", ((Array)dr[j]).OfType<object>().Select(o => o.ToString()));
-											}
-											else
-											{
-												row[j] = dr[j];
-											}
+											row[j] = Convert.ToBase64String(dr[j] as byte[]);
 										}
-										catch (Exception ex)
+										else if (dr[j].GetType().IsArray)
 										{
-											// TODO: log
-											if (!_errorDict.ContainsKey(i))
-												_errorDict.Add(i, new Dictionary<int, string>());
-											_errorDict[i].Add(j, "ERR! " + ex.Message);
+											List<string> stringVals = new List<string>();
+											row[j] = string.Join(",", ((Array)dr[j]).OfType<object>().Select(o => o.ToString()));
+										}
+										else
+										{
+											row[j] = dr[j];
 										}
 									}
-
-									dt.Rows.Add(row);
-
-									// if (i % 1000 == 0)
-									if ((DateTime.Now - lastRefresh).TotalSeconds > 3)
+									catch (Exception ex)
 									{
-										lastRefresh = DateTime.Now;
-										dt.EndLoadData();
-										grid.RowCount += dt.Rows.Count;
-										dt = dt.Clone();
-										(grid.Tag as List<DataTable>).Add(dt);
-										dt.BeginLoadData();
-										//dt.EndLoadData();
-										//dt.BeginLoadData();
-										//Application.DoEvents();
-
-										Application.DoEvents();
+										// TODO: log
+										if (!_errorDict.ContainsKey(i))
+											_errorDict.Add(i, new Dictionary<int, string>());
+										_errorDict[i].Add(j, "ERR! " + ex.Message);
 									}
-
-									if (i % 100 == 0)
-										Application.DoEvents();
 								}
-								dt.EndLoadData();
 
-								var sum = (grid.Tag as List<DataTable>).Sum(t => t.Rows.Count);
-								grid.RowCount = sum;
-								totalResults += sum;
+								dt.Rows.Add(row);
 
-								//grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+								// if (i % 1000 == 0)
+								//if ((DateTime.Now - lastRefresh).TotalSeconds > 3)
+								//{
+								//	lastRefresh = DateTime.Now;
+								//	dt.EndLoadData();
+								//	// grid.RowCount += dt.Rows.Count;
+								//	dt = dt.Clone();
+								//	// (grid.Tag as List<DataTable>).Add(dt);
+								//	dt.BeginLoadData();
+								//	//dt.EndLoadData();
+								//	//dt.BeginLoadData();
+								//	//Application.DoEvents();
 
-								if (!_stopRequested)
-									hasNext = dr.NextResult();
+								//	Application.DoEvents();
+								//}
+
+								// if (i % 1000 == 0)
+								if ((DateTime.Now - lastRefresh).TotalSeconds > 2)
+								{
+									lastRefresh = DateTime.Now;
+									this.Invoke(new Action(() =>
+									{
+										dt.EndLoadData();
+										Application.DoEvents();
+										dt.BeginLoadData();
+
+									}));
+								}
 							}
-						}));
+
+							this.Invoke(new Action(() =>
+							{
+								dt.EndLoadData();
+								Application.DoEvents();
+
+							}));
+
+							// var sum = (grid.Tag as List<DataTable>).Sum(t => t.Rows.Count);
+							// grid.RowCount = sum;
+							// totalResults += sum;
+							totalResults = dt.Rows.Count;
+
+							//grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+
+							if (!_stopRequested)
+								hasNext = dr.NextResult();
+						}
+						// }));
 					}
 				}
 				catch (Exception ex)
@@ -361,35 +391,35 @@ namespace PaJaMa.Database.Studio.Query
 			}));
 		}
 
-		private object getDataTableObject(DataGridView grid, int rowIndex, int colIndex)
-		{
-			var dts = grid.Tag as List<DataTable>;
-			if (dts.Count <= 0) return null;
+		//private object getDataTableObject(DataGridView grid, int rowIndex, int colIndex)
+		//{
+		//	var dts = grid.Tag as List<DataTable>;
+		//	if (dts.Count <= 0) return null;
 
-			int dtRowIndex = rowIndex;
-			int dtTableIndex = 0;
-			var dt = dts[dtTableIndex];
+		//	int dtRowIndex = rowIndex;
+		//	int dtTableIndex = 0;
+		//	var dt = dts[dtTableIndex];
 
-			while (dtRowIndex >= dt.Rows.Count)
-			{
-				dtRowIndex -= dt.Rows.Count;
-				dtTableIndex++;
-				dt = dts[dtTableIndex];
-			}
+		//	while (dtRowIndex >= dt.Rows.Count)
+		//	{
+		//		dtRowIndex -= dt.Rows.Count;
+		//		dtTableIndex++;
+		//		dt = dts[dtTableIndex];
+		//	}
 
-			return dt.Rows[dtRowIndex][colIndex];
-		}
+		//	return dt.Rows[dtRowIndex][colIndex];
+		//}
 
 		private void grid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
 		{
-			var val = getDataTableObject(sender as DataGridView, e.RowIndex, e.ColumnIndex);
-
+			var grid = sender as DataGridView;
+			var val = grid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
 			if (val == DBNull.Value)
 			{
 				e.CellStyle.BackColor = Color.LightYellow;
 				e.CellStyle.Font = new Font(e.CellStyle.Font, FontStyle.Italic);
+				e.Value = "NULL";
 			}
-
 			if (_errorDict.ContainsKey(e.RowIndex) && _errorDict[e.RowIndex].ContainsKey(e.ColumnIndex))
 			{
 				e.CellStyle.BackColor = Color.Red;
@@ -397,25 +427,39 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private void grid_CellValueNeeded(object sender, DataGridViewCellValueEventArgs e)
-		{
-			e.Value = getDataTableObject(sender as DataGridView, e.RowIndex, e.ColumnIndex);
+		//private void grid_CellValueNeeded(object sender, DataGridViewCellValueEventArgs e)
+		//{
+		//	var grid = sender as DataGridView;
+		//	e.Value = getDataTableObject(grid, e.RowIndex, e.ColumnIndex);
 
-			if (e.Value == DBNull.Value)
-				e.Value = "NULL";
+		//	var cell = grid.Rows[e.RowIndex].Cells[e.ColumnIndex];
+		//	if (e.Value == DBNull.Value)
+		//	{
+		//		cell.Style.BackColor = Color.LightYellow;
+		//		cell.Style.Font = new Font(grid.Font, FontStyle.Italic);
+		//	}
 
-			(sender as DataGridView).Rows[e.RowIndex].HeaderCell.Value = (e.RowIndex + 1).ToString();
+		//	if (_errorDict.ContainsKey(cell.RowIndex) && _errorDict[cell.RowIndex].ContainsKey(cell.ColumnIndex))
+		//	{
+		//		cell.Style.BackColor = Color.Red;
+		//		e.Value = _errorDict[cell.RowIndex][cell.ColumnIndex];
+		//	}
 
-			//int currPage = 0;
-			//int currRow = 0;
-			//var currDt = dts[currPage];
-			//while (e.RowIndex > currDt.Rows.Count + currRow)
-			//{
-			//	currPage++;
-			//	currRow += currDt.Rows.Count;
-			//	currDt = dts[currPage];
-			//}
-		}
+		//	if (e.Value == DBNull.Value)
+		//		e.Value = "NULL";
+
+		//	grid.Rows[e.RowIndex].HeaderCell.Value = (e.RowIndex + 1).ToString();
+
+		//	//int currPage = 0;
+		//	//int currRow = 0;
+		//	//var currDt = dts[currPage];
+		//	//while (e.RowIndex > currDt.Rows.Count + currRow)
+		//	//{
+		//	//	currPage++;
+		//	//	currRow += currDt.Rows.Count;
+		//	//	currDt = dts[currPage];
+		//	//}
+		//}
 
 		public void SelectTopN(int? topN, TreeNode selectedNode)
 		{
