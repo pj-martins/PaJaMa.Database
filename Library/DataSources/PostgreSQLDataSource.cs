@@ -370,9 +370,9 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 			return def;
 		}
 
-		internal override bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
+		internal override bool IgnoreDifference(Difference difference, DataSource fromDataSource, DataSource toDataSource, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
 		{
-			if (base.IgnoreDifference(difference, fromObject, toObject)) return true;
+			if (base.IgnoreDifference(difference, fromDataSource, toDataSource, fromObject, toObject)) return true;
 
 			if (fromObject is Column)
 			{

@@ -193,9 +193,9 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			if (TargetDatabase.DataSource.GetType().FullName != DatabaseObject.Database.DataSource.GetType().FullName)
 			{
-				if (TargetDatabase.DataSource.IgnoreDifference(diff, fromObject, toObject))
+				if (TargetDatabase.DataSource.IgnoreDifference(diff, DatabaseObject.Database.DataSource, TargetDatabase.DataSource, fromObject, toObject))
 					return null;
-				if (toObject != null && DatabaseObject.Database.DataSource.IgnoreDifference(diff, toObject, fromObject))
+				if (toObject != null && DatabaseObject.Database.DataSource.IgnoreDifference(diff, DatabaseObject.Database.DataSource, TargetDatabase.DataSource, toObject, fromObject))
 					return null;
 			}
 			return diff;

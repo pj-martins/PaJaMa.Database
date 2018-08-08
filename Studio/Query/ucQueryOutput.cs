@@ -28,6 +28,8 @@ namespace PaJaMa.Database.Studio.Query
 		private string _query;
 		private Dictionary<int, Dictionary<int, string>> _errorDict;
 
+		public ucWorkspace Workspace { get; set; }
+
 		public ucQueryOutput()
 		{
 			InitializeComponent();
@@ -74,6 +76,8 @@ namespace PaJaMa.Database.Studio.Query
 				execute();
 			else
 				new Thread(new ThreadStart(execute)).Start();
+
+			this.Workspace.SaveToTemp();
 		}
 
 		public bool Connect(DbConnection connection, DataSource server, string initialDatabase, bool useDummyDA)

@@ -12,6 +12,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -31,11 +32,15 @@ namespace PaJaMa.Database.Studio.Query
 		private string _initialConnString;
 		private Type _initialDbType;
 		private DataSource _dataSource;
+		private string _tempPath;
 
 		private QueryEventArgs _queryEventArgs;
 
 		public ucWorkspace()
 		{
+			var tmp = Path.Combine(Path.GetTempPath(), ucQuery.TEMP_PATH);
+			if (!Directory.Exists(tmp)) Directory.CreateDirectory(tmp);
+			_tempPath = Path.Combine(tmp, Guid.NewGuid().ToString() + ".dbs");
 			InitializeComponent();
 		}
 
@@ -164,6 +169,7 @@ namespace PaJaMa.Database.Studio.Query
 			if (tabOutputs.TabPages.Count < 1)
 			{
 				var uc = new ucQueryOutput();
+				uc.Workspace = this;
 				uc.Dock = DockStyle.Fill;
 				if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
 					return;
@@ -218,8 +224,9 @@ namespace PaJaMa.Database.Studio.Query
 		private ucQueryOutput addQueryOutput(WinControls.TabControl.TabPage tabPage, string initialDatabase)
 		{
 			var uc = new ucQueryOutput();
+			uc.Workspace = this;
 			uc.Dock = DockStyle.Fill;
-			if (!uc.Connect(_currentConnection, _dataSource, initialDatabase, chkUseDummyDA.Checked))
+			if (_dataSource == null || !uc.Connect(_currentConnection, _dataSource, initialDatabase, chkUseDummyDA.Checked))
 				return null;
 
 			bool add = false;
@@ -302,6 +309,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void ucWorkspace_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			DeleteTemp();
 			Disconnect();
 		}
 
@@ -732,6 +740,23 @@ namespace PaJaMa.Database.Studio.Query
 					uc.txtQuery.Text = frm.GetScript();
 				}
 			}
+		}
+
+		public void SaveToTemp()
+		{
+			if (!pnlControls.Visible) return;
+			var ws = this.GetWorkspace();
+			PaJaMa.Common.XmlSerialize.SerializeObjectToFile<QueryWorkspace>(ws, _tempPath);
+		}
+
+		public void DeleteTemp()
+		{
+			if (File.Exists(_tempPath)) File.Delete(_tempPath);
+		}
+
+		private void timSaveTemp_Tick(object sender, EventArgs e)
+		{
+			SaveToTemp();
 		}
 	}
 }

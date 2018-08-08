@@ -451,6 +451,9 @@ ON UPDATE {6}
 		internal virtual string GetColumnDefault(Column column, string columnDefault)
 		{
 			if (string.IsNullOrEmpty(columnDefault)) return string.Empty;
+			var parts = columnDefault.Split(':');
+			if (parts.Length > 1 && column.Database.DataSource.GetType() != this.GetType())
+				columnDefault = parts[0];
 			var src = column.Database.DataSource.ColumnTypes.First(c => c.DataType == column.ColumnType.DataType);
 			var srcmapped = src.MappedValues.FirstOrDefault(m => m.SqlValue == columnDefault);
 			if (srcmapped != null)
@@ -495,7 +498,7 @@ ON UPDATE {6}
 				;
 		}
 
-		internal virtual bool IgnoreDifference(Difference difference, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
+		internal virtual bool IgnoreDifference(Difference difference, DataSource fromDataSource, DataSource toDataSource, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
 		{
 			if (fromObject is Column)
 			{
@@ -511,13 +514,23 @@ ON UPDATE {6}
 				}
 				else if (difference.PropertyName == "ColumnType")
 				{
-					if (difference.TargetValue == this.GetConvertedColumnType((DataType)Enum.Parse(typeof(DataType), difference.SourceValue, true), false))
+					var targetType = toDataSource.ColumnTypes.First(t => t.CreateTypeName == difference.TargetValue || t.TypeName == difference.TargetValue);
+					var srcType = fromDataSource.ColumnTypes.First(t => t.CreateTypeName == difference.SourceValue || t.TypeName == difference.SourceValue);
+					if (srcType.DataType == targetType.DataType)
+					{
 						return true;
+					}
+					else if (toDataSource.GetType() != fromDataSource.GetType())
+					{
+						var targetEquivalent = toDataSource.ColumnTypes.FirstOrDefault(c => c.DataType == srcType.DataType);
+						if (targetEquivalent != null && targetEquivalent.TypeName == difference.TargetValue)
+							return true;
+					}
 				}
 				else if (difference.PropertyName == "ColumnDefault")
 				{
-					var srcDefault = this.GetColumnDefault(fromObject as Column, difference.SourceValue);
-					var targDefault = this.GetColumnDefault(fromObject as Column, difference.TargetValue);
+					var srcDefault = toDataSource.GetColumnDefault(fromObject as Column, difference.SourceValue);
+					var targDefault = toDataSource.GetColumnDefault(fromObject as Column, difference.TargetValue);
 					if (srcDefault.Replace("(", "").Replace(")", "") == targDefault.Replace("(", "").Replace(")", ""))
 						return true;
 				}

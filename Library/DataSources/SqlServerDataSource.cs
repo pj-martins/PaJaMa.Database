@@ -211,11 +211,16 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 			{
 				if (_columnTypes == null)
 				{
+					var dtMaps = new Map[] {
+						new Map("mintime", "(getdate())"),
+						new Map("now", "(getdate())")
+					};
+
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, "(newid())", new Map("newid", "(newid())")));
-					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
-					_columnTypes.Add(new ColumnType("datetime2", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
-					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "(getdate())", dtMaps));
+					_columnTypes.Add(new ColumnType("datetime2", DataType.DateTime, "(getdate())", dtMaps));
+					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", dtMaps));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, "''"));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VarChar, "''"));
 					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVarChar, "''"));
@@ -236,9 +241,9 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 					_columnTypes.Add(new ColumnType("text", DataType.Json, "''") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("ntext", DataType.Text, "''") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
-					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())", dtMaps));
 					_columnTypes.Add(new ColumnType("binary", DataType.Binary, "0"));
-					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())", dtMaps));
 					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
 					_columnTypes.Add(new ColumnType("timestamp", DataType.RowVersion, ""));
 					_columnTypes.Add(new ColumnType("rowversion", DataType.RowVersion, ""));

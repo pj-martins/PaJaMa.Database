@@ -15,6 +15,7 @@ namespace PaJaMa.Database.Studio.Query
 {
 	public partial class ucQuery : UserControl
 	{
+		public const string TEMP_PATH = "DatabaseStudio\\Query";
 		public ucQuery()
 		{
 			InitializeComponent();
@@ -22,6 +23,35 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void frmMain_Load(object sender, EventArgs e)
 		{
+			var tmp = Path.Combine(Path.GetTempPath(), TEMP_PATH);
+			if (Directory.Exists(tmp))
+			{
+				var tempFiles = new DirectoryInfo(tmp).GetFiles();
+				if (tempFiles.Any())
+				{
+					if (MessageBox.Show("Open previous workspaces?", "Open Workspaces", MessageBoxButtons.YesNo) == DialogResult.Yes)
+					{
+						foreach (var finf in tempFiles)
+						{
+							try
+							{
+								var workspace = PaJaMa.Common.XmlSerialize.DeserializeObjectFromFile<QueryWorkspace>(finf.FullName);
+								var uc = addWorkspace(null);
+								uc.LoadWorkspace(workspace);
+							}
+							catch
+							{
+								// TODO:
+							}
+						}
+					}
+					foreach (var finf in tempFiles)
+					{
+						finf.Delete();
+					}
+				}
+			}
+
 			if (tabMain.TabPages.Count < 1)
 				addWorkspace(null);
 		}
@@ -93,7 +123,7 @@ namespace PaJaMa.Database.Studio.Query
 			uc.LoadFromIDatabase(args);
 		}
 
-		private void addWorkspace(WinControls.TabControl.TabPage tabPage)
+		private ucWorkspace addWorkspace(WinControls.TabControl.TabPage tabPage)
 		{
 			var uc = new ucWorkspace();
 			bool add = false;
@@ -111,6 +141,7 @@ namespace PaJaMa.Database.Studio.Query
 				tabMain.TabPages.Add(tabPage);
 				tabMain.SelectedTab = tabPage;
 			}
+			return uc;
 		}
 
 		private void copyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -124,7 +155,9 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void tabMain_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{
-			(e.TabPage.Controls[0] as ucWorkspace).Disconnect();
+			var uc = e.TabPage.Controls[0] as ucWorkspace;
+			uc.DeleteTemp();
+			uc.Disconnect();
 		}
 
 		private void tabMain_TabAdding(object sender, WinControls.TabControl.TabEventArgs e)

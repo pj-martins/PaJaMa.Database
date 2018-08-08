@@ -49,9 +49,10 @@
 			this.newForeignKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newColumnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
-			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.timSaveTemp = new System.Windows.Forms.Timer(this.components);
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -192,7 +193,7 @@
             this.deleteToolStripMenuItem,
             this.newTableToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(164, 224);
+			this.mnuTree.Size = new System.Drawing.Size(164, 202);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
@@ -251,6 +252,13 @@
 			this.deleteToolStripMenuItem.Text = "&Delete";
 			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
 			// 
+			// newTableToolStripMenuItem
+			// 
+			this.newTableToolStripMenuItem.Name = "newTableToolStripMenuItem";
+			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newTableToolStripMenuItem.Text = "New &Table";
+			this.newTableToolStripMenuItem.Click += new System.EventHandler(this.newTableToolStripMenuItem_Click);
+			// 
 			// splitMain
 			// 
 			this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -283,12 +291,11 @@
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
-			// newTableToolStripMenuItem
+			// timSaveTemp
 			// 
-			this.newTableToolStripMenuItem.Name = "newTableToolStripMenuItem";
-			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
-			this.newTableToolStripMenuItem.Text = "New &Table";
-			this.newTableToolStripMenuItem.Click += new System.EventHandler(this.newTableToolStripMenuItem_Click);
+			this.timSaveTemp.Enabled = true;
+			this.timSaveTemp.Interval = 10000;
+			this.timSaveTemp.Tick += new System.EventHandler(this.timSaveTemp_Tick);
 			// 
 			// ucWorkspace
 			// 
@@ -338,6 +345,7 @@
 		private System.Windows.Forms.ToolStripMenuItem newColumnToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newTableToolStripMenuItem;
+		private System.Windows.Forms.Timer timSaveTemp;
 	}
 }
 

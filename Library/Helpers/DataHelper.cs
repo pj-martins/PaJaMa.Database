@@ -49,7 +49,7 @@ namespace PaJaMa.Database.Library.Helpers
 			using (var conn = workspace.SourceTable.Database.DataSource.OpenConnection(workspace.SourceTable.Database.DatabaseName))
 			{
 				_currentCommand = conn.CreateCommand();
-				_currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));
+				_currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.GetObjectNameWithSchema(workspace.SourceTable.Database.DataSource));
 				_currentReader = _currentCommand.ExecuteReader();
 				if (worker != null) worker.ReportProgress(0, string.Format("Populating {0} source table...", workspace.SourceTable.TableName));
 				dtFrom.Load(_currentReader);
