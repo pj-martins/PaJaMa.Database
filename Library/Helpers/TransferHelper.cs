@@ -196,8 +196,11 @@ namespace PaJaMa.Database.Library.Helpers
 		{
 			List<TableWorkspace> sortedWorkspaces = new List<TableWorkspace>();
 			List<TableWorkspace> currentWorkspaces = workspaces.ToList();
+			List<DatabaseObjects.ForeignKey> circularKeys = new List<DatabaseObjects.ForeignKey>();
+			bool isInInfinite = false;
 			while (currentWorkspaces.Count > 0)
 			{
+				int currentCount = currentWorkspaces.Count;
 				foreach (var ws in currentWorkspaces)
 				{
 					bool goodToGo = true;
@@ -205,6 +208,12 @@ namespace PaJaMa.Database.Library.Helpers
 					{
 						if (currentWorkspaces.Any(w => w.TargetTable.TableName == fk.ParentTable.TableName))
 						{
+							if (isInInfinite && fk.Columns.All(ck => ck.ChildColumn.IsNullable))
+							{
+								circularKeys.Add(fk);
+								break;
+							}
+
 							goodToGo = false;
 							break;
 						}
@@ -216,6 +225,7 @@ namespace PaJaMa.Database.Library.Helpers
 						break;
 					}
 				}
+				isInInfinite = currentCount == currentWorkspaces.Count;
 			}
 
 			return sortedWorkspaces;

@@ -238,6 +238,8 @@ namespace PaJaMa.Database.Studio.Query
 								// grid.RowCount = 0;
 								// grid.CellValueNeeded += grid_CellValueNeeded;
 								grid.CellFormatting += grid_CellFormatting;
+								grid.DataError += Grid_DataError;
+								grid.RowPostPaint += Grid_RowPostPaint;
 
 								var splitDetails = new SplitContainer();
 								splitDetails.Dock = DockStyle.Fill;
@@ -393,6 +395,26 @@ namespace PaJaMa.Database.Studio.Query
 				this.Parent.Text = this.Parent.Text.Replace(" (Executing)", "");
 				populateDetailPanels();
 			}));
+		}
+
+		private void Grid_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+		{
+			var grid = sender as DataGridView;
+			var rowIdx = (e.RowIndex + 1).ToString();
+
+			var centerFormat = new StringFormat()
+			{
+				// right alignment might actually make more sense for numbers
+				Alignment = StringAlignment.Center,
+				LineAlignment = StringAlignment.Center
+			};
+
+			var headerBounds = new Rectangle(e.RowBounds.Left, e.RowBounds.Top, grid.RowHeadersWidth, e.RowBounds.Height);
+			e.Graphics.DrawString(rowIdx, this.Font, SystemBrushes.ControlText, headerBounds, centerFormat);
+		}
+
+		private void Grid_DataError(object sender, DataGridViewDataErrorEventArgs e)
+		{
 		}
 
 		//private object getDataTableObject(DataGridView grid, int rowIndex, int colIndex)
