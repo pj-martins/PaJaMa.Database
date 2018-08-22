@@ -27,30 +27,24 @@ namespace PaJaMa.Database.Studio.Query
 		const string NONE = "__NONE__";
 
 		public WinControls.TabControl.TabControl ParentTabControl { get; set; }
+		public DatabaseStudioSettings Settings { get; set; }
 
 		private DbConnection _currentConnection;
 		private string _initialConnString;
 		private Type _initialDbType;
 		private DataSource _dataSource;
-		private string _tempPath;
 
 		private QueryEventArgs _queryEventArgs;
 
 		public ucWorkspace()
 		{
-			var tmp = Path.Combine(Path.GetTempPath(), ucQuery.TEMP_PATH);
-			if (!Directory.Exists(tmp)) Directory.CreateDirectory(tmp);
-			_tempPath = Path.Combine(tmp, Guid.NewGuid().ToString() + ".dbs");
 			InitializeComponent();
 		}
 
 		private void ucWorkspace_Load(object sender, EventArgs e)
 		{
 			cboServer.DataSource = DataSource.GetDataSourceTypes();
-
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (settings.ConnectionStrings == null)
-				settings.ConnectionStrings = string.Empty;
+			if (Settings.ConnectionStrings == null) Settings.ConnectionStrings = string.Empty;
 
 			refreshConnStrings();
 
@@ -97,11 +91,11 @@ namespace PaJaMa.Database.Studio.Query
 
 				_queryEventArgs = null;
 			}
-			else if (!string.IsNullOrEmpty(settings.LastQueryConnectionString))
+			else if (!string.IsNullOrEmpty(Settings.LastQueryConnectionString))
 			{
-				txtConnectionString.Text = settings.LastQueryConnectionString;
-				cboServer.SelectedItem = Type.GetType(settings.LastQueryServerType);
-				chkUseDummyDA.Checked = settings.LastQueryUseDummyDA;
+				txtConnectionString.Text = Settings.LastQueryConnectionString;
+				cboServer.SelectedItem = Type.GetType(Settings.LastQueryServerType);
+				chkUseDummyDA.Checked = Settings.LastQueryUseDummyDA;
 			}
 		}
 
@@ -168,37 +162,37 @@ namespace PaJaMa.Database.Studio.Query
 			tabOutputs.Visible = true;
 			if (tabOutputs.TabPages.Count < 1)
 			{
-				var uc = new ucQueryOutput();
-				uc.Workspace = this;
-				uc.Dock = DockStyle.Fill;
-				if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
-					return;
-
-				var tabPage = new WinControls.TabControl.TabPage();
-				tabPage.Text = "Query " + (tabOutputs.TabPages.Count + 1).ToString();
-				tabPage.Controls.Add(uc);
-				tabOutputs.TabPages.Add(tabPage);
-				tabOutputs.SelectedTab = tabPage;
+				if (Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
+				{
+					foreach (var queryOutput in Settings.QueryOutputs[txtConnectionString.Text])
+					{
+						addQueryOutput(null, queryOutput);
+					}
+				}
+				else
+				{
+					addQueryOutput(null, createQueryOutput());
+				}
 			}
 			else
 			{
 				foreach (var page in tabOutputs.TabPages)
 				{
 					var uc = page.Controls[0] as ucQueryOutput;
-					if (!uc.Connect(_currentConnection, _dataSource, _currentConnection.Database, chkUseDummyDA.Checked))
+					if (!uc.Connect(_currentConnection, _dataSource, uc.QueryOutput, chkUseDummyDA.Checked))
 						return;
 				}
 			}
 
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
+			List<string> connStrings = Settings.ConnectionStrings.Split('|').ToList();
 			if (!connStrings.Any(s => s == txtConnectionString.Text))
 				connStrings.Add(txtConnectionString.Text);
-			settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
-			settings.LastQueryConnectionString = txtConnectionString.Text;
-			settings.LastQueryServerType = (cboServer.SelectedItem as Type).AssemblyQualifiedName;
-			settings.LastQueryUseDummyDA = chkUseDummyDA.Checked;
-			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
+			Settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
+
+			Settings.LastQueryConnectionString = txtConnectionString.Text;
+			Settings.LastQueryServerType = (cboServer.SelectedItem as Type).AssemblyQualifiedName;
+			Settings.LastQueryUseDummyDA = chkUseDummyDA.Checked;
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
 
 			lblConnString.Text = txtConnectionString.Text;
 			pnlConnect.Visible = false;
@@ -221,12 +215,13 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private ucQueryOutput addQueryOutput(WinControls.TabControl.TabPage tabPage, string initialDatabase)
+		private ucQueryOutput addQueryOutput(WinControls.TabControl.TabPage tabPage, QueryOutput queryOutput)
 		{
 			var uc = new ucQueryOutput();
 			uc.Workspace = this;
 			uc.Dock = DockStyle.Fill;
-			if (_dataSource == null || !uc.Connect(_currentConnection, _dataSource, initialDatabase, chkUseDummyDA.Checked))
+			uc.QueryOutput = queryOutput;
+			if (_dataSource == null || !uc.Connect(_currentConnection, _dataSource, queryOutput, chkUseDummyDA.Checked))
 				return null;
 
 			bool add = false;
@@ -301,15 +296,13 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void refreshConnStrings()
 		{
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			var conns = settings.ConnectionStrings.Split('|');
+			var conns = Settings.ConnectionStrings.Split('|');
 			txtConnectionString.Items.Clear();
 			txtConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
 		}
 
 		private void ucWorkspace_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			DeleteTemp();
 			Disconnect();
 		}
 
@@ -398,8 +391,8 @@ namespace PaJaMa.Database.Studio.Query
 		private void refreshFunctionNodes(Schema schema, TreeNode parentNode)
 		{
 			foreach (var routineSynonym in from rs in schema.RoutinesSynonyms
-								 orderby rs.Name
-								 select rs)
+										   orderby rs.Name
+										   select rs)
 			{
 				var node2 = parentNode.Nodes.Add(routineSynonym.Name);
 				node2.Tag = routineSynonym;
@@ -499,7 +492,9 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void selectToNew(int topN)
 		{
-			var uc = addQueryOutput(null, string.Empty);
+			if (!Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
+				Settings.QueryOutputs.Add(txtConnectionString.Text, new List<QueryOutput>());
+			var uc = addQueryOutput(null, createQueryOutput());
 			if (uc == null) return;
 			uc.SelectTopN(topN, treeTables.SelectedNode);
 		}
@@ -541,7 +536,7 @@ namespace PaJaMa.Database.Studio.Query
 			foreach (var page in tabOutputs.TabPages)
 			{
 				var uc = page.Controls[0] as ucQueryOutput;
-				ws.Queries.Add(new QueryOutput() { Query = uc.txtQuery.Text, Database = uc.cboDatabases.Text });
+				ws.Queries.Add(uc.QueryOutput);
 			}
 
 			return ws;
@@ -551,13 +546,12 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			txtConnectionString.Text = workspace.ConnectionString;
 			cboServer.SelectedItem = cboServer.Items.OfType<Type>().First(t => t.FullName == workspace.ConnectionType);
-			btnConnect_Click(this, new EventArgs());
+			// btnConnect_Click(this, new EventArgs());
 
 			tabOutputs.TabPages.Clear();
 			foreach (var qry in workspace.Queries)
 			{
-				var uc = addQueryOutput(null, qry.Database);
-				uc.txtQuery.Text = qry.Query;
+				addQueryOutput(null, qry);
 			}
 
 		}
@@ -580,7 +574,7 @@ namespace PaJaMa.Database.Studio.Query
 			else if (inputBox.Result == DialogResult.Cancel)
 				return;
 
-			var uc = ws.addQueryOutput(null, string.Empty);
+			var uc = ws.addQueryOutput(null, createQueryOutput());
 			if (uc == null) return;
 
 			if (treeTables.SelectedNode.Tag is Library.DatabaseObjects.Database)
@@ -600,6 +594,7 @@ namespace PaJaMa.Database.Studio.Query
 					uc.PopulateScript(DatabaseObjectSynchronizationBase.GetSynchronization(obj.Database, obj).GetRawCreateText(), treeTables.SelectedNode);
 				}
 			}
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
 		}
 
 		private void buildQueryToolStripMenuItem_Click(object sender, EventArgs e)
@@ -613,8 +608,9 @@ namespace PaJaMa.Database.Studio.Query
 				var dlgResult = builder.ShowDialog();
 				if (dlgResult == DialogResult.OK)
 				{
-					var output = addQueryOutput(null, string.Empty);
+					var output = addQueryOutput(null, createQueryOutput());
 					output.PopulateScript(builder.GetQuery(), treeTables.SelectedNode);
+					PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
 				}
 			}
 			else
@@ -626,12 +622,14 @@ namespace PaJaMa.Database.Studio.Query
 		private void tabOutputs_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{
 			var uc = e.TabPage.Controls[0] as ucQueryOutput;
+			Settings.QueryOutputs[txtConnectionString.Text].Remove(uc.QueryOutput);
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
 			uc.Disconnect();
 		}
 
 		private void tabOutputs_TabAdding(object sender, WinControls.TabControl.TabEventArgs e)
 		{
-			addQueryOutput(e.TabPage, _currentConnection.Database);
+			addQueryOutput(e.TabPage, createQueryOutput());
 		}
 
 		private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
@@ -685,8 +683,7 @@ namespace PaJaMa.Database.Studio.Query
 						frm.ChildColumn = col;
 					if (frm.ShowDialog() == DialogResult.OK)
 					{
-						var uc = addQueryOutput(null, table.Database.DatabaseName);
-						uc.txtQuery.Text = frm.GetScript();
+						var uc = addQueryOutput(null, createQueryOutput(new QueryOutput() { Query = frm.GetScript() }));
 					}
 				}
 			}
@@ -704,8 +701,7 @@ namespace PaJaMa.Database.Studio.Query
 					frm.Table = table;
 					if (frm.ShowDialog() == DialogResult.OK)
 					{
-						var uc = addQueryOutput(null, table.Database.DatabaseName);
-						uc.txtQuery.Text = frm.GetScript();
+						addQueryOutput(null, new QueryOutput() { Database = table.Database.DatabaseName, Query = frm.GetScript() });
 					}
 				}
 			}
@@ -717,8 +713,7 @@ namespace PaJaMa.Database.Studio.Query
 			if (tag != null)
 			{
 				var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
-				var uc = addQueryOutput(null, tag.Database.DatabaseName);
-				uc.txtQuery.Text = syncItem.GetRawDropText();
+				addQueryOutput(null, new QueryOutput() { Database = tag.Database.DatabaseName, Query = syncItem.GetRawDropText() });
 			}
 		}
 
@@ -736,27 +731,23 @@ namespace PaJaMa.Database.Studio.Query
 				frm.Schema = tag is Schema ? (tag as Schema) : (tag as SchemaNode).Schema;
 				if (frm.ShowDialog() == DialogResult.OK)
 				{
-					var uc = addQueryOutput(null, frm.Schema.Database.DatabaseName);
-					uc.txtQuery.Text = frm.GetScript();
+					addQueryOutput(null, new QueryOutput() { Database = frm.Schema.Database.DatabaseName, Query = frm.GetScript() });
 				}
 			}
 		}
 
-		public void SaveToTemp()
+		private QueryOutput createQueryOutput(QueryOutput output = null)
 		{
-			if (!pnlControls.Visible) return;
-			var ws = this.GetWorkspace();
-			PaJaMa.Common.XmlSerialize.SerializeObjectToFile<QueryWorkspace>(ws, _tempPath);
-		}
+			if (!Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
+				Settings.QueryOutputs.Add(txtConnectionString.Text, new List<QueryOutput>());
 
-		public void DeleteTemp()
-		{
-			if (File.Exists(_tempPath)) File.Delete(_tempPath);
-		}
-
-		private void timSaveTemp_Tick(object sender, EventArgs e)
-		{
-			SaveToTemp();
+			if (output == null)
+				output = new QueryOutput() { Database = _currentConnection.Database };
+			else if (string.IsNullOrEmpty(output.Database))
+				output.Database = _currentConnection.Database;
+			Settings.QueryOutputs[txtConnectionString.Text].Add(output);
+			Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
+			return output;
 		}
 	}
 }

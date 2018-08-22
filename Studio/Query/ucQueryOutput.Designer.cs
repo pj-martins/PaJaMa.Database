@@ -287,7 +287,7 @@
 		private System.Windows.Forms.ProgressBar progMain;
 		private System.Windows.Forms.Button btnGo;
 		private System.Windows.Forms.Timer timDuration;
-		internal System.Windows.Forms.RichTextBox txtQuery;
+		private System.Windows.Forms.RichTextBox txtQuery;
 		private System.Windows.Forms.Label lblDatabase;
 		internal System.Windows.Forms.ComboBox cboDatabases;
 		private System.Windows.Forms.TabControl tabControl1;
