@@ -11,13 +11,9 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PaJaMa.Database.Studio.Query
@@ -336,8 +332,9 @@ namespace PaJaMa.Database.Studio.Query
 				var node3 = node2.Nodes.Add("Columns");
 				foreach (var column in table.Columns)
 				{
-					var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName + ", "
-								+ (column.IsNullable ? "null" : "not null") + ")");
+					var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName +
+							(column.CharacterMaximumLength != null && column.CharacterMaximumLength.GetValueOrDefault() > 0 ? "(" + column.CharacterMaximumLength.Value.ToString() + ")" : "")
+							+ ", " + (column.IsNullable ? "null" : "not null") + ")");
 					node4.Tag = column;
 				}
 
@@ -398,8 +395,8 @@ namespace PaJaMa.Database.Studio.Query
 		private void refreshFunctionNodes(Schema schema, TreeNode parentNode)
 		{
 			foreach (var routineSynonym in from rs in schema.RoutinesSynonyms
-								 orderby rs.Name
-								 select rs)
+										   orderby rs.Name
+										   select rs)
 			{
 				var node2 = parentNode.Nodes.Add(routineSynonym.Name);
 				node2.Tag = routineSynonym;
