@@ -15,7 +15,7 @@ namespace PaJaMa.Database.Studio.Query
 {
 	public partial class ucQuery : UserControl
 	{
-		public const string TEMP_PATH = "DatabaseStudio\\Query";
+		private DatabaseStudioSettings _settings;
 		public ucQuery()
 		{
 			InitializeComponent();
@@ -23,34 +23,9 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void frmMain_Load(object sender, EventArgs e)
 		{
-			var tmp = Path.Combine(Path.GetTempPath(), TEMP_PATH);
-			if (Directory.Exists(tmp))
-			{
-				var tempFiles = new DirectoryInfo(tmp).GetFiles();
-				if (tempFiles.Any())
-				{
-					if (MessageBox.Show("Open previous workspaces?", "Open Workspaces", MessageBoxButtons.YesNo) == DialogResult.Yes)
-					{
-						foreach (var finf in tempFiles)
-						{
-							try
-							{
-								var workspace = PaJaMa.Common.XmlSerialize.DeserializeObjectFromFile<QueryWorkspace>(finf.FullName);
-								var uc = addWorkspace(null);
-								uc.LoadWorkspace(workspace);
-							}
-							catch
-							{
-								// TODO:
-							}
-						}
-					}
-					foreach (var finf in tempFiles)
-					{
-						finf.Delete();
-					}
-				}
-			}
+			_settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (_settings.QueryOutputs == null)
+				_settings.QueryOutputs = new Common.SerializableDictionary<string, List<QueryOutput>>();
 
 			if (tabMain.TabPages.Count < 1)
 				addWorkspace(null);
@@ -126,6 +101,7 @@ namespace PaJaMa.Database.Studio.Query
 		private ucWorkspace addWorkspace(WinControls.TabControl.TabPage tabPage)
 		{
 			var uc = new ucWorkspace();
+			uc.Settings = _settings;
 			bool add = false;
 			if (tabPage == null)
 			{
@@ -156,7 +132,6 @@ namespace PaJaMa.Database.Studio.Query
 		private void tabMain_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{
 			var uc = e.TabPage.Controls[0] as ucWorkspace;
-			uc.DeleteTemp();
 			uc.Disconnect();
 		}
 

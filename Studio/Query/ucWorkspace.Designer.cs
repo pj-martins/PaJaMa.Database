@@ -52,7 +52,6 @@
 			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
-			this.timSaveTemp = new System.Windows.Forms.Timer(this.components);
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -291,12 +290,6 @@
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
-			// timSaveTemp
-			// 
-			this.timSaveTemp.Enabled = true;
-			this.timSaveTemp.Interval = 10000;
-			this.timSaveTemp.Tick += new System.EventHandler(this.timSaveTemp_Tick);
-			// 
 			// ucWorkspace
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -345,7 +338,6 @@
 		private System.Windows.Forms.ToolStripMenuItem newColumnToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newTableToolStripMenuItem;
-		private System.Windows.Forms.Timer timSaveTemp;
 	}
 }
 

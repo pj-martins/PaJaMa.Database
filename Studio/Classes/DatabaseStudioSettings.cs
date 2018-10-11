@@ -1,4 +1,6 @@
-﻿using System;
+﻿using PaJaMa.Common;
+using PaJaMa.Database.Library.Workspaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +10,7 @@ namespace PaJaMa.Database.Studio.Classes
 {
 	public class DatabaseStudioSettings
 	{
+		public SerializableDictionary<string, List<QueryOutput>> QueryOutputs { get; set; }
 		public string ConnectionStrings { get; set; }
 		public string SearchConnectionStrings { get; set; }
 		public string MonitorConnectionStrings { get; set; }
@@ -24,7 +27,7 @@ namespace PaJaMa.Database.Studio.Classes
 
 		public DatabaseStudioSettings()
 		{
-			ConnectionStrings = "";
+			QueryOutputs = new SerializableDictionary<string, List<QueryOutput>>();
 		}
 	}
 }

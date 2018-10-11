@@ -13,6 +13,8 @@ using System.Threading;
 using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.DataSources;
+using PaJaMa.Database.Library.Workspaces;
+using PaJaMa.Database.Studio.Classes;
 
 namespace PaJaMa.Database.Studio.Query
 {
@@ -22,13 +24,14 @@ namespace PaJaMa.Database.Studio.Query
 		private bool _lock = false;
 		private bool _stopRequested = false;
 		private DateTime _start;
-		public DbConnection _currentConnection;
 		private DbCommand _currentCommand;
 		private DataSource _server;
 		private string _query;
 		private Dictionary<int, Dictionary<int, string>> _errorDict;
 
+		public DbConnection CurrentConnection;
 		public ucWorkspace Workspace { get; set; }
+		public QueryOutput QueryOutput { get; set; }
 
 		public ucQueryOutput()
 		{
@@ -46,7 +49,7 @@ namespace PaJaMa.Database.Studio.Query
 
 			lblResults.Visible = false;
 			_stopRequested = false;
-			_currentCommand = _currentConnection.CreateCommand();
+			_currentCommand = CurrentConnection.CreateCommand();
 			_query = query;
 			btnGo.Visible = false;
 			btnStop.Visible = true;
@@ -72,27 +75,27 @@ namespace PaJaMa.Database.Studio.Query
 
 			this.Parent.Text += " (Executing)";
 
-			if (_currentConnection.GetType().Equals(typeof(System.Data.OleDb.OleDbConnection)))
+			if (CurrentConnection.GetType().Equals(typeof(System.Data.OleDb.OleDbConnection)))
 				execute();
 			else
 				new Thread(new ThreadStart(execute)).Start();
 
-			this.Workspace.SaveToTemp();
+			saveOutput();
 		}
 
-		public bool Connect(DbConnection connection, DataSource server, string initialDatabase, bool useDummyDA)
+		public bool Connect(DbConnection connection, DataSource server, QueryOutput queryOutput, bool useDummyDA)
 		{
 			try
 			{
 				_server = server;
 				if (useDummyDA)
-					_currentConnection = connection;
+					CurrentConnection = connection;
 				else
 				{
-					_currentConnection = server.OpenConnection(string.Empty);
+					CurrentConnection = server.OpenConnection(string.Empty);
 					// TODO: generic
-					if (_currentConnection is SqlConnection)
-						(_currentConnection as SqlConnection).InfoMessage += ucQueryOutput_InfoMessage;
+					if (CurrentConnection is SqlConnection)
+						(CurrentConnection as SqlConnection).InfoMessage += ucQueryOutput_InfoMessage;
 				}
 
 				pnlButtons.Enabled = splitQuery.Enabled = true;
@@ -104,11 +107,12 @@ namespace PaJaMa.Database.Studio.Query
 				cboDatabases.Items.Clear();
 				cboDatabases.Items.AddRange(server.Databases.ToArray());
 
-				if (!string.IsNullOrEmpty(initialDatabase) && initialDatabase != _currentConnection.Database)
-					_currentConnection.ChangeDatabase(initialDatabase);
+				if (!string.IsNullOrEmpty(queryOutput.Database) && queryOutput.Database != CurrentConnection.Database)
+					CurrentConnection.ChangeDatabase(queryOutput.Database);
 
 				_lock = true;
-				cboDatabases.Text = _currentConnection.Database;
+				cboDatabases.Text = CurrentConnection.Database;
+				txtQuery.Text = queryOutput.Query;
 				_lock = false;
 				return true;
 			}
@@ -129,12 +133,12 @@ namespace PaJaMa.Database.Studio.Query
 
 		public void Disconnect()
 		{
-			if (_currentConnection != null)
+			if (CurrentConnection != null)
 			{
-				if (_currentConnection.State == ConnectionState.Open)
-					_currentConnection.Close();
-				_currentConnection.Dispose();
-				_currentConnection = null;
+				if (CurrentConnection.State == ConnectionState.Open)
+					CurrentConnection.Close();
+				CurrentConnection.Dispose();
+				CurrentConnection = null;
 			}
 		}
 
@@ -143,7 +147,7 @@ namespace PaJaMa.Database.Studio.Query
 			if (cboDatabases.Items.Count > 0 && cboDatabases.Visible)
 			{
 				_lock = true;
-				cboDatabases.Text = _currentConnection.Database;
+				cboDatabases.Text = CurrentConnection.Database;
 				_lock = false;
 			}
 		}
@@ -163,8 +167,8 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				try
 				{
-					if (_currentConnection.State != ConnectionState.Open)
-						_currentConnection.Open();
+					if (CurrentConnection.State != ConnectionState.Open)
+						CurrentConnection.Open();
 
 					_currentCommand.CommandText = part;
 					_currentCommand.CommandTimeout = 600000;
@@ -505,14 +509,14 @@ namespace PaJaMa.Database.Studio.Query
 				}
 			}
 
-			if (selectedNode.Parent != null && _currentConnection.Database != selectedNode.Parent.Parent.Text)
+			if (selectedNode.Parent != null && CurrentConnection.Database != selectedNode.Parent.Parent.Text)
 			{
 				var node = selectedNode.Parent;
 				while (!(node.Tag is Database.Library.DatabaseObjects.Database))
 				{
 					node = node.Parent;
 				}
-				_currentConnection.ChangeDatabase(node.Text);
+				CurrentConnection.ChangeDatabase(node.Text);
 			}
 
 			string objName = string.Empty;
@@ -541,6 +545,8 @@ namespace PaJaMa.Database.Studio.Query
 				topN != null ? _server.GetPostTopN(topN.Value) : string.Empty,
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
+
+			saveOutput();
 		}
 
 		public void PopulateScript(string script, TreeNode selectedNode)
@@ -550,12 +556,12 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				dbName = (selectedNode.Tag as DatabaseObjectBase).Database.DatabaseName;
 			}
-			else if (selectedNode.Parent != null && _currentConnection.Database != selectedNode.Parent.Parent.Text)
+			else if (selectedNode.Parent != null && CurrentConnection.Database != selectedNode.Parent.Parent.Text)
 			{
 				dbName = selectedNode.Parent.Parent.Text;
 			}
 
-			_currentConnection.ChangeDatabase(dbName);
+			CurrentConnection.ChangeDatabase(dbName);
 
 			txtQuery.Text = script;
 		}
@@ -578,13 +584,13 @@ namespace PaJaMa.Database.Studio.Query
 			if (_lock) return;
 			try
 			{
-				_currentConnection.ChangeDatabase(cboDatabases.Text);
+				CurrentConnection.ChangeDatabase(cboDatabases.Text);
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message);
 				_lock = true;
-				cboDatabases.Text = _currentConnection.Database;
+				cboDatabases.Text = CurrentConnection.Database;
 				_lock = false;
 			}
 		}
@@ -675,6 +681,12 @@ namespace PaJaMa.Database.Studio.Query
 					txt.Font = new Font(txt.Font, FontStyle.Italic);
 				}
 			}
+		}
+
+		private void saveOutput()
+		{
+			QueryOutput.Query = txtQuery.Text;
+			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
 		}
 	}
 }
