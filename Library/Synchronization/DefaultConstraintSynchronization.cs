@@ -36,7 +36,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 			if (TargetDatabase.DataSource.BypassKeyConstraints || DatabaseObject.Database.DataSource.BypassKeyConstraints)
 			{
-				if (DatabaseObject.Table.KeyConstraints.Any(fk => fk.ObjectName == DatabaseObject.ObjectName))
+				if (DatabaseObject.Table.KeyConstraints.Any(kc => kc.Columns.Count == 1 && kc.Columns[0].ColumnName == DatabaseObject.Column.ColumnName)) // fk => fk.ObjectName == DatabaseObject.ObjectName))
 					return new List<SynchronizationItem>();
 			}
 
