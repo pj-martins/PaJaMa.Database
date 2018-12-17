@@ -148,12 +148,11 @@
 		#endregion
 
 		private System.Windows.Forms.DataGridView gridDifferences;
-		private System.Windows.Forms.SplitContainer splitMain;
 		private System.Windows.Forms.DataGridViewCheckBoxColumn Omit;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ObjectName;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ObjectType;
 		private System.Windows.Forms.DataGridViewTextBoxColumn DifferenceText;
 		internal System.Windows.Forms.TextBox txtAlterScript;
-
+		internal System.Windows.Forms.SplitContainer splitMain;
 	}
 }

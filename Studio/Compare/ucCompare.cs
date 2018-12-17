@@ -1047,6 +1047,32 @@ namespace PaJaMa.Database.Studio.Compare
 
 			if (!string.IsNullOrEmpty(settings.LastCompareTargetDriver))
 				cboTargetDriver.SelectedItem = Type.GetType(settings.LastCompareTargetDriver);
+
+			this.ParentForm.FormClosing += ParentForm_FormClosing;
+			this.ParentForm.Load += ParentForm_Load;
+		}
+
+		private void ParentForm_Load(object sender, EventArgs e)
+		{
+			var formSettings = Common.SettingsHelper.GetUserSettings<CompareFormSettings>();
+			if (formSettings.TablesSplitterDistance > 0) splitTables.SplitterDistance = formSettings.TablesSplitterDistance;
+			if (formSettings.TableDifferencesSplitterDistance > 0) diffTables.splitMain.SplitterDistance = formSettings.TableDifferencesSplitterDistance;
+			if (formSettings.ObjectsSplitterDistance > 0) splitObjects.SplitterDistance = formSettings.ObjectsSplitterDistance;
+			if (formSettings.ObjectDifferencesSplitterDistance > 0) diffObjects.splitMain.SplitterDistance = formSettings.ObjectDifferencesSplitterDistance;
+			if (formSettings.DropsSplitterDistance > 0) splitDrops.SplitterDistance = formSettings.DropsSplitterDistance;
+			if (formSettings.DropDifferencesSplitterDistance > 0) diffDrops.splitMain.SplitterDistance = formSettings.DropDifferencesSplitterDistance;
+		}
+
+		private void ParentForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			var formSettings = Common.SettingsHelper.GetUserSettings<CompareFormSettings>();
+			formSettings.TablesSplitterDistance = splitTables.SplitterDistance;
+			formSettings.TableDifferencesSplitterDistance = diffTables.splitMain.SplitterDistance;
+			formSettings.ObjectsSplitterDistance = splitObjects.SplitterDistance;
+			formSettings.ObjectDifferencesSplitterDistance = diffObjects.splitMain.SplitterDistance;
+			formSettings.DropsSplitterDistance = splitDrops.SplitterDistance;
+			formSettings.DropDifferencesSplitterDistance = diffDrops.splitMain.SplitterDistance;
+			Common.SettingsHelper.SaveUserSettings<CompareFormSettings>(formSettings);
 		}
 
 		private void cboDriver_Format(object sender, ListControlConvertEventArgs e)

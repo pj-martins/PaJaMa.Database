@@ -142,6 +142,7 @@
     <Compile Include="Classes\DatabaseStudioSettings.cs" />
     <Compile Include="Classes\GridHelper.cs" />
     <Compile Include="Classes\Events.cs" />
+    <Compile Include="Compare\CompareFormSettings.cs" />
     <Compile Include="Compare\frmCreates.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -38,9 +38,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			set
 			{
 				_selectTableForData = value;
-				if (!_selectTableForData)
-					_keepIdentity = _removeAddKeys = false;
-				else if (TransferBatchSize == 0)
+				if (TransferBatchSize == 0)
 					TransferBatchSize = DEFAULT_BATCH_SIZE;
 				if (TargetObject == null)
 					Select = true;

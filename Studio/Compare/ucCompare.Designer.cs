@@ -55,7 +55,7 @@
 			this.btnGo = new System.Windows.Forms.Button();
 			this.tabMain = new System.Windows.Forms.TabControl();
 			this.tabTables = new System.Windows.Forms.TabPage();
-			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+			this.splitTables = new System.Windows.Forms.SplitContainer();
 			this.gridTables = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.TargetTable = new System.Windows.Forms.DataGridViewComboBoxColumn();
@@ -74,7 +74,7 @@
 			this.setBatchSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.diffTables = new PaJaMa.Database.Studio.Compare.ucDifferences();
 			this.tabObjects = new System.Windows.Forms.TabPage();
-			this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+			this.splitObjects = new System.Windows.Forms.SplitContainer();
 			this.gridObjects = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ObjectType = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -82,7 +82,7 @@
 			this.dataGridViewCheckBoxColumn2 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.diffObjects = new PaJaMa.Database.Studio.Compare.ucDifferences();
 			this.tabDrop = new System.Windows.Forms.TabPage();
-			this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+			this.splitDrops = new System.Windows.Forms.SplitContainer();
 			this.gridDropObjects = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ObjectType2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -97,23 +97,23 @@
 			this.panel2.SuspendLayout();
 			this.tabMain.SuspendLayout();
 			this.tabTables.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
-			this.splitContainer1.Panel1.SuspendLayout();
-			this.splitContainer1.Panel2.SuspendLayout();
-			this.splitContainer1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitTables)).BeginInit();
+			this.splitTables.Panel1.SuspendLayout();
+			this.splitTables.Panel2.SuspendLayout();
+			this.splitTables.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridTables)).BeginInit();
 			this.mnuMain.SuspendLayout();
 			this.tabObjects.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
-			this.splitContainer3.Panel1.SuspendLayout();
-			this.splitContainer3.Panel2.SuspendLayout();
-			this.splitContainer3.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitObjects)).BeginInit();
+			this.splitObjects.Panel1.SuspendLayout();
+			this.splitObjects.Panel2.SuspendLayout();
+			this.splitObjects.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridObjects)).BeginInit();
 			this.tabDrop.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
-			this.splitContainer2.Panel1.SuspendLayout();
-			this.splitContainer2.Panel2.SuspendLayout();
-			this.splitContainer2.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitDrops)).BeginInit();
+			this.splitDrops.Panel1.SuspendLayout();
+			this.splitDrops.Panel2.SuspendLayout();
+			this.splitDrops.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridDropObjects)).BeginInit();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -425,7 +425,7 @@
 			// 
 			// tabTables
 			// 
-			this.tabTables.Controls.Add(this.splitContainer1);
+			this.tabTables.Controls.Add(this.splitTables);
 			this.tabTables.Location = new System.Drawing.Point(4, 22);
 			this.tabTables.Name = "tabTables";
 			this.tabTables.Padding = new System.Windows.Forms.Padding(3);
@@ -434,22 +434,22 @@
 			this.tabTables.Text = "Tables";
 			this.tabTables.UseVisualStyleBackColor = true;
 			// 
-			// splitContainer1
+			// splitTables
 			// 
-			this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.splitContainer1.Location = new System.Drawing.Point(3, 3);
-			this.splitContainer1.Name = "splitContainer1";
+			this.splitTables.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.splitTables.Location = new System.Drawing.Point(3, 3);
+			this.splitTables.Name = "splitTables";
 			// 
-			// splitContainer1.Panel1
+			// splitTables.Panel1
 			// 
-			this.splitContainer1.Panel1.Controls.Add(this.gridTables);
+			this.splitTables.Panel1.Controls.Add(this.gridTables);
 			// 
-			// splitContainer1.Panel2
+			// splitTables.Panel2
 			// 
-			this.splitContainer1.Panel2.Controls.Add(this.diffTables);
-			this.splitContainer1.Size = new System.Drawing.Size(1051, 482);
-			this.splitContainer1.SplitterDistance = 299;
-			this.splitContainer1.TabIndex = 12;
+			this.splitTables.Panel2.Controls.Add(this.diffTables);
+			this.splitTables.Size = new System.Drawing.Size(1051, 482);
+			this.splitTables.SplitterDistance = 299;
+			this.splitTables.TabIndex = 12;
 			// 
 			// gridTables
 			// 
@@ -607,7 +607,7 @@
 			// 
 			// tabObjects
 			// 
-			this.tabObjects.Controls.Add(this.splitContainer3);
+			this.tabObjects.Controls.Add(this.splitObjects);
 			this.tabObjects.Location = new System.Drawing.Point(4, 22);
 			this.tabObjects.Name = "tabObjects";
 			this.tabObjects.Padding = new System.Windows.Forms.Padding(3);
@@ -616,22 +616,22 @@
 			this.tabObjects.Text = "Objects";
 			this.tabObjects.UseVisualStyleBackColor = true;
 			// 
-			// splitContainer3
+			// splitObjects
 			// 
-			this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.splitContainer3.Location = new System.Drawing.Point(3, 3);
-			this.splitContainer3.Name = "splitContainer3";
+			this.splitObjects.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.splitObjects.Location = new System.Drawing.Point(3, 3);
+			this.splitObjects.Name = "splitObjects";
 			// 
-			// splitContainer3.Panel1
+			// splitObjects.Panel1
 			// 
-			this.splitContainer3.Panel1.Controls.Add(this.gridObjects);
+			this.splitObjects.Panel1.Controls.Add(this.gridObjects);
 			// 
-			// splitContainer3.Panel2
+			// splitObjects.Panel2
 			// 
-			this.splitContainer3.Panel2.Controls.Add(this.diffObjects);
-			this.splitContainer3.Size = new System.Drawing.Size(1051, 482);
-			this.splitContainer3.SplitterDistance = 743;
-			this.splitContainer3.TabIndex = 12;
+			this.splitObjects.Panel2.Controls.Add(this.diffObjects);
+			this.splitObjects.Size = new System.Drawing.Size(1051, 482);
+			this.splitObjects.SplitterDistance = 743;
+			this.splitObjects.TabIndex = 12;
 			// 
 			// gridObjects
 			// 
@@ -697,7 +697,7 @@
 			// 
 			// tabDrop
 			// 
-			this.tabDrop.Controls.Add(this.splitContainer2);
+			this.tabDrop.Controls.Add(this.splitDrops);
 			this.tabDrop.Location = new System.Drawing.Point(4, 22);
 			this.tabDrop.Name = "tabDrop";
 			this.tabDrop.Padding = new System.Windows.Forms.Padding(3);
@@ -706,22 +706,22 @@
 			this.tabDrop.Text = "Drop";
 			this.tabDrop.UseVisualStyleBackColor = true;
 			// 
-			// splitContainer2
+			// splitDrops
 			// 
-			this.splitContainer2.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.splitContainer2.Location = new System.Drawing.Point(3, 3);
-			this.splitContainer2.Name = "splitContainer2";
+			this.splitDrops.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.splitDrops.Location = new System.Drawing.Point(3, 3);
+			this.splitDrops.Name = "splitDrops";
 			// 
-			// splitContainer2.Panel1
+			// splitDrops.Panel1
 			// 
-			this.splitContainer2.Panel1.Controls.Add(this.gridDropObjects);
+			this.splitDrops.Panel1.Controls.Add(this.gridDropObjects);
 			// 
-			// splitContainer2.Panel2
+			// splitDrops.Panel2
 			// 
-			this.splitContainer2.Panel2.Controls.Add(this.diffDrops);
-			this.splitContainer2.Size = new System.Drawing.Size(1051, 482);
-			this.splitContainer2.SplitterDistance = 749;
-			this.splitContainer2.TabIndex = 3;
+			this.splitDrops.Panel2.Controls.Add(this.diffDrops);
+			this.splitDrops.Size = new System.Drawing.Size(1051, 482);
+			this.splitDrops.SplitterDistance = 749;
+			this.splitDrops.TabIndex = 3;
 			// 
 			// gridDropObjects
 			// 
@@ -797,21 +797,21 @@
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
 			// 
 			// saveToolStripMenuItem
 			// 
 			this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-			this.saveToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+			this.saveToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
 			this.saveToolStripMenuItem.Text = "&Save";
 			this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
 			// 
 			// connectionStringsToolStripMenuItem
 			// 
 			this.connectionStringsToolStripMenuItem.Name = "connectionStringsToolStripMenuItem";
-			this.connectionStringsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.connectionStringsToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
 			this.connectionStringsToolStripMenuItem.Text = "&Connection Strings";
 			this.connectionStringsToolStripMenuItem.Click += new System.EventHandler(this.connectionStringsToolStripMenuItem_Click);
 			// 
@@ -832,23 +832,23 @@
 			this.panel2.PerformLayout();
 			this.tabMain.ResumeLayout(false);
 			this.tabTables.ResumeLayout(false);
-			this.splitContainer1.Panel1.ResumeLayout(false);
-			this.splitContainer1.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
-			this.splitContainer1.ResumeLayout(false);
+			this.splitTables.Panel1.ResumeLayout(false);
+			this.splitTables.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.splitTables)).EndInit();
+			this.splitTables.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.gridTables)).EndInit();
 			this.mnuMain.ResumeLayout(false);
 			this.tabObjects.ResumeLayout(false);
-			this.splitContainer3.Panel1.ResumeLayout(false);
-			this.splitContainer3.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
-			this.splitContainer3.ResumeLayout(false);
+			this.splitObjects.Panel1.ResumeLayout(false);
+			this.splitObjects.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.splitObjects)).EndInit();
+			this.splitObjects.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.gridObjects)).EndInit();
 			this.tabDrop.ResumeLayout(false);
-			this.splitContainer2.Panel1.ResumeLayout(false);
-			this.splitContainer2.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
-			this.splitContainer2.ResumeLayout(false);
+			this.splitDrops.Panel1.ResumeLayout(false);
+			this.splitDrops.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.splitDrops)).EndInit();
+			this.splitDrops.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.gridDropObjects)).EndInit();
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
@@ -876,12 +876,12 @@
 		private System.Windows.Forms.TabPage tabTables;
 		private System.Windows.Forms.TabPage tabObjects;
 		private System.Windows.Forms.TabPage tabDrop;
-		private System.Windows.Forms.SplitContainer splitContainer1;
+		private System.Windows.Forms.SplitContainer splitTables;
 		private System.Windows.Forms.DataGridView gridTables;
 		private System.Windows.Forms.DataGridView gridDropObjects;
 		private System.Windows.Forms.DataGridView gridObjects;
 		private ucDifferences diffTables;
-		private System.Windows.Forms.SplitContainer splitContainer3;
+		private System.Windows.Forms.SplitContainer splitObjects;
 		private ucDifferences diffObjects;
 		private System.Windows.Forms.Button btnRefresh;
 		private System.Windows.Forms.Button btnViewMissingDependencies;
@@ -890,7 +890,7 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn ObjectType;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ProgTargetObject;
 		private System.Windows.Forms.DataGridViewCheckBoxColumn dataGridViewCheckBoxColumn2;
-		private System.Windows.Forms.SplitContainer splitContainer2;
+		private System.Windows.Forms.SplitContainer splitDrops;
 		private System.Windows.Forms.Button btnViewCreates;
 		private System.Windows.Forms.Button btnSelectAll;
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
