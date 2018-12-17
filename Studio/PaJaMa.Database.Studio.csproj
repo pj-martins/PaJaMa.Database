@@ -203,6 +203,12 @@
     <Compile Include="DataGenerate\ucDataGenerate.Designer.cs">
       <DependentUpon>ucDataGenerate.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmConnectionStrings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmConnectionStrings.Designer.cs">
+      <DependentUpon>frmConnectionStrings.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -332,6 +338,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DataGenerate\ucDataGenerate.resx">
       <DependentUpon>ucDataGenerate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmConnectionStrings.resx">
+      <DependentUpon>frmConnectionStrings.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>

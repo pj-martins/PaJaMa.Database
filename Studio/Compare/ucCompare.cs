@@ -1055,38 +1055,11 @@ namespace PaJaMa.Database.Studio.Compare
 			e.Value = type.Name;
 		}
 
-		private void removeConnectionString(string connString)
+		private void connectionStringsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (!string.IsNullOrEmpty(settings.ConnectionStrings))
+			if (new frmConnectionStrings().ShowDialog() == DialogResult.OK)
 			{
-				var conns = settings.ConnectionStrings.Split('|').ToList();
-				if (conns.IndexOf(connString) >= 0)
-				{
-					conns.Remove(connString);
-					cboSource.Items.Remove(connString);
-					cboTarget.Items.Remove(connString);
-				}
-				settings.ConnectionStrings = string.Join("|", conns);
-				Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
-			}
-		}
-
-		private void btnRemoveSource_Click(object sender, EventArgs e)
-		{
-			if (MessageBox.Show("Remove source connection string from list?", "Remove", MessageBoxButtons.YesNo) == DialogResult.Yes)
-			{
-				removeConnectionString(cboSource.Text);
-				cboSource.Text = string.Empty;
-			}
-		}
-
-		private void btnRemoveTarget_Click(object sender, EventArgs e)
-		{
-			if (MessageBox.Show("Remove source connection string from list?", "Remove", MessageBoxButtons.YesNo) == DialogResult.Yes)
-			{
-				removeConnectionString(cboTarget.Text);
-				cboTarget.Text = string.Empty;
+				refreshConnStrings();
 			}
 		}
 	}
