@@ -18,7 +18,8 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return getStandardItems(TargetDatabase.DataSource.GetForeignKeyCreateScript(DatabaseObject), 7);
+			var script = TargetDatabase.DataSource.GetForeignKeyCreateScript(DatabaseObject);
+			return string.IsNullOrEmpty(script) ? new List<SynchronizationItem>() : getStandardItems(script, 7);
 		}
 
 		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)

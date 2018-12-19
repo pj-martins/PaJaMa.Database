@@ -1,11 +1,9 @@
 ﻿using PaJaMa.Common;
 using PaJaMa.Database.Library.DatabaseObjects;
-using PaJaMa.Database.Library.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.Synchronization
 {
@@ -61,7 +59,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			sb.AppendLine(getColumnCreates().ToString());
 			foreach (var kc in DatabaseObject.KeyConstraints)
 			{
-				sb.AppendLine(", " + TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc));
+				var script = TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc);
+				if (!string.IsNullOrEmpty(script))
+					sb.AppendLine(", " + TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc));
 			}
 			sb.AppendLine(");");
 

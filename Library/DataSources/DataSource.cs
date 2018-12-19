@@ -7,7 +7,6 @@ using System.ComponentModel;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DataSources
 {
@@ -182,7 +181,8 @@ namespace PaJaMa.Database.Library.DataSources
 
 							PopulateKeyConstraints(schema.Database, cmd, true, null);
 							PopulateIndexes(schema.Database, cmd, true, null);
-							populateObjects<DefaultConstraint>(schema.Database, cmd, string.Format(qry, string.Format(this.DefaultConstraintSQL, schema.Database.DatabaseName)), string.Empty, true, null);
+							if (!string.IsNullOrEmpty(this.DefaultConstraintSQL))
+								populateObjects<DefaultConstraint>(schema.Database, cmd, string.Format(qry, string.Format(this.DefaultConstraintSQL, schema.Database.DatabaseName)), string.Empty, true, null);
 							populateObjects<Trigger>(schema.Database, cmd, string.Format(qry, string.Format(this.TriggerSQL, schema.Database.DatabaseName)), string.Empty, true, null);
 						}
 					}
