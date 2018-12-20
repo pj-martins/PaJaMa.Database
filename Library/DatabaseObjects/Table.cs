@@ -159,14 +159,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public void TruncateDelete(Database targetDatabase, IDbCommand cmd, bool truncate)
 		{
+			var schema = Schema.GetQueryObjectName(targetDatabase.DataSource);
+			if (!string.IsNullOrEmpty(schema)) schema += ".";
 			if (truncate)
 			{
-				cmd.CommandText = string.Format("truncate table {0}.{1}", Schema.GetQueryObjectName(targetDatabase.DataSource), GetQueryObjectName(targetDatabase.DataSource));
+				cmd.CommandText = string.Format("truncate table {0}{1}", schema, GetQueryObjectName(targetDatabase.DataSource));
 				cmd.ExecuteNonQuery();
 			}
 			else
 			{
-				cmd.CommandText = string.Format("delete from {0}.{1}", Schema.GetQueryObjectName(targetDatabase.DataSource), GetQueryObjectName(targetDatabase.DataSource));
+				cmd.CommandText = string.Format("delete from {0}{1}", schema, GetQueryObjectName(targetDatabase.DataSource));
 				cmd.ExecuteNonQuery();
 			}
 		}

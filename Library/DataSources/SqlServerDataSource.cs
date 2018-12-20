@@ -1,13 +1,8 @@
-﻿using PaJaMa.Common;
-using PaJaMa.Database.Library.DatabaseObjects;
+﻿using PaJaMa.Database.Library.DatabaseObjects;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PaJaMa.Database.Library.Synchronization;
 
 namespace PaJaMa.Database.Library.DataSources
 {
@@ -272,7 +267,7 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 
 		public override string GetConvertedObjectName(string objectName)
 		{
-			return string.Format("[{0}]", objectName);
+			return string.IsNullOrEmpty(objectName) ? string.Empty : string.Format("[{0}]", objectName);
 		}
 
 		public override string GetPreTopN(int topN)
