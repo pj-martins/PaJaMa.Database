@@ -323,13 +323,7 @@ namespace PaJaMa.Database.Studio.Query
 				var node2 = parentNode.Nodes.Add(table.TableName);
 				node2.Tag = table;
 				var node3 = node2.Nodes.Add("Columns");
-				foreach (var column in table.Columns)
-				{
-					var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName +
-							(column.CharacterMaximumLength != null && column.CharacterMaximumLength.GetValueOrDefault() > 0 ? "(" + column.CharacterMaximumLength.Value.ToString() + ")" : "")
-							+ ", " + (column.IsNullable ? "null" : "not null") + ")");
-					node4.Tag = column;
-				}
+				refreshColumnNodes(table, node3);
 
 				node3 = node2.Nodes.Add("Keys");
 				foreach (var key in table.KeyConstraints)
@@ -365,6 +359,17 @@ namespace PaJaMa.Database.Studio.Query
 					var node4 = node3.Nodes.Add(key.IndexName);
 					node4.Tag = key;
 				}
+			}
+		}
+
+		private void refreshColumnNodes(Table table, TreeNode parentNode)
+		{
+			foreach (var column in table.Columns)
+			{
+				var node = parentNode.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName +
+						(column.CharacterMaximumLength != null && column.CharacterMaximumLength.GetValueOrDefault() > 0 ? "(" + column.CharacterMaximumLength.Value.ToString() + ")" : "")
+						+ ", " + (column.IsNullable ? "null" : "not null") + ")");
+				node.Tag = column;
 			}
 		}
 
@@ -633,9 +638,8 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			var tag = treeTables.SelectedNode.Tag;
 			var isExpanded = treeTables.SelectedNode.IsExpanded;
-			if (tag is SchemaNode)
+			if (tag is SchemaNode schemaNode)
 			{
-				var schemaNode = tag as SchemaNode;
 				switch (schemaNode.SchemaNodeType)
 				{
 					case SchemaNodeType.Tables:
@@ -655,12 +659,24 @@ namespace PaJaMa.Database.Studio.Query
 						break;
 				}
 			}
-			else if (treeTables.SelectedNode.Tag is Library.DatabaseObjects.Database)
+			else if (tag is Library.DatabaseObjects.Database db)
 			{
-				var db = treeTables.SelectedNode.Tag as Library.DatabaseObjects.Database;
 				db.Schemas.Clear();
 				treeTables.SelectedNode.Nodes.Clear();
 				refreshSchemaNodes(treeTables.SelectedNode);
+			}
+			else if (treeTables.SelectedNode.Text == "Columns" && treeTables.SelectedNode.Parent.Tag is Table table)
+			{
+				treeTables.SelectedNode.Nodes.Clear();
+				_dataSource.PopulateColumnsForTable(table);
+				refreshColumnNodes(table, treeTables.SelectedNode);
+			}
+			else if (treeTables.SelectedNode.Tag is Table table2)
+			{
+				treeTables.SelectedNode.FirstNode.Nodes.Clear();
+				_dataSource.PopulateColumnsForTable(table2);
+				refreshColumnNodes(table2, treeTables.SelectedNode.FirstNode);
+				// TODO: other table props
 			}
 		}
 

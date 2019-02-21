@@ -119,7 +119,7 @@ namespace PaJaMa.Database.Library.DataSources
 			CurrentDatabase = Databases.First(d => d.DatabaseName == newDatabase);
 		}
 
-		private List<TDatabaseObject> populateObjects<TDatabaseObject>(DatabaseObjects.Database database, DbCommand cmd, string query, string forSchema, bool includeSystemSchemas, BackgroundWorker worker)
+		private List<TDatabaseObject> populateObjects<TDatabaseObject>(DatabaseObjects.Database database, DbCommand cmd, string query, string forSchema, bool includeSystemSchemas, string additionalWhere, BackgroundWorker worker)
 			where TDatabaseObject : DatabaseObjectBase
 		{
 			if (string.IsNullOrEmpty(query)) return new List<TDatabaseObject>();
@@ -139,6 +139,7 @@ namespace PaJaMa.Database.Library.DataSources
 				{query}
 				) z where SchemaName is null or SchemaName not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
 			}
+			query += additionalWhere;
 			cmd.CommandText = query;
 			using (var rdr = cmd.ExecuteReader())
 			{
@@ -165,7 +166,7 @@ namespace PaJaMa.Database.Library.DataSources
 				{
 					foreach (var schema in schemas)
 					{
-						populateObjects<Table>(schema.Database, cmd, string.Format(this.TableSQL, schema.Database.DatabaseName), schema.SchemaName, true, null);
+						populateObjects<Table>(schema.Database, cmd, string.Format(this.TableSQL, schema.Database.DatabaseName), schema.SchemaName, true, string.Empty, null);
 						PopulateColumns(schema.Database, cmd, schema.SchemaName, false, null);
 					}
 
@@ -182,10 +183,25 @@ namespace PaJaMa.Database.Library.DataSources
 							PopulateKeyConstraints(schema.Database, cmd, true, null);
 							PopulateIndexes(schema.Database, cmd, true, null);
 							if (!string.IsNullOrEmpty(this.DefaultConstraintSQL))
-								populateObjects<DefaultConstraint>(schema.Database, cmd, string.Format(qry, string.Format(this.DefaultConstraintSQL, schema.Database.DatabaseName)), string.Empty, true, null);
-							populateObjects<Trigger>(schema.Database, cmd, string.Format(qry, string.Format(this.TriggerSQL, schema.Database.DatabaseName)), string.Empty, true, null);
+								populateObjects<DefaultConstraint>(schema.Database, cmd, string.Format(qry, string.Format(this.DefaultConstraintSQL, schema.Database.DatabaseName)), string.Empty, true, string.Empty, null);
+							populateObjects<Trigger>(schema.Database, cmd, string.Format(qry, string.Format(this.TriggerSQL, schema.Database.DatabaseName)), string.Empty, true, string.Empty, null);
 						}
 					}
+				}
+				conn.Close();
+			}
+		}
+
+		public virtual void PopulateColumnsForTable(Table table)
+		{
+			// TODO: assumes all schemas are from same db
+			using (var conn = OpenConnection(table.Database.DatabaseName))
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					table.Columns.Clear();
+					populateObjects<Column>(table.Database, cmd, string.Format(this.ColumnSQL, table.Database.DatabaseName), table.Schema.SchemaName, true,
+					$" and TableName = '{table.TableName}'", null);
 				}
 				conn.Close();
 			}
@@ -202,7 +218,7 @@ namespace PaJaMa.Database.Library.DataSources
 				{
 					using (var cmd = conn.CreateCommand())
 					{
-						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, null);
+						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, null);
 					}
 				}
 			}
@@ -214,7 +230,7 @@ namespace PaJaMa.Database.Library.DataSources
 			{
 				using (var cmd = conn.CreateCommand())
 				{
-					populateObjects<View>(schema.Database, cmd, string.Format(this.ViewSQL, schema.Database.DatabaseName), schema.SchemaName, true, null);
+					populateObjects<View>(schema.Database, cmd, string.Format(this.ViewSQL, schema.Database.DatabaseName), schema.SchemaName, true, string.Empty, null);
 				}
 				conn.Close();
 			}
@@ -226,7 +242,7 @@ namespace PaJaMa.Database.Library.DataSources
 			{
 				using (var cmd = conn.CreateCommand())
 				{
-					populateObjects<RoutineSynonym>(schema.Database, cmd, string.Format(this.RoutineSynonymSQL, schema.Database.DatabaseName), schema.SchemaName, true, null);
+					populateObjects<RoutineSynonym>(schema.Database, cmd, string.Format(this.RoutineSynonymSQL, schema.Database.DatabaseName), schema.SchemaName, true, string.Empty, null);
 				}
 				conn.Close();
 			}
@@ -247,8 +263,8 @@ namespace PaJaMa.Database.Library.DataSources
 			{
 				using (var cmd = conn.CreateCommand())
 				{
-					populateObjects<ExtendedProperty>(database, cmd, string.Format(this.ExtendedPropertySQL, database.DatabaseName), string.Empty, false, worker);
-					populateObjects<DatabasePrincipal>(database, cmd, string.Format(this.DatabasePrincipalSQL, database.DatabaseName), string.Empty, true, worker);
+					populateObjects<ExtendedProperty>(database, cmd, string.Format(this.ExtendedPropertySQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
+					populateObjects<DatabasePrincipal>(database, cmd, string.Format(this.DatabasePrincipalSQL, database.DatabaseName), string.Empty, true, string.Empty, worker);
 					foreach (var dp in database.Principals)
 					{
 						if (dp.OwningPrincipalID > 0)
@@ -260,26 +276,26 @@ namespace PaJaMa.Database.Library.DataSources
 					if (string.IsNullOrEmpty(this.SchemaSQL))
 						database.Schemas.Add(new Schema(database) { SchemaName = "" });
 					else
-						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, worker);
+						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
 
-					populateObjects<RoutineSynonym>(database, cmd, string.Format(this.RoutineSynonymSQL, database.DatabaseName), string.Empty, false, worker);
-					populateObjects<View>(database, cmd, string.Format(this.ViewSQL, database.DatabaseName), string.Empty, false, worker);
+					populateObjects<RoutineSynonym>(database, cmd, string.Format(this.RoutineSynonymSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
+					populateObjects<View>(database, cmd, string.Format(this.ViewSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
 					if (!condensed)
 					{
-						populateObjects<ServerLogin>(database, cmd, string.Format(this.ServerLoginSQL, database.DatabaseName), string.Empty, true, worker);
-						populateObjects<Permission>(database, cmd, string.Format(this.PermissionSQL, database.DatabaseName), string.Empty, true, worker);
-						populateObjects<Credential>(database, cmd, string.Format(this.CredentialSQL, database.DatabaseName), string.Empty, true, worker);
+						populateObjects<ServerLogin>(database, cmd, string.Format(this.ServerLoginSQL, database.DatabaseName), string.Empty, true, string.Empty, worker);
+						populateObjects<Permission>(database, cmd, string.Format(this.PermissionSQL, database.DatabaseName), string.Empty, true, string.Empty, worker);
+						populateObjects<Credential>(database, cmd, string.Format(this.CredentialSQL, database.DatabaseName), string.Empty, true, string.Empty, worker);
 					}
-					populateObjects<Table>(database, cmd, string.Format(this.TableSQL, database.DatabaseName), string.Empty, false, worker);
+					populateObjects<Table>(database, cmd, string.Format(this.TableSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
 					PopulateColumns(database, cmd, string.Empty, false, worker);
 					PopulateForeignKeys(database, cmd, string.Empty, false, worker);
 					PopulateKeyConstraints(database, cmd, false, worker);
 					PopulateIndexes(database, cmd, false, worker);
 
-					populateObjects<DefaultConstraint>(database, cmd, string.Format(this.DefaultConstraintSQL, database.DatabaseName), string.Empty, false, worker);
-					populateObjects<Trigger>(database, cmd, string.Format(this.TriggerSQL, database.DatabaseName), string.Empty, false, worker);
-					populateObjects<Sequence>(database, cmd, string.Format(this.SequenceSQL, database.DatabaseName), string.Empty, false, worker);
-					populateObjects<Extension>(database, cmd, string.Format(this.ExtensionSQL, database.DatabaseName), string.Empty, false, worker);
+					populateObjects<DefaultConstraint>(database, cmd, string.Format(this.DefaultConstraintSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
+					populateObjects<Trigger>(database, cmd, string.Format(this.TriggerSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
+					populateObjects<Sequence>(database, cmd, string.Format(this.SequenceSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
+					populateObjects<Extension>(database, cmd, string.Format(this.ExtensionSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
 				}
 				conn.Close();
 			}
@@ -287,22 +303,22 @@ namespace PaJaMa.Database.Library.DataSources
 
 		internal virtual void PopulateColumns(DatabaseObjects.Database database, DbCommand cmd, string forSchema, bool includeSystemSchemas, BackgroundWorker worker)
 		{
-			populateObjects<Column>(database, cmd, string.Format(this.ColumnSQL, database.DatabaseName), forSchema, false, worker);
+			populateObjects<Column>(database, cmd, string.Format(this.ColumnSQL, database.DatabaseName), forSchema, false, string.Empty, worker);
 		}
 
 		internal virtual void PopulateForeignKeys(DatabaseObjects.Database database, DbCommand cmd, string schemaName, bool includeSystemSchemas, BackgroundWorker worker)
 		{
-			populateObjects<ForeignKey>(database, cmd, string.Format(this.ForeignKeySQL, database.DatabaseName), schemaName, false, worker);
+			populateObjects<ForeignKey>(database, cmd, string.Format(this.ForeignKeySQL, database.DatabaseName), schemaName, false, string.Empty, worker);
 		}
 
 		internal virtual void PopulateKeyConstraints(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
-			populateObjects<KeyConstraint>(database, cmd, string.Format(this.KeyConstraintSQL, database.DatabaseName), string.Empty, false, worker);
+			populateObjects<KeyConstraint>(database, cmd, string.Format(this.KeyConstraintSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
 		}
 
 		internal virtual void PopulateIndexes(DatabaseObjects.Database database, DbCommand cmd, bool includeSystemSchemas, BackgroundWorker worker)
 		{
-			populateObjects<Index>(database, cmd, string.Format(this.IndexSQL, database.DatabaseName), string.Empty, false, worker);
+			populateObjects<Index>(database, cmd, string.Format(this.IndexSQL, database.DatabaseName), string.Empty, false, string.Empty, worker);
 		}
 
 		internal ColumnType GetColumnType(string dataType, string columnDefault)
