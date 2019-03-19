@@ -517,11 +517,9 @@ namespace PaJaMa.Database.Studio.Compare
 						return;
 					}
 
-					using (var frm = new frmDataDetails())
-					{
-						frm.SelectedWorkspace = workspace;
-						frm.ShowDialog();
-					}
+					var frm = new frmDataDetails();
+					frm.SelectedWorkspace = workspace;
+					frm.Show();
 				}
 			}
 		}

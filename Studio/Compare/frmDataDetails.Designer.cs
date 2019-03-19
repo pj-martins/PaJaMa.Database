@@ -31,6 +31,8 @@
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmDataDetails));
 			this.gridMain = new System.Windows.Forms.DataGridView();
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.label2 = new System.Windows.Forms.Label();
+			this.cboOverrideKeyField = new System.Windows.Forms.ComboBox();
 			this.chkRight = new System.Windows.Forms.CheckBox();
 			this.chkLeft = new System.Windows.Forms.CheckBox();
 			this.chkDifferent = new System.Windows.Forms.CheckBox();
@@ -44,8 +46,7 @@
 			this.numPage = new System.Windows.Forms.NumericUpDown();
 			this.btnRefresh = new System.Windows.Forms.Button();
 			this.btnSync = new System.Windows.Forms.Button();
-			this.cboOverrideKeyField = new System.Windows.Forms.ComboBox();
-			this.label2 = new System.Windows.Forms.Label();
+			this.chkAllPages = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this.gridMain)).BeginInit();
 			this.panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numPage)).BeginInit();
@@ -67,6 +68,7 @@
 			// 
 			// panel1
 			// 
+			this.panel1.Controls.Add(this.chkAllPages);
 			this.panel1.Controls.Add(this.label2);
 			this.panel1.Controls.Add(this.cboOverrideKeyField);
 			this.panel1.Controls.Add(this.chkRight);
@@ -87,6 +89,25 @@
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(1085, 36);
 			this.panel1.TabIndex = 1;
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(425, 11);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(25, 13);
+			this.label2.TabIndex = 14;
+			this.label2.Text = "Key";
+			// 
+			// cboOverrideKeyField
+			// 
+			this.cboOverrideKeyField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cboOverrideKeyField.FormattingEnabled = true;
+			this.cboOverrideKeyField.Location = new System.Drawing.Point(456, 8);
+			this.cboOverrideKeyField.Name = "cboOverrideKeyField";
+			this.cboOverrideKeyField.Size = new System.Drawing.Size(135, 21);
+			this.cboOverrideKeyField.TabIndex = 13;
+			this.cboOverrideKeyField.SelectedIndexChanged += new System.EventHandler(this.cboOverrideKeyField_SelectedIndexChanged);
 			// 
 			// chkRight
 			// 
@@ -231,24 +252,17 @@
 			this.btnSync.UseVisualStyleBackColor = true;
 			this.btnSync.Click += new System.EventHandler(this.btnSync_Click);
 			// 
-			// cboOverrideKeyField
+			// chkAllPages
 			// 
-			this.cboOverrideKeyField.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.cboOverrideKeyField.FormattingEnabled = true;
-			this.cboOverrideKeyField.Location = new System.Drawing.Point(376, 8);
-			this.cboOverrideKeyField.Name = "cboOverrideKeyField";
-			this.cboOverrideKeyField.Size = new System.Drawing.Size(215, 21);
-			this.cboOverrideKeyField.TabIndex = 13;
-			this.cboOverrideKeyField.SelectedIndexChanged += new System.EventHandler(this.cboOverrideKeyField_SelectedIndexChanged);
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(345, 11);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(25, 13);
-			this.label2.TabIndex = 14;
-			this.label2.Text = "Key";
+			this.chkAllPages.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.chkAllPages.AutoSize = true;
+			this.chkAllPages.Location = new System.Drawing.Point(345, 9);
+			this.chkAllPages.Name = "chkAllPages";
+			this.chkAllPages.Size = new System.Drawing.Size(70, 17);
+			this.chkAllPages.TabIndex = 15;
+			this.chkAllPages.Text = "All Pages";
+			this.chkAllPages.UseVisualStyleBackColor = true;
+			this.chkAllPages.CheckedChanged += new System.EventHandler(this.chkAllPages_CheckedChanged);
 			// 
 			// frmDataDetails
 			// 
@@ -290,6 +304,6 @@
 		private System.Windows.Forms.CheckBox chkDifferent;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.ComboBox cboOverrideKeyField;
-
+		private System.Windows.Forms.CheckBox chkAllPages;
 	}
 }
