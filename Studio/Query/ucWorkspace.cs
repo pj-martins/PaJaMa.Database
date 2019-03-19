@@ -11,7 +11,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -738,15 +737,17 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void newTableToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			using (var frm = new frmNewTable())
+			var frm = new frmNewTable();
+			var tag = treeTables.SelectedNode.Tag;
+			frm.Schema = tag is Schema ? (tag as Schema) : (tag as SchemaNode).Schema;
+			frm.FormClosed += (object sender2, FormClosedEventArgs e2) =>
 			{
-				var tag = treeTables.SelectedNode.Tag;
-				frm.Schema = tag is Schema ? (tag as Schema) : (tag as SchemaNode).Schema;
-				if (frm.ShowDialog() == DialogResult.OK)
+				if (frm.DialogResult == DialogResult.OK)
 				{
 					addQueryOutput(null, new QueryOutput() { Database = frm.Schema.Database.DatabaseName, Query = frm.GetScript() });
 				}
-			}
+			};
+			frm.Show();
 		}
 
 		private QueryOutput createQueryOutput(QueryOutput output = null)

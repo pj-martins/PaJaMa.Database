@@ -601,7 +601,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					if (fk.Columns.Any(k => !toTbl.KeyConstraints.Any(kc => kc.Columns.Any(c => string.Compare(c.ColumnName, k.ParentColumn.ColumnName, ignoreCase) == 0))))
 					{
 						if (!selectedItems.Select(si => si.DatabaseObject).OfType<KeyConstraint>().Any(kc => string.Compare(kc.Table.TableName, fk.ParentTable.ObjectName, ignoreCase) == 0))
-							missing.Add(fk.ParentTable);
+							missing.Add(fk);
 					}
 					continue;
 				}
@@ -614,7 +614,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				if (item != null && !item.Omit)
 					continue;
 
-				missing.Add(fk.ParentTable);
+				missing.Add(fk);
 			}
 
 			if (!existingTargetObjects.OfType<Schema>().Any(s => string.Compare(s.MappedSchemaName, DatabaseObject.Schema.MappedSchemaName, ignoreCase) == 0))

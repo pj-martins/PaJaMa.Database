@@ -29,12 +29,6 @@
 		private void InitializeComponent()
 		{
 			this.gridMain = new System.Windows.Forms.DataGridView();
-			this.panel1 = new System.Windows.Forms.Panel();
-			this.panel2 = new System.Windows.Forms.Panel();
-			this.txtTableName = new System.Windows.Forms.TextBox();
-			this.label1 = new System.Windows.Forms.Label();
-			this.btnCancel = new System.Windows.Forms.Button();
-			this.btnOK = new System.Windows.Forms.Button();
 			this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Nullable = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.ColumnType = new System.Windows.Forms.DataGridViewComboBoxColumn();
@@ -44,6 +38,12 @@
 			this.PrimaryKey = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.NumericPrecision = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.NumericScale = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.panel1 = new System.Windows.Forms.Panel();
+			this.btnOK = new System.Windows.Forms.Button();
+			this.btnCancel = new System.Windows.Forms.Button();
+			this.panel2 = new System.Windows.Forms.Panel();
+			this.label1 = new System.Windows.Forms.Label();
+			this.txtTableName = new System.Windows.Forms.TextBox();
 			((System.ComponentModel.ISupportInitialize)(this.gridMain)).BeginInit();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
@@ -68,64 +68,6 @@
 			this.gridMain.Size = new System.Drawing.Size(1031, 567);
 			this.gridMain.TabIndex = 0;
 			this.gridMain.CellParsing += new System.Windows.Forms.DataGridViewCellParsingEventHandler(this.gridMain_CellParsing);
-			// 
-			// panel1
-			// 
-			this.panel1.Controls.Add(this.btnOK);
-			this.panel1.Controls.Add(this.btnCancel);
-			this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.panel1.Location = new System.Drawing.Point(0, 594);
-			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(1031, 28);
-			this.panel1.TabIndex = 1;
-			// 
-			// panel2
-			// 
-			this.panel2.Controls.Add(this.label1);
-			this.panel2.Controls.Add(this.txtTableName);
-			this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-			this.panel2.Location = new System.Drawing.Point(0, 0);
-			this.panel2.Name = "panel2";
-			this.panel2.Size = new System.Drawing.Size(1031, 27);
-			this.panel2.TabIndex = 0;
-			// 
-			// txtTableName
-			// 
-			this.txtTableName.Location = new System.Drawing.Point(83, 3);
-			this.txtTableName.Name = "txtTableName";
-			this.txtTableName.Size = new System.Drawing.Size(481, 20);
-			this.txtTableName.TabIndex = 0;
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(12, 6);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(65, 13);
-			this.label1.TabIndex = 1;
-			this.label1.Text = "Table Name";
-			// 
-			// btnCancel
-			// 
-			this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnCancel.Location = new System.Drawing.Point(953, 3);
-			this.btnCancel.Name = "btnCancel";
-			this.btnCancel.Size = new System.Drawing.Size(75, 23);
-			this.btnCancel.TabIndex = 0;
-			this.btnCancel.Text = "Cancel";
-			this.btnCancel.UseVisualStyleBackColor = true;
-			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
-			// 
-			// btnOK
-			// 
-			this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnOK.Location = new System.Drawing.Point(872, 3);
-			this.btnOK.Name = "btnOK";
-			this.btnOK.Size = new System.Drawing.Size(75, 23);
-			this.btnOK.TabIndex = 1;
-			this.btnOK.Text = "OK";
-			this.btnOK.UseVisualStyleBackColor = true;
-			this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
 			// 
 			// ColumnName
 			// 
@@ -180,6 +122,64 @@
 			this.NumericScale.HeaderText = "Scale";
 			this.NumericScale.Name = "NumericScale";
 			// 
+			// panel1
+			// 
+			this.panel1.Controls.Add(this.btnOK);
+			this.panel1.Controls.Add(this.btnCancel);
+			this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this.panel1.Location = new System.Drawing.Point(0, 594);
+			this.panel1.Name = "panel1";
+			this.panel1.Size = new System.Drawing.Size(1031, 28);
+			this.panel1.TabIndex = 1;
+			// 
+			// btnOK
+			// 
+			this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnOK.Location = new System.Drawing.Point(872, 3);
+			this.btnOK.Name = "btnOK";
+			this.btnOK.Size = new System.Drawing.Size(75, 23);
+			this.btnOK.TabIndex = 1;
+			this.btnOK.Text = "OK";
+			this.btnOK.UseVisualStyleBackColor = true;
+			this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
+			// 
+			// btnCancel
+			// 
+			this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnCancel.Location = new System.Drawing.Point(953, 3);
+			this.btnCancel.Name = "btnCancel";
+			this.btnCancel.Size = new System.Drawing.Size(75, 23);
+			this.btnCancel.TabIndex = 0;
+			this.btnCancel.Text = "Cancel";
+			this.btnCancel.UseVisualStyleBackColor = true;
+			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+			// 
+			// panel2
+			// 
+			this.panel2.Controls.Add(this.label1);
+			this.panel2.Controls.Add(this.txtTableName);
+			this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+			this.panel2.Location = new System.Drawing.Point(0, 0);
+			this.panel2.Name = "panel2";
+			this.panel2.Size = new System.Drawing.Size(1031, 27);
+			this.panel2.TabIndex = 0;
+			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Location = new System.Drawing.Point(12, 6);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(65, 13);
+			this.label1.TabIndex = 1;
+			this.label1.Text = "Table Name";
+			// 
+			// txtTableName
+			// 
+			this.txtTableName.Location = new System.Drawing.Point(83, 3);
+			this.txtTableName.Name = "txtTableName";
+			this.txtTableName.Size = new System.Drawing.Size(481, 20);
+			this.txtTableName.TabIndex = 0;
+			// 
 			// frmNewTable
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -190,7 +190,6 @@
 			this.Controls.Add(this.panel1);
 			this.Name = "frmNewTable";
 			this.ShowIcon = false;
-			this.ShowInTaskbar = false;
 			this.Text = "Create Table";
 			this.Load += new System.EventHandler(this.frmNewTable_Load);
 			((System.ComponentModel.ISupportInitialize)(this.gridMain)).EndInit();
