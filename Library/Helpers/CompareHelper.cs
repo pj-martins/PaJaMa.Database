@@ -225,7 +225,8 @@ namespace PaJaMa.Database.Library.Helpers
 					if (checkedObjects.Contains(child))
 						continue;
 
-					if (child is ForeignKey && ws is TableWorkspace tw && tw.RemoveAddKeys)
+					if (child is ForeignKey fk && ws is TableWorkspace tw && 
+						(tw.RemoveAddKeys || selectedWorkspaces.Any(sw => sw is TableWorkspace tw2 && tw2.Select && tw2.SourceTable == fk.ParentTable)))
 						continue;
 
 					checkedObjects.Add(child);
