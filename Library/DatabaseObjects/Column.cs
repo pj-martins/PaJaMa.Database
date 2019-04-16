@@ -34,13 +34,66 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		public int OrdinalPosition { get; set; }
 
+		[Ignore]
+		public UInt64 OrdinalPosition2
+		{
+			get { return (UInt64)OrdinalPosition; }
+			set { OrdinalPosition = Convert.ToInt32(value); }
+		}
+
 		public bool IsIdentity { get; set; }
+
+		[Ignore]
+		public Int64 IsIdentity2
+		{
+			get { return IsIdentity ? 1 : 0; }
+			set { IsIdentity = value == 1; }
+		}
+
 		public int? CharacterMaximumLength { get; set; }
+
+		[Ignore]
+		public UInt64 CharacterMaximumLength2
+		{
+			get { return (UInt64)CharacterMaximumLength; }
+			set
+			{
+				var parsed = 0;
+				int.TryParse(value.ToString(), out parsed);
+				CharacterMaximumLength = parsed;
+			}
+		}
+
 		public bool IsNullable { get; set; }
+
+		[Ignore]
+		public Int64 IsNullable2
+		{
+			get { return IsNullable ? 1 : 0; }
+			set { IsNullable = value == 1; }
+		}
+
 		public string Formula { get; set; }
 		public string ColumnDefault { get; set; }
 		public int? NumericPrecision { get; set; }
+
+		[Ignore]
+		public UInt64 NumericPrecision2
+		{
+			get { return (UInt64)NumericPrecision.GetValueOrDefault(); }
+			set { NumericPrecision = Convert.ToInt16(value); }
+		}
+
 		public int? NumericScale { get; set; }
+
+		[Ignore]
+		public UInt64 NumericScale2
+		{
+			get { return (UInt64)NumericScale.GetValueOrDefault(); }
+			set { NumericScale = Convert.ToInt16(value); }
+		}
+
+
 		public decimal? Increment { get; set; }
 		public string UDTName { get; set; }
 
