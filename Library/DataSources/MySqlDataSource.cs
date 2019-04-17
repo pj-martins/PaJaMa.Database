@@ -14,14 +14,16 @@ namespace PaJaMa.Database.Library.DataSources
 		{
 		}
 
-		public override string DefaultSchemaName => "";
+        internal override List<string> SystemSchemaNames => new List<string>() { "information_schema" };
+
+        public override string DefaultSchemaName => "";
 
 		protected override Type connectionType => typeof(MySqlConnection);
 
 		// TODO: owner
 		internal override string SchemaSQL => "";
 
-		internal override string ViewSQL => throw new NotImplementedException();
+        internal override string ViewSQL => "";
 
 		internal override string TableSQL => "select TABLE_NAME as TableName, '' as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = '{0}'";
 
@@ -40,7 +42,7 @@ where TABLE_SCHEMA = '{0}'";
 SELECT distinct
     tc.constraint_name as ForeignKeyName, tc.table_name as ChildTableName, kcu.column_name as ChildColumnName, 
    c.referenced_table_name AS ParentTableName, referenced_column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
-	 referenced_table_schema as ParentTableSchema, tc.TABLE_SCHEMA as ChildTableSchema, '' as SchemaName
+	 '' as ParentTableSchema, '' as ChildTableSchema, '' as SchemaName
 FROM information_schema.table_constraints AS tc
 JOIN information_schema.key_column_usage AS kcu
 	ON tc.constraint_name = kcu.constraint_name
@@ -50,13 +52,21 @@ JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c ON c.CONSTRAINT_NAME = tc.CONS
 WHERE constraint_type = 'FOREIGN KEY'
 and tc.TABLE_SCHEMA = '{0}'";
 
-		internal override string KeyConstraintSQL => throw new NotImplementedException();
+        internal override string KeyConstraintSQL => @"select ku.CONSTRAINT_NAME as ConstraintName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as Ordinal2, 
+	ku.TABLE_NAME as TableName, '' as SchemaName, '' as ClusteredNonClustered, true as IsPrimaryKey2, false as Descending2
+FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
+INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
+ON tc.CONSTRAINT_TYPE = 'PRIMARY KEY' 
+AND tc.CONSTRAINT_NAME = ku.CONSTRAINT_NAME
+and ku.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
+and tc.TABLE_SCHEMA = '{0}'";
 
-		internal override string IndexSQL => throw new NotImplementedException();
 
-		internal override string DefaultConstraintSQL => throw new NotImplementedException();
+        internal override string IndexSQL => "";
 
-		internal override string TriggerSQL => throw new NotImplementedException();
+        internal override string DefaultConstraintSQL => "";
+
+        internal override string TriggerSQL => "";
 
 		internal override string DatabaseSQL => "SELECT SCHEMA_NAME AS DatabaseName FROM information_schema.schemata";
 
@@ -87,7 +97,8 @@ and tc.TABLE_SCHEMA = '{0}'";
 					_columnTypes.Add(new ColumnType("binary", DataType.Binary, "0"));
 					_columnTypes.Add(new ColumnType("blob", DataType.Binary, "0"));
 					_columnTypes.Add(new ColumnType("mediumblob", DataType.Binary, "0"));
-					_columnTypes.Add(new ColumnType("text", DataType.Text, "0"));
+                    _columnTypes.Add(new ColumnType("longblob", DataType.Binary, "0"));
+                    _columnTypes.Add(new ColumnType("text", DataType.Text, "0"));
 					_columnTypes.Add(new ColumnType("tinytext", DataType.Text, "0"));
 					_columnTypes.Add(new ColumnType("mediumtext", DataType.Text, "0"));
 					_columnTypes.Add(new ColumnType("longtext", DataType.Text, "0"));
@@ -101,7 +112,12 @@ and tc.TABLE_SCHEMA = '{0}'";
 
 		public override string GetConvertedObjectName(string objectName)
 		{
-			throw new NotImplementedException();
-		}
-	}
+            return string.Format("`{0}`", objectName);
+        }
+
+        public override string GetPostTopN(int topN)
+        {
+            return topN <= 0 ? string.Empty : string.Format("LIMIT {0}", topN);
+        }
+    }
 }

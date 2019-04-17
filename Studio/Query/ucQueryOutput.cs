@@ -506,16 +506,7 @@ namespace PaJaMa.Database.Studio.Query
 				}
 			}
 
-			if (selectedNode.Parent != null && CurrentConnection.Database != selectedNode.Parent.Parent.Text)
-			{
-				var node = selectedNode.Parent;
-				while (!(node.Tag is Database.Library.DatabaseObjects.Database))
-				{
-					node = node.Parent;
-				}
-				CurrentConnection.ChangeDatabase(node.Text);
-			}
-
+				
 			string objName = string.Empty;
 			var dbName = string.Empty;
 			string[] columns = null;
@@ -523,7 +514,8 @@ namespace PaJaMa.Database.Studio.Query
 			if (selectedNode.Tag is Library.DatabaseObjects.View)
 			{
 				var view = selectedNode.Tag as Library.DatabaseObjects.View;
-				dbName = view.Database.DataSource.GetConvertedObjectName(view.Database.DatabaseName);
+                CurrentConnection.ChangeDatabase(view.Database.DatabaseName);
+                dbName = view.Database.DataSource.GetConvertedObjectName(view.Database.DatabaseName);
 				objName = view.GetObjectNameWithSchema(view.Database.DataSource);
 				columns = view.Columns.Select(c => c.ColumnName).ToArray();
 			}
@@ -531,11 +523,14 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				var tbl = selectedNode.Tag as Table;
 				dbName = tbl.Database.DataSource.GetConvertedObjectName(tbl.Database.DatabaseName);
-				objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
+                CurrentConnection.ChangeDatabase(tbl.Database.DatabaseName);
+                objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
 				columns = tbl.Columns.Select(c => c.ColumnName).ToArray();
 			}
 
-			txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
+            
+
+            txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
 				topN != null ? _server.GetPreTopN(topN.Value) : string.Empty,
 				_server.GetColumnSelectList(columns),
 				objName,

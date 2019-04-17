@@ -57,6 +57,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
     {
         public string ColumnName { get; set; }
         public bool Descending { get; set; }
+        [Ignore]
+        public Int64 Descending2
+        {
+            get { return Descending ? 1 : 0; }
+            set { Descending = value == 1; }
+        }
         public int Ordinal { get; set; }
+        public Int64 Ordinal2
+        {
+            get { return Ordinal; }
+            set { Ordinal = Convert.ToInt32(value); }
+        }
     }
 }

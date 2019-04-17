@@ -16,3 +16,4 @@ Library/obj
 UnitTests/bin
 UnitTests/obj
 .vs/PaJaMa.Database/DesignTimeBuild
+.vs

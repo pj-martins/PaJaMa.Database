@@ -25,6 +25,13 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public string ClusteredNonClustered { get; set; }
 		public bool IsPrimaryKey { get; set; }
 
+        [Ignore]
+        public Int64 IsPrimaryKey2
+        {
+            get { return IsPrimaryKey ? 1 : 0; }
+            set { IsPrimaryKey = value == 1; }
+        }
+
 		public KeyConstraint(Database database) : base(database)
 		{
 			Columns = new List<IndexColumn>();
