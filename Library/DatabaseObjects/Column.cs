@@ -102,9 +102,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbDataReader reader)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == reader["SchemaName"].ToString());
+			if (schema == null) throw new Exception("Schema " + reader["SchemaName"].ToString() + " not found for column " + this.ColumnName);
 			ColumnType = Database.DataSource.GetColumnType(reader["DataType"].ToString(), this.ColumnDefault);
-			this.Table = schema.Tables.First(t => t.TableName == reader["TableName"].ToString());
+			this.Table = schema.Tables.FirstOrDefault(t => t.TableName == reader["TableName"].ToString());
+			if (this.Table == null) throw new Exception("Table " + reader["TableName"].ToString() + " not found for column " + this.ColumnName);
 			this.Table.Columns.Add(this);
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.Table.ObjectName

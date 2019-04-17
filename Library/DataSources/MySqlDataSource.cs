@@ -40,7 +40,7 @@ where TABLE_SCHEMA = '{0}'";
 SELECT distinct
     tc.constraint_name as ForeignKeyName, tc.table_name as ChildTableName, kcu.column_name as ChildColumnName, 
    c.referenced_table_name AS ParentTableName, referenced_column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
-	 referenced_table_schema as ParentTableSchema, tc.TABLE_SCHEMA as ChildTableSchema, tc.CONSTRAINT_SCHEMA as SchemaName
+	 referenced_table_schema as ParentTableSchema, tc.TABLE_SCHEMA as ChildTableSchema, '' as SchemaName
 FROM information_schema.table_constraints AS tc
 JOIN information_schema.key_column_usage AS kcu
 	ON tc.constraint_name = kcu.constraint_name

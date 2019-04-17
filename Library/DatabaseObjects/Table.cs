@@ -56,7 +56,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			if (reader["Definition"] != DBNull.Value)
 				this.Definition = reader["Definition"].ToString();
-			this.Schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			this.Schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == reader["SchemaName"].ToString());
+			if (this.Schema == null) throw new Exception("Schema " + reader["SchemaName"].ToString() + " not found for " + this.TableName);
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.TableName && ep.SchemaName == this.Schema.SchemaName &&
 				string.IsNullOrEmpty(ep.Level2Object)).ToList();
