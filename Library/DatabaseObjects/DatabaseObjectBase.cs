@@ -59,6 +59,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public string GetQueryObjectName(DataSource server)
 		{
+            if (string.IsNullOrEmpty(ObjectName)) return string.Empty;
 			return server.GetConvertedObjectName(ObjectName);
 		}
 	}

@@ -23,20 +23,34 @@ namespace PaJaMa.Database.Library.DataSources
 		// TODO: owner
 		internal override string SchemaSQL => "";
 
-        internal override string ViewSQL => "";
+        internal override string ViewSQL => ""; /*@"
+select
+	c.TABLE_SCHEMA as SchemaName,
+	c.TABLE_NAME as ViewName,
+	c.COLUMN_NAME as ColumnName,
+	false as IsIdentity2,
+	c.DATA_TYPE as DataType,
+	c.CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength2,
+	case when c.IS_NULLABLE = 'YES' then true else false end as IsNullable2,
+	VIEW_DEFINITION as Definition
+FROM INFORMATION_SCHEMA.COLUMNS c
+JOIN INFORMATION_SCHEMA.VIEWS t on t.TABLE_NAME = c.TABLE_NAME
+	AND t.TABLE_SCHEMA = c.TABLE_SCHEMA
+";*/
 
-		internal override string TableSQL => "select TABLE_NAME as TableName, '' as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = '{0}'";
+        internal override string TableSQL => "select TABLE_NAME as TableName, '' as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = '{0}'";
 
 		internal override string ColumnSQL => @"
-select TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition2, 
+select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition2, 
 	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength2, DATA_TYPE as DataType,
     case when co.IS_NULLABLE = 'YES' then true else false END AS IsNullable2,
 	 case when EXTRA = 'auto_increment' then TRUE ELSE false end as IsIdentity2, 
-	 CONCAT('DF_', TABLE_NAME, '_', COLUMN_NAME) as ConstraintName,
+	 CONCAT('DF_', co.TABLE_NAME, '_', COLUMN_NAME) as ConstraintName,
 	  COLUMN_DEFAULT as ColumnDefault, null as Formula, NUMERIC_PRECISION as NumericPrecision2, NUMERIC_SCALE as NumericScale2,
 	  '' AS SchemaName, null AS Increment
 FROM INFORMATION_SCHEMA.COLUMNS co
-where TABLE_SCHEMA = '{0}'";
+JOIN INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME and t.TABLE_SCHEMA = co.TABLE_SCHEMA
+WHERE t.TABLE_TYPE = 'BASE TABLE' and co.TABLE_SCHEMA = '{0}'";
 
 		internal override string ForeignKeySQL => @"
 SELECT distinct
@@ -49,8 +63,7 @@ JOIN information_schema.key_column_usage AS kcu
 	AND tc.table_name = kcu.TABLE_NAME
 JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c ON c.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
 	AND c.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
-WHERE constraint_type = 'FOREIGN KEY'
-and tc.TABLE_SCHEMA = '{0}'";
+WHERE constraint_type = 'FOREIGN KEY' AND referenced_table_schema IS NOT NULL and referenced_table_schema = '{0}'";
 
         internal override string KeyConstraintSQL => @"select ku.CONSTRAINT_NAME as ConstraintName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as Ordinal2, 
 	ku.TABLE_NAME as TableName, '' as SchemaName, '' as ClusteredNonClustered, true as IsPrimaryKey2, false as Descending2
@@ -79,7 +92,8 @@ and tc.TABLE_SCHEMA = '{0}'";
 				{
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("int", DataType.Integer, "0"));
-					_columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
+                    _columnTypes.Add(new ColumnType("mediumint", DataType.Integer, "0"));
+                    _columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
 					_columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "0"));
 					_columnTypes.Add(new ColumnType("tinyint", DataType.SmallInteger, "0"));
 					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
@@ -105,7 +119,8 @@ and tc.TABLE_SCHEMA = '{0}'";
 					_columnTypes.Add(new ColumnType("enum", DataType.Integer, "0"));
 					_columnTypes.Add(new ColumnType("json", DataType.Json, "0"));
 					_columnTypes.Add(new ColumnType("set", DataType.Array, "0"));
-				}
+                    _columnTypes.Add(new ColumnType("bit", DataType.Integer, "0"));
+                }
 				return _columnTypes;
 			}
 		}
@@ -119,5 +134,20 @@ and tc.TABLE_SCHEMA = '{0}'";
         {
             return topN <= 0 ? string.Empty : string.Format("LIMIT {0}", topN);
         }
-    }
+
+        internal override string GetForeignKeyDropScript(ForeignKey foreignKey)
+        {
+            return "ALTER TABLE {0} DROP FOREIGN KEY {1};";
+        }
+
+		protected override string keysTableWhere(Table table)
+		{
+			return $" and ku.TABLE_NAME = '{table.TableName}'";
+		}
+
+		protected override string foreignKeysTableWhere(Table table)
+		{
+			return $" and tc.TABLE_NAME = '{table.TableName}'";
+		}
+	}
 }

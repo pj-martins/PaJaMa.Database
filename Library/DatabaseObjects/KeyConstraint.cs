@@ -41,7 +41,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			string tableName = reader["TableName"].ToString();
 			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
-			if (!schema.Tables.Any()) Database.DataSource.PopulateTables(new Schema[] { schema });
+			if (!schema.Tables.Any()) Database.DataSource.PopulateTables(new Schema[] { schema }, true);
 			var table = schema.Tables.First(t => t.TableName == reader["TableName"].ToString());
 			var constraint = table.KeyConstraints.FirstOrDefault(c => c.ConstraintName == this.ConstraintName && c.Table.TableName == tableName
 				&& c.Table.Schema.SchemaName == schema.SchemaName);

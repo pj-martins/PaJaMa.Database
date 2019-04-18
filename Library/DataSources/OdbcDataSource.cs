@@ -73,7 +73,7 @@ namespace PaJaMa.Database.Library.DataSources
 			return topN <= 0 ? string.Empty : string.Format("TOP {0}", topN);
 		}
 
-		public override void PopulateTables(Schema[] schemas)
+		public override void PopulateTables(Schema[] schemas, bool andChildren)
 		{
 			var schema = schemas.First();
 			using (var conn = OpenConnection(schema.Database.DatabaseName))
