@@ -60,6 +60,7 @@
     <Compile Include="DatabaseObjects\Database.cs" />
     <Compile Include="DatabaseObjects\DatabaseObjectBase.cs" />
     <Compile Include="DatabaseObjects\DatabasePrincipal.cs" />
+    <Compile Include="DataSources\MySqlDataSourceForCompare.cs" />
     <Compile Include="DataSources\MySqlDataSource.cs" />
     <Compile Include="DataSources\AccessDataSource.cs" />
     <Compile Include="DataSources\OdbcDataSource.cs" />

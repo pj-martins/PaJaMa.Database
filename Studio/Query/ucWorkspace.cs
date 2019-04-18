@@ -463,7 +463,7 @@ namespace PaJaMa.Database.Studio.Query
 						{
 							case SchemaNodeType.Tables:
 								if (!schemaNode.Schema.Tables.Any())
-									_dataSource.PopulateTables(new Schema[] { schemaNode.Schema }, false);
+									_dataSource.PopulateTables(_currentConnection, new Schema[] { schemaNode.Schema }, false);
 								refreshTableNodes(schemaNode.Schema, node);
 								break;
 							case SchemaNodeType.Views:
@@ -481,37 +481,37 @@ namespace PaJaMa.Database.Studio.Query
 					else if (node.Text == "Columns")
 					{
 						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateColumnsForTable(table);
+						_dataSource.PopulateColumnsForTable(_currentConnection, table);
 						refreshColumnNodes(table, node);
 					}
 					else if (node.Text == "ForeignKeys")
 					{
 						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateForeignKeysForTable(table);
+						_dataSource.PopulateForeignKeysForTable(_currentConnection, table);
 						refreshForeignKeyNodes(table, node);
 					}
 					else if (node.Text == "Keys")
 					{
 						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateKeysForTable(table);
+						_dataSource.PopulateKeysForTable(_currentConnection, table);
 						refreshKeyNodes(table, node);
 					}
 					else if (node.Text == "Constraints")
 					{
 						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateConstraintsForTable(table);
+						_dataSource.PopulateConstraintsForTable(_currentConnection, table);
 						refreshConstraintsNodes(table, node);
 					}
 					else if (node.Text == "Indexes")
 					{
 						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateIndexesForTable(table);
+						_dataSource.PopulateIndexesForTable(_currentConnection, table);
 						refreshIndexNodes(table, node);
 					}
 					else if (node.Text == "Triggers")
 					{
 						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateTriggersForTable(table);
+						_dataSource.PopulateTriggersForTable(_currentConnection, table);
 						refreshTriggerNodes(table, node);
 					}
 				}
@@ -710,7 +710,7 @@ namespace PaJaMa.Database.Studio.Query
 							s.Tables.Clear();
 						}
 						treeTables.SelectedNode.Nodes.Clear();
-						_dataSource.PopulateTables(schemaNode.Schema.Database.Schemas.ToArray(), false);
+						_dataSource.PopulateTables(_currentConnection, schemaNode.Schema.Database.Schemas.ToArray(), false);
 						refreshTableNodes(schemaNode.Schema, treeTables.SelectedNode);
 						break;
 					case SchemaNodeType.Views:
@@ -730,13 +730,13 @@ namespace PaJaMa.Database.Studio.Query
 			else if (treeTables.SelectedNode.Text == "Columns" && treeTables.SelectedNode.Parent.Tag is Table table)
 			{
 				treeTables.SelectedNode.Nodes.Clear();
-				_dataSource.PopulateColumnsForTable(table);
+				_dataSource.PopulateColumnsForTable(_currentConnection, table);
 				refreshColumnNodes(table, treeTables.SelectedNode);
 			}
 			else if (treeTables.SelectedNode.Tag is Table table2)
 			{
 				treeTables.SelectedNode.FirstNode.Nodes.Clear();
-				_dataSource.PopulateColumnsForTable(table2);
+				_dataSource.PopulateColumnsForTable(_currentConnection, table2);
 				refreshColumnNodes(table2, treeTables.SelectedNode.FirstNode);
 				// TODO: other table props
 			}

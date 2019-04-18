@@ -57,6 +57,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			sb.AppendLineFormat("CREATE TABLE {0}(", DatabaseObject.GetObjectNameWithSchema(TargetDatabase.DataSource));
 
 			sb.AppendLine(getColumnCreates().ToString());
+
 			foreach (var kc in DatabaseObject.KeyConstraints)
 			{
 				var script = TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc);
@@ -543,6 +544,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		private List<SynchronizationItem> getTriggerUpdateItems(Table targetTable, bool ignoreCase)
 		{
+
 			if (TargetDatabase.DataSource.GetType().FullName != DatabaseObject.Database.GetType().FullName) return new List<SynchronizationItem>();
 
 			var skips = new List<string>();

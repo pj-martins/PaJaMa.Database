@@ -34,14 +34,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Columns = new List<Column>();
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
-			var viewName = reader["ViewName"].ToString();
+			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
+			var viewName = values["ViewName"].ToString();
 			var currView = schema.Views.FirstOrDefault(v => v.ViewName == viewName && v.Schema.SchemaName == schema.SchemaName);
 			if (currView == null)
 			{
-				currView = reader.ToObject<View>(Database);
+				currView = values.DictionaryToObject<View>(Database);
 				currView.Schema = schema;
 				if (Database.ExtendedProperties != null)
 					currView.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == currView.ViewName && ep.SchemaName == currView.Schema.SchemaName &&
@@ -49,7 +49,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				schema.Views.Add(currView);
 			}
 
-			var col = reader.ToObject<Column>(Database);
+			var col = values.DictionaryToObject<Column>(Database);
 			if (!string.IsNullOrEmpty(col.ColumnName))
 				currView.Columns.Add(col);
 		}

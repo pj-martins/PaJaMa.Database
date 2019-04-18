@@ -33,11 +33,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
             return Table.Schema.SchemaName.ToString() + "." + TriggerName;
         }
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
 			this.Table = (from t in schema.Tables
-						  where t.TableName == reader["TableName"].ToString()
+						  where t.TableName == values["TableName"].ToString()
 						  select t).First();
 
 			this.Table.Triggers.Add(this);

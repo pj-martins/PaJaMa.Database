@@ -100,13 +100,13 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		public string ConstraintName { get; set; }
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == reader["SchemaName"].ToString());
-			if (schema == null) throw new Exception("Schema " + reader["SchemaName"].ToString() + " not found for column " + this.ColumnName);
-			ColumnType = Database.DataSource.GetColumnType(reader["DataType"].ToString(), this.ColumnDefault);
-			this.Table = schema.Tables.FirstOrDefault(t => t.TableName == reader["TableName"].ToString());
-			if (this.Table == null) throw new Exception("Table " + reader["TableName"].ToString() + " not found for column " + this.ColumnName);
+			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == values["SchemaName"].ToString());
+			if (schema == null) throw new Exception("Schema " + values["SchemaName"].ToString() + " not found for column " + this.ColumnName);
+			ColumnType = Database.DataSource.GetColumnType(values["DataType"].ToString(), this.ColumnDefault);
+			this.Table = schema.Tables.FirstOrDefault(t => t.TableName == values["TableName"].ToString());
+			if (this.Table == null) throw new Exception("Table " + values["TableName"].ToString() + " not found for column " + this.ColumnName);
 			this.Table.Columns.Add(this);
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.Table.ObjectName

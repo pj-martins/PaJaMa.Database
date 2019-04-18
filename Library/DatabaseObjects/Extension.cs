@@ -29,7 +29,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			return Name;
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
 			Database.Extensions.Add(this);
 		}

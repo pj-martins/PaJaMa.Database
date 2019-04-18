@@ -148,103 +148,117 @@ namespace PaJaMa.Database.Library.DataSources
 					while (rdr.Read())
 					{
 						var obj = rdr.ToObject<TDatabaseObject>(database);
-						obj.setObjectProperties(rdr);
 						objs.Add(obj);
+						var values = new Dictionary<string, object>();
+						for (int i = 0; i < rdr.FieldCount; i++)
+						{
+							var col = rdr.GetName(i);
+							values.Add(col, rdr[col]);
+						}
+						obj.RawValues = values;
 					}
 				}
 				rdr.Close();
 			}
+			foreach (var obj in objs)
+			{
+				obj.setObjectProperties(cmd.Connection, obj.RawValues);
+			}
 			return objs;
 		}
 
-		public virtual void PopulateTables(Schema[] schemas, bool andChildren)
+		public virtual void PopulateTables(DbConnection connection, Schema[] schemas, bool andChildren)
 		{
 			// TODO: assumes all schemas are from same db
-			using (var conn = OpenConnection(schemas.First().Database.DatabaseName))
+			var conn = connection ?? OpenConnection(schemas.First().Database.DatabaseName);
+			using (var cmd = conn.CreateCommand())
 			{
-				using (var cmd = conn.CreateCommand())
+				foreach (var schema in schemas)
+				{
+					populateObjects<Table>(schema.Database, cmd, string.Format(this.TableSQL, schema.Database.DatabaseName), schema.SchemaName, true, string.Empty, null);
+					if (andChildren) PopulateColumns(schema.Database, cmd, schema.SchemaName, false, null);
+				}
+
+				if (andChildren)
 				{
 					foreach (var schema in schemas)
 					{
-						populateObjects<Table>(schema.Database, cmd, string.Format(this.TableSQL, schema.Database.DatabaseName), schema.SchemaName, true, string.Empty, null);
-						if (andChildren) PopulateColumns(schema.Database, cmd, schema.SchemaName, false, null);
-					}
-
-					if (andChildren)
-					{
-						foreach (var schema in schemas)
+						if (schema.Tables.Count > 0)
 						{
-							if (schema.Tables.Count > 0)
-							{
-								var qry = $"select * from ({{0}}) z where ChildTableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+							var qry = $"select * from ({{0}}) z where ChildTableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
 
-								PopulateForeignKeys(schema.Database, cmd, schema.SchemaName, false, null);
+							PopulateForeignKeys(schema.Database, cmd, schema.SchemaName, false, null);
 
-								qry = $"select * from ({{0}}) z where TableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
+							qry = $"select * from ({{0}}) z where TableName in ({string.Join(",", schema.Tables.Select(t => "'" + t.TableName + "'"))})";
 
-								PopulateKeyConstraints(schema.Database, cmd, true, null);
-								PopulateIndexes(schema.Database, cmd, true, null);
-								if (!string.IsNullOrEmpty(this.DefaultConstraintSQL))
-									populateObjects<DefaultConstraint>(schema.Database, cmd, string.Format(qry, string.Format(this.DefaultConstraintSQL, schema.Database.DatabaseName)), string.Empty, true, string.Empty, null);
-								if (!string.IsNullOrEmpty(this.TriggerSQL))
-									populateObjects<Trigger>(schema.Database, cmd, string.Format(qry, string.Format(this.TriggerSQL, schema.Database.DatabaseName)), string.Empty, true, string.Empty, null);
-							}
+							PopulateKeyConstraints(schema.Database, cmd, true, null);
+							PopulateIndexes(schema.Database, cmd, true, null);
+							if (!string.IsNullOrEmpty(this.DefaultConstraintSQL))
+								populateObjects<DefaultConstraint>(schema.Database, cmd, string.Format(qry, string.Format(this.DefaultConstraintSQL, schema.Database.DatabaseName)), string.Empty, true, string.Empty, null);
+							if (!string.IsNullOrEmpty(this.TriggerSQL))
+								populateObjects<Trigger>(schema.Database, cmd, string.Format(qry, string.Format(this.TriggerSQL, schema.Database.DatabaseName)), string.Empty, true, string.Empty, null);
 						}
 					}
 				}
+			}
+			if (connection == null)
+			{
 				conn.Close();
+				conn.Dispose();
 			}
 		}
 
-		private void populateChildren<TDatabaseObject>(Table table, List<TDatabaseObject> arrayToClear, string sql, string additionalWhere)
+		private void populateChildren<TDatabaseObject>(DbConnection connection, Table table, List<TDatabaseObject> arrayToClear, string sql, string additionalWhere)
 			where TDatabaseObject : DatabaseObjectBase
 		{
+			var conn = connection ?? OpenConnection(table.Database.DatabaseName);
 			// TODO: assumes all schemas are from same db
-			using (var conn = OpenConnection(table.Database.DatabaseName))
+			using (var cmd = conn.CreateCommand())
 			{
-				using (var cmd = conn.CreateCommand())
-				{
-					arrayToClear.Clear();
-					populateObjects<TDatabaseObject>(table.Database, cmd, string.Format(sql, table.Database.DatabaseName), table.Schema.SchemaName, true, additionalWhere, null);
-				}
+				arrayToClear.Clear();
+				populateObjects<TDatabaseObject>(table.Database, cmd, string.Format(sql, table.Database.DatabaseName), table.Schema.SchemaName, true, additionalWhere, null);
+			}
+			if (connection == null)
+			{
 				conn.Close();
+				conn.Dispose();
 			}
 		}
 
 		protected virtual string columnsTableWhere(Table table) => $" and co.TABLE_NAME = '{table.TableName}'" + (string.IsNullOrEmpty(table.Schema.SchemaName) ? string.Empty : $" and co.TABLE_SCHEMA = '{table.Schema.SchemaName}'");
-		public virtual void PopulateColumnsForTable(Table table)
+		public virtual void PopulateColumnsForTable(DbConnection connection, Table table)
 		{
-			populateChildren<Column>(table, table.Columns, this.ColumnSQL, columnsTableWhere(table));
+			populateChildren<Column>(connection, table, table.Columns, this.ColumnSQL, columnsTableWhere(table));
 		}
 
 		protected virtual string foreignKeysTableWhere(Table table) => $" and ChildTableName = '{table.TableName}'";
-		public virtual void PopulateForeignKeysForTable(Table table)
+		public virtual void PopulateForeignKeysForTable(DbConnection connection, Table table)
 		{
-			populateChildren<ForeignKey>(table, table.ForeignKeys, this.ForeignKeySQL, foreignKeysTableWhere(table));
+			populateChildren<ForeignKey>(connection, table, table.ForeignKeys, this.ForeignKeySQL, foreignKeysTableWhere(table));
 		}
 
 		protected virtual string keysTableWhere(Table table) => $" and TableName = '{table.TableName}'";
-		public virtual void PopulateKeysForTable(Table table)
+		public virtual void PopulateKeysForTable(DbConnection connection, Table table)
 		{
-			populateChildren<KeyConstraint>(table, table.KeyConstraints, this.KeyConstraintSQL, keysTableWhere(table));
+			populateChildren<KeyConstraint>(connection, table, table.KeyConstraints, this.KeyConstraintSQL, keysTableWhere(table));
 		}
 
 		protected virtual string constraintsTableWhere(Table table) => $" and TableName = '{table.TableName}'";
-		public virtual void PopulateConstraintsForTable(Table table)
+		public virtual void PopulateConstraintsForTable(DbConnection connection, Table table)
 		{
-			populateChildren<DefaultConstraint>(table, table.DefaultConstraints, this.DefaultConstraintSQL, constraintsTableWhere(table));
+			populateChildren<DefaultConstraint>(connection, table, table.DefaultConstraints, this.DefaultConstraintSQL, constraintsTableWhere(table));
 		}
 
 		protected virtual string triggersTableWhere(Table table) => $" and TableName = '{table.TableName}'";
-		public virtual void PopulateTriggersForTable(Table table)
+		public virtual void PopulateTriggersForTable(DbConnection connection, Table table)
 		{
-			populateChildren<Trigger>(table, table.Triggers, this.TriggerSQL, triggersTableWhere(table));
+			populateChildren<Trigger>(connection, table, table.Triggers, this.TriggerSQL, triggersTableWhere(table));
 		}
 
 		protected virtual string indexesTableWhere(Table table) => $" and TableName = '{table.TableName}'";
-		public virtual void PopulateIndexesForTable(Table table)
+		public virtual void PopulateIndexesForTable(DbConnection connection, Table table)
 		{
-			populateChildren<Index>(table, table.Indexes, this.IndexSQL, indexesTableWhere(table));
+			populateChildren<Index>(connection, table, table.Indexes, this.IndexSQL, indexesTableWhere(table));
 		}
 
 		public void PopulateSchemas(DatabaseObjects.Database database)

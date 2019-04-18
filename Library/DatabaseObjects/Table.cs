@@ -52,12 +52,12 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Triggers = new List<Trigger>();
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			if (reader["Definition"] != DBNull.Value)
-				this.Definition = reader["Definition"].ToString();
-			this.Schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == reader["SchemaName"].ToString());
-			if (this.Schema == null) throw new Exception("Schema " + reader["SchemaName"].ToString() + " not found for " + this.TableName);
+			if (values["Definition"] != DBNull.Value)
+				this.Definition = values["Definition"].ToString();
+			this.Schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == values["SchemaName"].ToString());
+			if (this.Schema == null) throw new Exception("Schema " + values["SchemaName"].ToString() + " not found for " + this.TableName);
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.TableName && ep.SchemaName == this.Schema.SchemaName &&
 				string.IsNullOrEmpty(ep.Level2Object)).ToList();

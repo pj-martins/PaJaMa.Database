@@ -36,9 +36,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			return Schema.SchemaName + "." + Name;
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
 			this.Definition = string.IsNullOrEmpty(this.Definition) ? string.Empty : this.Definition.Trim();
 			this.Schema = schema;
 			// TODO:

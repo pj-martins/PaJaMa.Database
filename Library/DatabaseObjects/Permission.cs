@@ -27,7 +27,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			PermissionPrincipals = new List<PermissionPrincipal>();
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
 			var permission = Database.Permissions.FirstOrDefault(p => p.SchemaName == this.SchemaName
 							&& p.PermissionSchemaName == this.PermissionSchemaName && p.PermissionName == this.PermissionName);
@@ -37,8 +37,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				Database.Permissions.Add(permission);
 			}
 
-			var permissionPrincipal = reader.ToObject<PermissionPrincipal>();
-			permissionPrincipal.DatbasePrincipal = Database.Principals.First(p => p.PrincipalName == reader["PrincipalName"].ToString());
+			var permissionPrincipal = values.DictionaryToObject<PermissionPrincipal>();
+			permissionPrincipal.DatbasePrincipal = Database.Principals.First(p => p.PrincipalName == values["PrincipalName"].ToString());
 			permissionPrincipal.Permission = permission;
 			permission.PermissionPrincipals.Add(permissionPrincipal);
 		}
