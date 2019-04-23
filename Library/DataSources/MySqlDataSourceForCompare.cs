@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DataSources
 {
-	// TEMPORARY UNTIL COMPARE MULTI DBS AT ONCE
+	// EDR USES CROSS DB FKS YIKES!!! SO WE NEED TO ACT AS IF DBS ARE SCHEMAS ON ONE DB (MYSQL ONLY SUPPORTS 1 SCHEMA PER DB)
 	public class MySqlDataSourceForCompare : MySqlDataSource
 	{
 		public MySqlDataSourceForCompare(string connectionString) : base(connectionString)

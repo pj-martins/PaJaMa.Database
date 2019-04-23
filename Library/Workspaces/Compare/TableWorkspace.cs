@@ -37,11 +37,10 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			get { return _selectTableForData; }
 			set
 			{
+				if (TargetObject == null) return;
 				_selectTableForData = value;
 				if (TransferBatchSize == 0)
 					TransferBatchSize = DEFAULT_BATCH_SIZE;
-				if (TargetObject == null)
-					Select = true;
 			}
 		}
 
@@ -181,8 +180,8 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 
 			var toTbls = (from s in compareHelper.ToDataSource.CurrentDatabase.Schemas
 						  where !s.IsSystemSchema
-						from t in s.Tables
-						select t).ToList();
+						  from t in s.Tables
+						  select t).ToList();
 
 			foreach (var tbl in fromTbls)
 			{
