@@ -160,216 +160,225 @@ namespace PaJaMa.Database.Studio.Query
 				}, StringSplitOptions.RemoveEmptyEntries);
 
 			var sbErrors = new StringBuilder();
+			int tries = 2;
 			foreach (var part in parts)
 			{
-				try
+				while (tries > 0)
 				{
-					if (CurrentConnection.State != ConnectionState.Open)
-						CurrentConnection.Open();
-
-					_currentCommand.CommandText = part;
-					_currentCommand.CommandTimeout = 600000;
-					using (var dr = _currentCommand.ExecuteReader())
+					try
 					{
-						// this.Invoke(new Action(() =>
-						// {
-						//if (!_stopRequested && !dr.HasRows)
-						//{
-						//	lblResults.Text = "Complete.";
-						//	lblResults.Visible = true;
-						//	setDatabaseText();
+						if (CurrentConnection.State != ConnectionState.Open)
+							CurrentConnection.Open();
 
-						//	return;
-						//}
-						bool hasNext = true;
-						while (!_stopRequested)
+						_currentCommand.CommandText = part;
+						_currentCommand.CommandTimeout = 600000;
+						using (var dr = _currentCommand.ExecuteReader())
 						{
-							DataTable dt = new DataTable();
-							//var timer = new System.Threading.Timer((object stateInfo) =>
+							// this.Invoke(new Action(() =>
+							// {
+							//if (!_stopRequested && !dr.HasRows)
 							//{
-							//	this.Invoke(new Action(() =>
-							//	{
-							//		dt.EndLoadData();
-							//		dt.BeginLoadData();
-							//		Application.DoEvents();
-							//	}));
-							//}, null, 3000, 3000);
+							//	lblResults.Text = "Complete.";
+							//	lblResults.Visible = true;
+							//	setDatabaseText();
 
-							var schema = dr.GetSchemaTable();
-							if (schema == null || !hasNext)
+							//	return;
+							//}
+							bool hasNext = true;
+							while (!_stopRequested)
 							{
-								if (dr.RecordsAffected > 0)
-									recordsAffected += dr.RecordsAffected;
-								break;
-							}
+								DataTable dt = new DataTable();
+								//var timer = new System.Threading.Timer((object stateInfo) =>
+								//{
+								//	this.Invoke(new Action(() =>
+								//	{
+								//		dt.EndLoadData();
+								//		dt.BeginLoadData();
+								//		Application.DoEvents();
+								//	}));
+								//}, null, 3000, 3000);
 
-							var grid = new DataGridView();
-							this.Invoke(new Action(() =>
-							{
-								foreach (var row in schema.Rows.OfType<DataRow>())
+								var schema = dr.GetSchemaTable();
+								if (schema == null || !hasNext)
 								{
+									if (dr.RecordsAffected > 0)
+										recordsAffected += dr.RecordsAffected;
+									break;
+								}
+
+								var grid = new DataGridView();
+								this.Invoke(new Action(() =>
+								{
+									foreach (var row in schema.Rows.OfType<DataRow>())
+									{
 									// int existingCount = dt.Columns.OfType<DataColumn>().Count(c => c.ColumnName == row["ColumnName"].ToString());
 									var colType = Type.GetType(row["DataType"].ToString());
-									if (colType == null || colType.Equals(typeof(byte[])) || colType == typeof(Array))
-										colType = typeof(string);
-									string colName = row["ColumnName"].ToString();
-									int curr = 1;
-									while (dt.Columns.OfType<DataColumn>().Any(c => c.ColumnName == colName))
-									{
-										colName = row["ColumnName"].ToString() + curr.ToString();
-										curr++;
-									}
-									dt.Columns.Add(colName, colType);
+										if (colType == null || colType.Equals(typeof(byte[])) || colType == typeof(Array))
+											colType = typeof(string);
+										string colName = row["ColumnName"].ToString();
+										int curr = 1;
+										while (dt.Columns.OfType<DataColumn>().Any(c => c.ColumnName == colName))
+										{
+											colName = row["ColumnName"].ToString() + curr.ToString();
+											curr++;
+										}
+										dt.Columns.Add(colName, colType);
 									// grid.Columns.Add(colName, row["ColumnName"].ToString());
 								}
 
-								var lastSplit = _splitContainers.LastOrDefault();
-								if (lastSplit != null)
-									lastSplit.Panel2Collapsed = false;
-								var splitContainer = new SplitContainer();
-								splitContainer.Dock = DockStyle.Fill;
-								splitContainer.Orientation = Orientation.Horizontal;
-								splitContainer.Panel2Collapsed = true;
-								splitContainer.Panel2MinSize = 0;
-								grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
-								grid.Dock = DockStyle.Fill;
-								grid.AllowUserToAddRows = grid.AllowUserToDeleteRows = false;
-								grid.ReadOnly = true;
+									var lastSplit = _splitContainers.LastOrDefault();
+									if (lastSplit != null)
+										lastSplit.Panel2Collapsed = false;
+									var splitContainer = new SplitContainer();
+									splitContainer.Dock = DockStyle.Fill;
+									splitContainer.Orientation = Orientation.Horizontal;
+									splitContainer.Panel2Collapsed = true;
+									splitContainer.Panel2MinSize = 0;
+									grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+									grid.Dock = DockStyle.Fill;
+									grid.AllowUserToAddRows = grid.AllowUserToDeleteRows = false;
+									grid.ReadOnly = true;
 								// grid.VirtualMode = true;
 								// grid.RowCount = 0;
 								// grid.CellValueNeeded += grid_CellValueNeeded;
 								grid.CellFormatting += grid_CellFormatting;
-								grid.DataError += Grid_DataError;
-								grid.RowPostPaint += Grid_RowPostPaint;
+									grid.DataError += Grid_DataError;
+									grid.RowPostPaint += Grid_RowPostPaint;
 
-								var splitDetails = new SplitContainer();
-								splitDetails.Dock = DockStyle.Fill;
-								splitDetails.Panel2Collapsed = true;
-								splitDetails.Panel2MinSize = 0;
-								var pnlDetail = new Panel();
-								pnlDetail.Dock = DockStyle.Fill;
-								pnlDetail.BorderStyle = BorderStyle.Fixed3D;
-								pnlDetail.AutoScroll = true;
-								splitDetails.Panel2.Controls.Add(pnlDetail);
-								splitDetails.Panel1.Controls.Add(grid);
-								grid.SelectionChanged += (object s, EventArgs e) => setDetailControls(splitDetails);
+									var splitDetails = new SplitContainer();
+									splitDetails.Dock = DockStyle.Fill;
+									splitDetails.Panel2Collapsed = true;
+									splitDetails.Panel2MinSize = 0;
+									var pnlDetail = new Panel();
+									pnlDetail.Dock = DockStyle.Fill;
+									pnlDetail.BorderStyle = BorderStyle.Fixed3D;
+									pnlDetail.AutoScroll = true;
+									splitDetails.Panel2.Controls.Add(pnlDetail);
+									splitDetails.Panel1.Controls.Add(grid);
+									grid.SelectionChanged += (object s, EventArgs e) => setDetailControls(splitDetails);
 
-								splitContainer.Panel1.Controls.Add(splitDetails);
-								if (lastSplit != null)
-									lastSplit.Panel2.Controls.Add(splitContainer);
-								else
-									tabResults.Controls.Add(splitContainer);
-								_splitContainers.Add(splitContainer);
-								foreach (var split in _splitContainers)
-								{
-									split.SplitterDistance = splitQuery.Panel2.Height / _splitContainers.Count;
-								}
-								splitDetails.SplitterDistance = (int)((double)splitDetails.Width * 0.7);
-								grid.DataSource = dt;
-								grid.AutoGenerateColumns = true;
+									splitContainer.Panel1.Controls.Add(splitDetails);
+									if (lastSplit != null)
+										lastSplit.Panel2.Controls.Add(splitContainer);
+									else
+										tabResults.Controls.Add(splitContainer);
+									_splitContainers.Add(splitContainer);
+									foreach (var split in _splitContainers)
+									{
+										split.SplitterDistance = splitQuery.Panel2.Height / _splitContainers.Count;
+									}
+									splitDetails.SplitterDistance = (int)((double)splitDetails.Width * 0.7);
+									grid.DataSource = dt;
+									grid.AutoGenerateColumns = true;
 								// grid.Tag = new List<DataTable>() { dt };
 
 								foreach (DataGridViewColumn col in grid.Columns)
-								{
-									if (!string.IsNullOrEmpty(col.Name))
 									{
-										var dtCol = dt.Columns[col.Name];
-										col.ToolTipText = dtCol.DataType.Name;
-									}
-								}
-							}));
-
-							int i = 0;
-							var lastRefresh = DateTime.Now;
-							dt.BeginLoadData();
-							while (dr.Read())
-							{
-								i++;
-								if (_stopRequested) break;
-								var row = dt.NewRow();
-								var cols = dt.Columns.OfType<DataColumn>();
-								for (int j = 0; j < cols.Count(); j++)
-								{
-									try
-									{
-										if (dr[j] is byte[])
+										if (!string.IsNullOrEmpty(col.Name))
 										{
-											row[j] = Convert.ToBase64String(dr[j] as byte[]);
-										}
-										else if (dr[j].GetType().IsArray)
-										{
-											List<string> stringVals = new List<string>();
-											row[j] = string.Join(",", ((Array)dr[j]).OfType<object>().Select(o => o.ToString()));
-										}
-										else
-										{
-											row[j] = dr[j];
+											var dtCol = dt.Columns[col.Name];
+											col.ToolTipText = dtCol.DataType.Name;
 										}
 									}
-									catch (Exception ex)
+								}));
+
+								int i = 0;
+								var lastRefresh = DateTime.Now;
+								dt.BeginLoadData();
+								while (dr.Read())
+								{
+									i++;
+									if (_stopRequested) break;
+									var row = dt.NewRow();
+									var cols = dt.Columns.OfType<DataColumn>();
+									for (int j = 0; j < cols.Count(); j++)
 									{
-										// TODO: log
-										if (!_errorDict.ContainsKey(i))
-											_errorDict.Add(i, new Dictionary<int, string>());
-										_errorDict[i].Add(j, "ERR! " + ex.Message);
+										try
+										{
+											if (dr[j] is byte[])
+											{
+												row[j] = Convert.ToBase64String(dr[j] as byte[]);
+											}
+											else if (dr[j].GetType().IsArray)
+											{
+												List<string> stringVals = new List<string>();
+												row[j] = string.Join(",", ((Array)dr[j]).OfType<object>().Select(o => o.ToString()));
+											}
+											else
+											{
+												row[j] = dr[j];
+											}
+										}
+										catch (Exception ex)
+										{
+											// TODO: log
+											if (!_errorDict.ContainsKey(i))
+												_errorDict.Add(i, new Dictionary<int, string>());
+											_errorDict[i].Add(j, "ERR! " + ex.Message);
+										}
+									}
+
+									dt.Rows.Add(row);
+
+									// if (i % 1000 == 0)
+									//if ((DateTime.Now - lastRefresh).TotalSeconds > 3)
+									//{
+									//	lastRefresh = DateTime.Now;
+									//	dt.EndLoadData();
+									//	// grid.RowCount += dt.Rows.Count;
+									//	dt = dt.Clone();
+									//	// (grid.Tag as List<DataTable>).Add(dt);
+									//	dt.BeginLoadData();
+									//	//dt.EndLoadData();
+									//	//dt.BeginLoadData();
+									//	//Application.DoEvents();
+
+									//	Application.DoEvents();
+									//}
+
+									// if (i % 1000 == 0)
+									if ((DateTime.Now - lastRefresh).TotalSeconds > 2)
+									{
+										lastRefresh = DateTime.Now;
+										this.Invoke(new Action(() =>
+										{
+											dt.EndLoadData();
+											Application.DoEvents();
+											dt.BeginLoadData();
+
+										}));
 									}
 								}
 
-								dt.Rows.Add(row);
-
-								// if (i % 1000 == 0)
-								//if ((DateTime.Now - lastRefresh).TotalSeconds > 3)
-								//{
-								//	lastRefresh = DateTime.Now;
-								//	dt.EndLoadData();
-								//	// grid.RowCount += dt.Rows.Count;
-								//	dt = dt.Clone();
-								//	// (grid.Tag as List<DataTable>).Add(dt);
-								//	dt.BeginLoadData();
-								//	//dt.EndLoadData();
-								//	//dt.BeginLoadData();
-								//	//Application.DoEvents();
-
-								//	Application.DoEvents();
-								//}
-
-								// if (i % 1000 == 0)
-								if ((DateTime.Now - lastRefresh).TotalSeconds > 2)
+								this.Invoke(new Action(() =>
 								{
-									lastRefresh = DateTime.Now;
-									this.Invoke(new Action(() =>
-									{
-										dt.EndLoadData();
-										Application.DoEvents();
-										dt.BeginLoadData();
+									dt.EndLoadData();
+									Application.DoEvents();
 
-									}));
-								}
+								}));
+
+								// var sum = (grid.Tag as List<DataTable>).Sum(t => t.Rows.Count);
+								// grid.RowCount = sum;
+								// totalResults += sum;
+								totalResults = dt.Rows.Count;
+
+								//grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+
+								if (!_stopRequested)
+									hasNext = dr.NextResult();
 							}
-
-							this.Invoke(new Action(() =>
-							{
-								dt.EndLoadData();
-								Application.DoEvents();
-
-							}));
-
-							// var sum = (grid.Tag as List<DataTable>).Sum(t => t.Rows.Count);
-							// grid.RowCount = sum;
-							// totalResults += sum;
-							totalResults = dt.Rows.Count;
-
-							//grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-
-							if (!_stopRequested)
-								hasNext = dr.NextResult();
+							// }));
 						}
-						// }));
+						tries = 0;
 					}
-				}
-				catch (Exception ex)
-				{
-					sbErrors.AppendLine(ex.Message);
+					catch (Exception ex)
+					{
+						tries--;
+						if (tries > 0 && ex.Message == "Fatal error encountered during command execution.")
+							continue;
+						sbErrors.AppendLine(ex.Message);
+						tries = 0;
+					}
 				}
 			}
 			_currentCommand.Dispose();

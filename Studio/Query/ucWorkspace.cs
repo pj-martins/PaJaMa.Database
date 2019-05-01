@@ -446,80 +446,92 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void treeTables_BeforeExpand(object sender, TreeViewCancelEventArgs e)
 		{
-			try
+			int tries = 2;
+			while (tries > 0)
 			{
-				var node = e.Node;
-				if (node.Nodes.Count == 1 && node.Nodes[0].Text == NONE)
+				try
 				{
-					node.Nodes.Clear();
-					if (node.Tag is Library.DatabaseObjects.Database)
+					if (_currentConnection.State != ConnectionState.Open)
+						_currentConnection.Open();
+
+					var node = e.Node;
+					if (node.Nodes.Count == 0 || (node.Nodes.Count == 1 && node.Nodes[0].Text == NONE))
 					{
-						refreshSchemaNodes(node);
-					}
-					else if (node.Tag is SchemaNode)
-					{
-						var schemaNode = node.Tag as SchemaNode;
-						switch (schemaNode.SchemaNodeType)
+						node.Nodes.Clear();
+						if (node.Tag is Library.DatabaseObjects.Database)
 						{
-							case SchemaNodeType.Tables:
-								if (!schemaNode.Schema.Tables.Any())
-									_dataSource.PopulateTables(_currentConnection, new Schema[] { schemaNode.Schema }, false);
-								refreshTableNodes(schemaNode.Schema, node);
-								break;
-							case SchemaNodeType.Views:
-								if (!schemaNode.Schema.Views.Any())
-									_dataSource.PopulateViews(schemaNode.Schema);
-								refreshViewNodes(schemaNode.Schema, node);
-								break;
-							case SchemaNodeType.Functions:
-								if (!schemaNode.Schema.RoutinesSynonyms.Any())
-									_dataSource.PopulateRoutinesSynonyms(schemaNode.Schema);
-								refreshFunctionNodes(schemaNode.Schema, node);
-								break;
+							refreshSchemaNodes(node);
+						}
+						else if (node.Tag is SchemaNode)
+						{
+							var schemaNode = node.Tag as SchemaNode;
+							switch (schemaNode.SchemaNodeType)
+							{
+								case SchemaNodeType.Tables:
+									if (!schemaNode.Schema.Tables.Any())
+										_dataSource.PopulateTables(_currentConnection, new Schema[] { schemaNode.Schema }, false);
+									refreshTableNodes(schemaNode.Schema, node);
+									break;
+								case SchemaNodeType.Views:
+									if (!schemaNode.Schema.Views.Any())
+										_dataSource.PopulateViews(schemaNode.Schema);
+									refreshViewNodes(schemaNode.Schema, node);
+									break;
+								case SchemaNodeType.Functions:
+									if (!schemaNode.Schema.RoutinesSynonyms.Any())
+										_dataSource.PopulateRoutinesSynonyms(schemaNode.Schema);
+									refreshFunctionNodes(schemaNode.Schema, node);
+									break;
+							}
+						}
+						else if (node.Text == "Columns")
+						{
+							var table = node.Parent.Tag as Table;
+							_dataSource.PopulateColumnsForTable(_currentConnection, table);
+							refreshColumnNodes(table, node);
+						}
+						else if (node.Text == "ForeignKeys")
+						{
+							var table = node.Parent.Tag as Table;
+							_dataSource.PopulateForeignKeysForTable(_currentConnection, table);
+							refreshForeignKeyNodes(table, node);
+						}
+						else if (node.Text == "Keys")
+						{
+							var table = node.Parent.Tag as Table;
+							_dataSource.PopulateKeysForTable(_currentConnection, table);
+							refreshKeyNodes(table, node);
+						}
+						else if (node.Text == "Constraints")
+						{
+							var table = node.Parent.Tag as Table;
+							_dataSource.PopulateConstraintsForTable(_currentConnection, table);
+							refreshConstraintsNodes(table, node);
+						}
+						else if (node.Text == "Indexes")
+						{
+							var table = node.Parent.Tag as Table;
+							_dataSource.PopulateIndexesForTable(_currentConnection, table);
+							refreshIndexNodes(table, node);
+						}
+						else if (node.Text == "Triggers")
+						{
+							var table = node.Parent.Tag as Table;
+							_dataSource.PopulateTriggersForTable(_currentConnection, table);
+							refreshTriggerNodes(table, node);
 						}
 					}
-					else if (node.Text == "Columns")
-					{
-						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateColumnsForTable(_currentConnection, table);
-						refreshColumnNodes(table, node);
-					}
-					else if (node.Text == "ForeignKeys")
-					{
-						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateForeignKeysForTable(_currentConnection, table);
-						refreshForeignKeyNodes(table, node);
-					}
-					else if (node.Text == "Keys")
-					{
-						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateKeysForTable(_currentConnection, table);
-						refreshKeyNodes(table, node);
-					}
-					else if (node.Text == "Constraints")
-					{
-						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateConstraintsForTable(_currentConnection, table);
-						refreshConstraintsNodes(table, node);
-					}
-					else if (node.Text == "Indexes")
-					{
-						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateIndexesForTable(_currentConnection, table);
-						refreshIndexNodes(table, node);
-					}
-					else if (node.Text == "Triggers")
-					{
-						var table = node.Parent.Tag as Table;
-						_dataSource.PopulateTriggersForTable(_currentConnection, table);
-						refreshTriggerNodes(table, node);
-					}
+					tries = 0;
 				}
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.Message);
-				e.Cancel = true;
+				catch (Exception ex)
+				{
+					tries--;
+					if (tries > 0 && ex.Message == "Fatal error encountered during command execution.")
+						continue;
+					MessageBox.Show(ex.Message);
+					e.Cancel = true;
+					tries = 0;
+				}
 			}
 		}
 
@@ -698,47 +710,66 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var tag = treeTables.SelectedNode.Tag;
-			var isExpanded = treeTables.SelectedNode.IsExpanded;
-			if (tag is SchemaNode schemaNode)
+			int tries = 2;
+			while (tries > 0)
 			{
-				switch (schemaNode.SchemaNodeType)
+				try
 				{
-					case SchemaNodeType.Tables:
-						foreach (var s in schemaNode.Schema.Database.Schemas)
+					if (_currentConnection.State != ConnectionState.Open)
+						_currentConnection.Open();
+
+					var tag = treeTables.SelectedNode.Tag;
+					var isExpanded = treeTables.SelectedNode.IsExpanded;
+					if (tag is SchemaNode schemaNode)
+					{
+						switch (schemaNode.SchemaNodeType)
 						{
-							s.Tables.Clear();
+							case SchemaNodeType.Tables:
+								foreach (var s in schemaNode.Schema.Database.Schemas)
+								{
+									s.Tables.Clear();
+								}
+								treeTables.SelectedNode.Nodes.Clear();
+								_dataSource.PopulateTables(_currentConnection, schemaNode.Schema.Database.Schemas.ToArray(), false);
+								refreshTableNodes(schemaNode.Schema, treeTables.SelectedNode);
+								break;
+							case SchemaNodeType.Views:
+								schemaNode.Schema.Views.Clear();
+								treeTables.SelectedNode.Nodes.Clear();
+								_dataSource.PopulateViews(schemaNode.Schema);
+								refreshViewNodes(schemaNode.Schema, treeTables.SelectedNode);
+								break;
 						}
+					}
+					else if (tag is Library.DatabaseObjects.Database db)
+					{
+						db.Schemas.Clear();
 						treeTables.SelectedNode.Nodes.Clear();
-						_dataSource.PopulateTables(_currentConnection, schemaNode.Schema.Database.Schemas.ToArray(), false);
-						refreshTableNodes(schemaNode.Schema, treeTables.SelectedNode);
-						break;
-					case SchemaNodeType.Views:
-						schemaNode.Schema.Views.Clear();
+						refreshSchemaNodes(treeTables.SelectedNode);
+					}
+					else if (treeTables.SelectedNode.Text == "Columns" && treeTables.SelectedNode.Parent.Tag is Table table)
+					{
 						treeTables.SelectedNode.Nodes.Clear();
-						_dataSource.PopulateViews(schemaNode.Schema);
-						refreshViewNodes(schemaNode.Schema, treeTables.SelectedNode);
-						break;
+						_dataSource.PopulateColumnsForTable(_currentConnection, table);
+						refreshColumnNodes(table, treeTables.SelectedNode);
+					}
+					else if (treeTables.SelectedNode.Tag is Table table2)
+					{
+						treeTables.SelectedNode.FirstNode.Nodes.Clear();
+						_dataSource.PopulateColumnsForTable(_currentConnection, table2);
+						refreshColumnNodes(table2, treeTables.SelectedNode.FirstNode);
+						// TODO: other table props
+					}
+					tries = 0;
 				}
-			}
-			else if (tag is Library.DatabaseObjects.Database db)
-			{
-				db.Schemas.Clear();
-				treeTables.SelectedNode.Nodes.Clear();
-				refreshSchemaNodes(treeTables.SelectedNode);
-			}
-			else if (treeTables.SelectedNode.Text == "Columns" && treeTables.SelectedNode.Parent.Tag is Table table)
-			{
-				treeTables.SelectedNode.Nodes.Clear();
-				_dataSource.PopulateColumnsForTable(_currentConnection, table);
-				refreshColumnNodes(table, treeTables.SelectedNode);
-			}
-			else if (treeTables.SelectedNode.Tag is Table table2)
-			{
-				treeTables.SelectedNode.FirstNode.Nodes.Clear();
-				_dataSource.PopulateColumnsForTable(_currentConnection, table2);
-				refreshColumnNodes(table2, treeTables.SelectedNode.FirstNode);
-				// TODO: other table props
+				catch (Exception ex)
+				{
+					tries--;
+					if (tries > 0 && ex.Message == "Fatal error encountered during command execution.")
+						continue;
+					tries = 0;
+					MessageBox.Show(ex.Message);
+				}
 			}
 		}
 
