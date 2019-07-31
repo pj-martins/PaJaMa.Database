@@ -3,6 +3,7 @@ using PaJaMa.Database.Library.Helpers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-	public class Column : DatabaseObjectWithExtendedProperties
+	public class Column : DatabaseObjectWithExtendedProperties, IObjectWithTable
 	{
 		public Column(Database database) : base(database)
 		{
@@ -28,29 +29,84 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public ColumnType ColumnType { get; set; }
 
-        public string ColumnName { get; set; }
+		public string ColumnName { get; set; }
 
 		[Ignore]
 		public int OrdinalPosition { get; set; }
 
+		[Ignore]
+		public UInt64 OrdinalPosition2
+		{
+			get { return (UInt64)OrdinalPosition; }
+			set { OrdinalPosition = Convert.ToInt32(value); }
+		}
+
 		public bool IsIdentity { get; set; }
+
+		[Ignore]
+		public Int64 IsIdentity2
+		{
+			get { return IsIdentity ? 1 : 0; }
+			set { IsIdentity = value == 1; }
+		}
+
 		public int? CharacterMaximumLength { get; set; }
+
+		[Ignore]
+		public UInt64 CharacterMaximumLength2
+		{
+			get { return (UInt64)CharacterMaximumLength; }
+			set
+			{
+				var parsed = 0;
+				int.TryParse(value.ToString(), out parsed);
+				CharacterMaximumLength = parsed;
+			}
+		}
+
 		public bool IsNullable { get; set; }
+
+		[Ignore]
+		public Int64 IsNullable2
+		{
+			get { return IsNullable ? 1 : 0; }
+			set { IsNullable = value == 1; }
+		}
+
 		public string Formula { get; set; }
 		public string ColumnDefault { get; set; }
 		public int? NumericPrecision { get; set; }
+
+		[Ignore]
+		public UInt64 NumericPrecision2
+		{
+			get { return (UInt64)NumericPrecision.GetValueOrDefault(); }
+			set { NumericPrecision = Convert.ToInt16(value); }
+		}
+
 		public int? NumericScale { get; set; }
+
+		[Ignore]
+		public UInt64 NumericScale2
+		{
+			get { return (UInt64)NumericScale.GetValueOrDefault(); }
+			set { NumericScale = Convert.ToInt16(value); }
+		}
+
+
 		public decimal? Increment { get; set; }
 		public string UDTName { get; set; }
 
 		[Ignore]
 		public string ConstraintName { get; set; }
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
-			ColumnType = Database.DataSource.GetColumnType(reader["DataType"].ToString(), this.ColumnDefault);
-			this.Table = schema.Tables.First(t => t.TableName == reader["TableName"].ToString());
+			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == values["SchemaName"].ToString());
+			if (schema == null) throw new Exception("Schema " + values["SchemaName"].ToString() + " not found for column " + this.ColumnName);
+			ColumnType = Database.DataSource.GetColumnType(values["DataType"].ToString(), this.ColumnDefault);
+			this.Table = schema.Tables.FirstOrDefault(t => t.TableName == values["TableName"].ToString());
+			if (this.Table == null) throw new Exception("Table " + values["TableName"].ToString() + " not found for column " + this.ColumnName);
 			this.Table.Columns.Add(this);
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.Table.ObjectName
@@ -65,6 +121,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public string CreateTypeName { get; set; }
 		public Type ClrType { get; private set; }
 		public DataType DataType { get; private set; }
+		public DbType DbType { get; private set; }
 		public string DefaultValue { get; private set; }
 		public Map[] MappedValues { get; private set; }
 		public bool IsFixedSize { get; set; }
@@ -76,6 +133,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			this.DataType = dataType;
 			this.MappedValues = maps;
 			this.DefaultValue = defaultValue;
+			var memInfo = typeof(DataType).GetMember(dataType.ToString())[0];
+			this.DbType = (memInfo.GetCustomAttributes(typeof(DbTypeAttribute), true).First() as DbTypeAttribute).DbType;
 		}
 
 		public override string ToString()
@@ -86,31 +145,65 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 	public enum DataType
 	{
+		[DbType(DbType.Guid)]
 		UniqueIdentifier,
+		[DbType(DbType.DateTime2)]
 		DateTime,
+		[DbType(DbType.DateTime2)]
 		SmallDateTime,
+		[DbType(DbType.Date)]
 		DateOnly,
+		[DbType(DbType.String)]
 		VaryingChar,
-        Char,
-        SmallInteger,
+		[DbType(DbType.String)]
+		Char,
+		[DbType(DbType.Int16)]
+		SmallInteger,
+		[DbType(DbType.Int32)]
 		Integer,
+		[DbType(DbType.Double)]
 		Real,
+		[DbType(DbType.Decimal)]
 		Money,
+		[DbType(DbType.Boolean)]
 		Boolean,
+		[DbType(DbType.Xml)]
 		Xml,
+		[DbType(DbType.String)]
 		Json,
+		[DbType(DbType.Double)]
 		Float,
+		[DbType(DbType.Binary)]
 		VarBinary,
+		[DbType(DbType.String)]
 		Text,
+		[DbType(DbType.Decimal)]
 		Decimal,
+		[DbType(DbType.Decimal)]
 		Numeric,
+		[DbType(DbType.Binary)]
 		Binary,
+		[DbType(DbType.Time)]
 		TimeOnly,
+		[DbType(DbType.Int64)]
 		BigInt,
+		[DbType(DbType.Object)]
 		RowVersion,
+		[DbType(DbType.Object)]
 		Array,
+		[DbType(DbType.String)]
 		VarChar,
+		[DbType(DbType.String)]
 		NVarChar
+	}
+
+	public class DbTypeAttribute : Attribute
+	{
+		public DbType DbType { get; private set; }
+		public DbTypeAttribute(DbType dbType)
+		{
+			DbType = dbType;
+		}
 	}
 
 	public class Map

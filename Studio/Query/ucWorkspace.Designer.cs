@@ -48,10 +48,11 @@
 			this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newForeignKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newColumnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
-			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -185,6 +186,7 @@
             this.selectToolStripMenuItem,
             this.selectTop1000ToolStripMenuItem,
             this.scriptCreateToolStripMenuItem,
+            this.renameToolStripMenuItem,
             this.buildQueryToolStripMenuItem,
             this.refreshToolStripMenuItem,
             this.newForeignKeyToolStripMenuItem,
@@ -244,12 +246,26 @@
 			this.newColumnToolStripMenuItem.Text = "New C&olumn";
 			this.newColumnToolStripMenuItem.Click += new System.EventHandler(this.newColumnToolStripMenuItem_Click);
 			// 
+			// renameToolStripMenuItem
+			// 
+			this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
+			this.renameToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.renameToolStripMenuItem.Text = "Re&name";
+			this.renameToolStripMenuItem.Click += new System.EventHandler(this.RenameToolStripMenuItem_Click);
+			// 
 			// deleteToolStripMenuItem
 			// 
 			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
 			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.deleteToolStripMenuItem.Text = "&Delete";
 			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+			// 
+			// newTableToolStripMenuItem
+			// 
+			this.newTableToolStripMenuItem.Name = "newTableToolStripMenuItem";
+			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newTableToolStripMenuItem.Text = "New &Table";
+			this.newTableToolStripMenuItem.Click += new System.EventHandler(this.newTableToolStripMenuItem_Click);
 			// 
 			// splitMain
 			// 
@@ -282,13 +298,6 @@
 			this.tabOutputs.Visible = false;
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
-			// 
-			// newTableToolStripMenuItem
-			// 
-			this.newTableToolStripMenuItem.Name = "newTableToolStripMenuItem";
-			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
-			this.newTableToolStripMenuItem.Text = "New &Table";
-			this.newTableToolStripMenuItem.Click += new System.EventHandler(this.newTableToolStripMenuItem_Click);
 			// 
 			// ucWorkspace
 			// 
@@ -338,6 +347,7 @@
 		private System.Windows.Forms.ToolStripMenuItem newColumnToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newTableToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem renameToolStripMenuItem;
 	}
 }
 

@@ -33,7 +33,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public bool IsExpirationChecked { get; set; }
 		public bool IsPolicyChecked { get; set; }
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
 			this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.ObjectType == LoginType.SQLLogin.ToString() &&
 							ep.Level1Object == this.LoginName).ToList();

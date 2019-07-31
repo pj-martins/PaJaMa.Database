@@ -7,11 +7,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Data.SqlClient;
 using PaJaMa.Database.Studio.Classes;
 using PaJaMa.Common;
 using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Workspaces.Search;
+using PaJaMa.Database.Library.DataSources;
 
 namespace PaJaMa.Database.Studio.Search
 {
@@ -35,8 +35,14 @@ namespace PaJaMa.Database.Studio.Search
 			if (!string.IsNullOrEmpty(settings.LastSearchConnectionString))
 				cboConnectionString.Text = settings.LastSearchConnectionString;
 
+			var types = DataSource.GetDataSourceTypes();
+			cboServer.DataSource = types;
+			if (!string.IsNullOrEmpty(settings.LastSearchServerType))
+				cboServer.SelectedItem = types.FirstOrDefault(t => t.FullName == settings.LastSearchServerType);
+
 			new GridHelper().DecorateGrid(gridTables);
 			new GridHelper().DecorateGrid(gridColumns);
+
 		}
 
 		private void refreshConnStrings()
@@ -52,6 +58,11 @@ namespace PaJaMa.Database.Studio.Search
 
 		private void btnConnect_Click(object sender, EventArgs e)
 		{
+			if (cboServer.SelectedItem == null)
+			{
+				MessageBox.Show("Select server type.");
+				return;
+			}
 
 			string connString = cboConnectionString.Text;
 
@@ -59,19 +70,19 @@ namespace PaJaMa.Database.Studio.Search
 
 			DataTable schema = null;
 			string database = string.Empty;
+			var dsType = cboServer.SelectedItem as Type;
 
 			var worker = new BackgroundWorker();
 			worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 			{
 				try
 				{
-					using (var conn = new SqlConnection(connString))
+					var dataSource = Activator.CreateInstance(dsType, new object[] { connString }) as DataSource;
+					using (var conn = dataSource.OpenConnection(string.Empty))
 					{
-						conn.Open();
 						schema = conn.GetSchema("Databases");
 						database = conn.Database;
 						conn.Close();
-						SqlConnection.ClearPool(conn);
 					}
 				}
 				catch (Exception ex)
@@ -80,7 +91,7 @@ namespace PaJaMa.Database.Studio.Search
 					return;
 				}
 
-				_searchHelper = new SearchHelper(typeof(SqlConnection), connString, worker);
+				_searchHelper = new SearchHelper(dsType, connString, worker);
 			};
 
 			WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
@@ -91,12 +102,13 @@ namespace PaJaMa.Database.Studio.Search
 				refreshPage(false);
 
 				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-				List<string> connStrings = settings.SearchConnectionStrings.Split('|').ToList();
+				List<string> connStrings = string.IsNullOrEmpty(settings.SearchConnectionStrings) ? new List<string>() : settings.SearchConnectionStrings.Split('|').ToList();
 				if (!connStrings.Any(s => s == cboConnectionString.Text))
 					connStrings.Add(cboConnectionString.Text);
 
 				settings.SearchConnectionStrings = string.Join("|", connStrings.ToArray());
 				settings.LastSearchConnectionString = cboConnectionString.Text;
+				settings.LastSearchServerType = cboServer.SelectedItem.ToString();
 				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
 				_lockDbChange = true;
@@ -179,7 +191,8 @@ namespace PaJaMa.Database.Studio.Search
 					var tab = new TabPage(tbl.TableName);
 					var grid = new DataGridView();
 					grid.AllowUserToAddRows = false;
-					grid.AllowUserToDeleteRows = true;
+					grid.AllowUserToDeleteRows = false;
+					grid.ReadOnly = true;
 					grid.DataSource = tbl;
 					grid.Dock = DockStyle.Fill;
 					tab.Controls.Add(grid);
@@ -208,6 +221,7 @@ namespace PaJaMa.Database.Studio.Search
 			connStrings.Remove(connString);
 			settings.SearchConnectionStrings = string.Join("|", connStrings.ToArray());
 			settings.LastSearchConnectionString = string.Empty;
+			settings.LastSearchServerType = string.Empty;
 			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 			refreshConnStrings();
 			cboConnectionString.Text = string.Empty;
@@ -244,6 +258,17 @@ namespace PaJaMa.Database.Studio.Search
 			gridColumns.DataSource = new SortableBindingList<ColumnWorkspace>((from t in tableWorkspaces
 																			   from c in t.ColumnWorkspaces
 																			   select c).ToList());
+		}
+
+		private void cboServer_Format(object sender, ListControlConvertEventArgs e)
+		{
+			Type type = e.ListItem as Type;
+			e.Value = type.Name;
+		}
+
+		private void gridColumns_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+		{
+			gridTables.Invalidate();
 		}
 	}
 }

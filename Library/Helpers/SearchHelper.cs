@@ -34,7 +34,7 @@ namespace PaJaMa.Database.Library.Helpers
 							   group c by c.Column.Table into g
 							   select g;
 
-			using (var conn = DataSource.OpenConnection())
+			using (var conn = DataSource.OpenConnection(string.Empty))
 			{
 				using (var cmd = conn.CreateCommand())
 				{
@@ -43,15 +43,20 @@ namespace PaJaMa.Database.Library.Helpers
 						cmd.Parameters.Clear();
 
 						var dt = new DataTable(tbl.Key.TableName);
-						var sb = new StringBuilder(string.Format("select * from [{0}].[{1}]", tbl.Key.Schema.SchemaName, tbl.Key.TableName));
+						var sb = new StringBuilder(string.Format("select * from {0}", tbl.Key.GetObjectNameWithSchema(DataSource)));
 						var firstIn = true;
 						foreach (var col in tbl)
 						{
-							sb.AppendLine(firstIn ? "where " : "and ");
-							sb.AppendLine(string.Format("[{0}] = @{0}", col.Column.ColumnName));
-                            // TODO:
-							(cmd as System.Data.SqlClient.SqlCommand).Parameters.AddWithValue(string.Format("@{0}", col.Column.ColumnName), searchFor);
-
+							sb.AppendLine(firstIn ? "where " : "or ");
+							var param = cmd.CreateParameter();
+							param.DbType = col.Column.ColumnType.DbType;
+							param.ParameterName = string.Format("@{0}", col.Column.ColumnName);
+							param.Value = searchFor;
+							if (param.DbType == DbType.String)
+								sb.AppendLine(string.Format("{0} like @{1}", DataSource.GetConvertedObjectName(col.Column.ColumnName), col.Column.ColumnName));
+							else
+								sb.AppendLine(string.Format("{0} = @{1}", DataSource.GetConvertedObjectName(col.Column.ColumnName), col.Column.ColumnName));
+							cmd.Parameters.Add(param);
 							firstIn = false;
 						}
 						cmd.CommandText = sb.ToString();

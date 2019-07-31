@@ -46,10 +46,10 @@ namespace PaJaMa.Database.Library.Helpers
 
 			_cancel = false;
 
-			using (var conn = workspace.SourceTable.Database.DataSource.OpenConnection())
+			using (var conn = workspace.SourceTable.Database.DataSource.OpenConnection(workspace.SourceTable.Database.DatabaseName))
 			{
 				_currentCommand = conn.CreateCommand();
-				_currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));
+				_currentCommand.CommandText = string.Format("select * from {0}", workspace.SourceTable.GetObjectNameWithSchema(workspace.SourceTable.Database.DataSource));
 				_currentReader = _currentCommand.ExecuteReader();
 				if (worker != null) worker.ReportProgress(0, string.Format("Populating {0} source table...", workspace.SourceTable.TableName));
 				dtFrom.Load(_currentReader);
@@ -59,7 +59,7 @@ namespace PaJaMa.Database.Library.Helpers
 
 			workspace.ComparedData.PrimaryKeyFields = primaryKeys;
 
-			using (var conn = workspace.TargetTable.Database.DataSource.OpenConnection())
+			using (var conn = workspace.TargetTable.Database.DataSource.OpenConnection(workspace.TargetTable.Database.DatabaseName))
 			{
 				_currentCommand = conn.CreateCommand();
 				_currentCommand.CommandText = string.Format("select * from {0}", workspace.TargetTable.GetObjectNameWithSchema(workspace.TargetDatabase.DataSource));

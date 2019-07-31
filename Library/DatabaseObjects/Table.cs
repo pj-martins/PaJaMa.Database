@@ -52,11 +52,12 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Triggers = new List<Trigger>();
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			if (reader["Definition"] != DBNull.Value)
-				this.Definition = reader["Definition"].ToString();
-			this.Schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			if (values["Definition"] != DBNull.Value)
+				this.Definition = values["Definition"].ToString();
+			this.Schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == values["SchemaName"].ToString());
+			if (this.Schema == null) throw new Exception("Schema " + values["SchemaName"].ToString() + " not found for " + this.TableName);
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.TableName && ep.SchemaName == this.Schema.SchemaName &&
 				string.IsNullOrEmpty(ep.Level2Object)).ToList();
@@ -159,14 +160,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public void TruncateDelete(Database targetDatabase, IDbCommand cmd, bool truncate)
 		{
+			var schema = Schema.GetQueryObjectName(targetDatabase.DataSource);
+			if (!string.IsNullOrEmpty(schema)) schema += ".";
 			if (truncate)
 			{
-				cmd.CommandText = string.Format("truncate table {0}.{1}", Schema.GetQueryObjectName(targetDatabase.DataSource), GetQueryObjectName(targetDatabase.DataSource));
+				cmd.CommandText = string.Format("truncate table {0}{1}", schema, GetQueryObjectName(targetDatabase.DataSource));
 				cmd.ExecuteNonQuery();
 			}
 			else
 			{
-				cmd.CommandText = string.Format("delete from {0}.{1}", Schema.GetQueryObjectName(targetDatabase.DataSource), GetQueryObjectName(targetDatabase.DataSource));
+				cmd.CommandText = string.Format("delete from {0}{1}", schema, GetQueryObjectName(targetDatabase.DataSource));
 				cmd.ExecuteNonQuery();
 			}
 		}

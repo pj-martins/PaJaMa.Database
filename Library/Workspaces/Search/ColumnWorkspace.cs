@@ -12,10 +12,23 @@ namespace PaJaMa.Database.Library.Workspaces.Search
 	public class ColumnWorkspace
 	{
 		public Column Column { get; private set; }
-		public bool Select { get; set; }
+		private TableWorkspace _tableWorkspace;
 
-		public ColumnWorkspace(Column column)
+		private bool _select;
+		public bool Select
 		{
+			get { return _select; }
+			set
+			{
+				_select = value;
+				if (value)
+					_tableWorkspace.SelectAll = true;
+			}
+		}
+
+		public ColumnWorkspace(TableWorkspace tableWorkspace, Column column)
+		{
+			_tableWorkspace = tableWorkspace;
 			Column = column;
 		}
 	}

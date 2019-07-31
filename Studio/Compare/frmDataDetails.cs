@@ -294,5 +294,15 @@ namespace PaJaMa.Database.Studio.Compare
 		{
 			refreshGrid(true);
 		}
+
+		private void chkAllPages_CheckedChanged(object sender, EventArgs e)
+		{
+			if (chkAllPages.Checked)
+				_pageSize = SelectedWorkspace.ComparedData.Rows.Count;
+			else
+				_pageSize = 100;
+			_currentPage = 0;
+			setData();
+		}
 	}
 }

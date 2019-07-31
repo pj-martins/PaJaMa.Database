@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.Odbc;
 using System.Linq;
 using System.Text;
@@ -73,10 +74,11 @@ namespace PaJaMa.Database.Library.DataSources
 			return topN <= 0 ? string.Empty : string.Format("TOP {0}", topN);
 		}
 
-		public override void PopulateTables(Schema[] schemas)
+		public override void PopulateTables(DbConnection connection, Schema[] schemas, bool andChildren)
 		{
 			var schema = schemas.First();
-			using (var conn = OpenConnection())
+			// TODO used passed in
+			using (var conn = OpenConnection(schema.Database.DatabaseName))
 			{
 				var dtTables = conn.GetSchema("Tables");
 				var dtColumns = conn.GetSchema("Columns");

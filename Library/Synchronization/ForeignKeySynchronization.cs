@@ -18,14 +18,15 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return getStandardItems(TargetDatabase.DataSource.GetForeignKeyCreateScript(DatabaseObject), 7);
+			var script = TargetDatabase.DataSource.GetForeignKeyCreateScript(DatabaseObject);
+			return string.IsNullOrEmpty(script) ? new List<SynchronizationItem>() : getStandardItems(script, 7);
 		}
 
 		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
-			return getStandardDropItems(string.Format(@"
-ALTER TABLE {0} DROP CONSTRAINT {1};
-", DatabaseObject.ChildTable.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
+            var script = TargetDatabase.DataSource.GetForeignKeyDropScript(DatabaseObject);
+            return getStandardDropItems(string.Format(script, 
+                DatabaseObject.ChildTable.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
 			sourceParent);
 		}
 

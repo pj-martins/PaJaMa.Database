@@ -38,7 +38,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (!string.IsNullOrEmpty(colDef) && colDef.StartsWith("((") && colDef.EndsWith("))"))
 				colDef = colDef.Substring(1, colDef.Length - 2);
 
-			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(DatabaseObject.ConstraintName))
+			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(DatabaseObject.ConstraintName) && !DatabaseObject.Table.KeyConstraints.Any(k => k.ConstraintName == DatabaseObject.ConstraintName))
 				def = "CONSTRAINT " + TargetDatabase.DataSource.GetConvertedObjectName(DatabaseObject.ConstraintName) + " DEFAULT(" + colDef + ")";
 			else if (!string.IsNullOrEmpty(colDef))
 				def = "DEFAULT(" + colDef + ")";

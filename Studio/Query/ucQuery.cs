@@ -15,6 +15,7 @@ namespace PaJaMa.Database.Studio.Query
 {
 	public partial class ucQuery : UserControl
 	{
+		private DatabaseStudioSettings _settings;
 		public ucQuery()
 		{
 			InitializeComponent();
@@ -22,6 +23,10 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void frmMain_Load(object sender, EventArgs e)
 		{
+			_settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (_settings.QueryOutputs == null)
+				_settings.QueryOutputs = new Common.SerializableDictionary<string, List<QueryOutput>>();
+
 			if (tabMain.TabPages.Count < 1)
 				addWorkspace(null);
 		}
@@ -93,9 +98,10 @@ namespace PaJaMa.Database.Studio.Query
 			uc.LoadFromIDatabase(args);
 		}
 
-		private void addWorkspace(WinControls.TabControl.TabPage tabPage)
+		private ucWorkspace addWorkspace(WinControls.TabControl.TabPage tabPage)
 		{
 			var uc = new ucWorkspace();
+			uc.Settings = _settings;
 			bool add = false;
 			if (tabPage == null)
 			{
@@ -111,6 +117,7 @@ namespace PaJaMa.Database.Studio.Query
 				tabMain.TabPages.Add(tabPage);
 				tabMain.SelectedTab = tabPage;
 			}
+			return uc;
 		}
 
 		private void copyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -124,7 +131,8 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void tabMain_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{
-			(e.TabPage.Controls[0] as ucWorkspace).Disconnect();
+			var uc = e.TabPage.Controls[0] as ucWorkspace;
+			uc.Disconnect();
 		}
 
 		private void tabMain_TabAdding(object sender, WinControls.TabControl.TabEventArgs e)

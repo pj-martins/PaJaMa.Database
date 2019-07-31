@@ -27,6 +27,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return ToString() + " (" + ObjectType + ")"; }
 		}
 
+		[Ignore]
+		internal Dictionary<string, object> RawValues { get; set; }
+
 		public Schema Schema { get; set; }
 
 		public DatabaseObjectBase(Database database)
@@ -44,7 +47,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			return ObjectName;
 		}
 
-		internal abstract void setObjectProperties(DbDataReader reader);
+		internal abstract void setObjectProperties(DbConnection connection, Dictionary<string, object> values);
 
 		public virtual string GetObjectNameWithSchema(DataSource dataSource)
 		{
@@ -59,6 +62,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public string GetQueryObjectName(DataSource server)
 		{
+            if (string.IsNullOrEmpty(ObjectName)) return string.Empty;
 			return server.GetConvertedObjectName(ObjectName);
 		}
 	}
@@ -77,5 +81,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 	public interface IObjectWithExtendedProperty
 	{
 		List<ExtendedProperty> ExtendedProperties { get; set; }
+	}
+
+	public interface IObjectWithTable
+	{
+		Table Table { get; }
 	}
 }

@@ -35,14 +35,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Columns = new List<ForeignKeyColumn>();
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			var foreignKeyName = reader["ForeignKeyName"].ToString();
-			var childTableName = reader["ChildTableName"].ToString();
-			var parentSchema = Database.Schemas.First(s => s.SchemaName == reader["ParentTableSchema"].ToString());
-			if (!parentSchema.Tables.Any()) Database.DataSource.PopulateTables(new Schema[] { parentSchema });
-			var childSchema = Database.Schemas.First(s => s.SchemaName == reader["ChildTableSchema"].ToString());
-			var childTable = childSchema.Tables.First(t => t.TableName == reader["ChildTableName"].ToString());
+			var foreignKeyName = values["ForeignKeyName"].ToString();
+			var childTableName = values["ChildTableName"].ToString();
+			var parentSchema = Database.Schemas.First(s => s.SchemaName == values["ParentTableSchema"].ToString());
+			if (!parentSchema.Tables.Any()) Database.DataSource.PopulateTables(connection, new Schema[] { parentSchema }, true);
+			var childSchema = Database.Schemas.First(s => s.SchemaName == values["ChildTableSchema"].ToString());
+			var childTable = childSchema.Tables.First(t => t.TableName == values["ChildTableName"].ToString());
 			var foreignKey = childTable.ForeignKeys.FirstOrDefault(f => f.ForeignKeyName == foreignKeyName 
 				&& f.ChildTable.TableName == childTableName
 				&& f.ChildTable.Schema.SchemaName == childSchema.SchemaName);
@@ -50,15 +50,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			if (foreignKey == null)
 			{
 				foreignKey = this;
-				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == reader["ParentTableName"].ToString());
+				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == values["ParentTableName"].ToString());
+				if (!foreignKey.ParentTable.Columns.Any()) Database.DataSource.PopulateColumnsForTable(connection, foreignKey.ParentTable);
 				foreignKey.ChildTable = childTable;
+				if (!foreignKey.ChildTable.Columns.Any()) Database.DataSource.PopulateColumnsForTable(connection, foreignKey.ChildTable);
 				foreignKey.ChildTable.ForeignKeys.Add(foreignKey);
 			}
 
 			foreignKey.Columns.Add(new ForeignKeyColumn()
 			{
-				ParentColumn = foreignKey.ParentTable.Columns.First(c => c.ColumnName == reader["ParentColumnName"].ToString()),
-				ChildColumn = foreignKey.ChildTable.Columns.First(c => c.ColumnName == reader["ChildColumnName"].ToString())
+				ParentColumn = foreignKey.ParentTable.Columns.First(c => c.ColumnName == values["ParentColumnName"].ToString()),
+				ChildColumn = foreignKey.ChildTable.Columns.First(c => c.ColumnName == values["ChildColumnName"].ToString())
 			});
 		}
 	}

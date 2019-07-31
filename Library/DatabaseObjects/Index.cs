@@ -12,10 +12,26 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
     public class Index : DatabaseObjectBase
     {
+		public string ColumnName { get; set; }
+		public bool Descending { get; set; }
+		[Ignore]
+		public Int64 Descending2
+		{
+			get { return Descending ? 1 : 0; }
+			set { Descending = value == 1; }
+		}
+		public int Ordinal { get; set; }
+		public Int64 Ordinal2
+		{
+			get { return Ordinal; }
+			set { Ordinal = Convert.ToInt32(value); }
+		}
+
 		public Index(Database database) : base(database)
 		{
 		}
 
+		public string SchemaName { get; set; }
 		public Table Table { get; set; }
         public string IndexName { get; set; }
 		public string TableName { get; set; }
@@ -31,10 +47,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
             get { return IndexName; }
         }
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
 
-			var schema = Database.Schemas.First(s => s.SchemaName == reader["SchemaName"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName == SchemaName);
 			var table = schema.Tables.FirstOrDefault(t => t.TableName == TableName);
 			if (table == null) return;
 			var index = table.Indexes.FirstOrDefault(i => i.IndexName == IndexName && i.Table.TableName == TableName && i.Table.Schema.SchemaName
@@ -48,7 +64,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				index.Table = table;
 				table.Indexes.Add(index);
 			}
-			var indexCol = reader.ToObject<IndexColumn>();
+			var indexCol = values.DictionaryToObject<IndexColumn>();
 			index.IndexColumns.Add(indexCol);
 		}
     }
@@ -57,6 +73,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
     {
         public string ColumnName { get; set; }
         public bool Descending { get; set; }
+        [Ignore]
+        public Int64 Descending2
+        {
+            get { return Descending ? 1 : 0; }
+            set { Descending = value == 1; }
+        }
         public int Ordinal { get; set; }
+        public Int64 Ordinal2
+        {
+            get { return Ordinal; }
+            set { Ordinal = Convert.ToInt32(value); }
+        }
     }
 }

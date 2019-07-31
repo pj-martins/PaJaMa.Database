@@ -142,6 +142,7 @@
     <Compile Include="Classes\DatabaseStudioSettings.cs" />
     <Compile Include="Classes\GridHelper.cs" />
     <Compile Include="Classes\Events.cs" />
+    <Compile Include="Compare\CompareFormSettings.cs" />
     <Compile Include="Compare\frmCreates.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -203,11 +204,23 @@
     <Compile Include="DataGenerate\ucDataGenerate.Designer.cs">
       <DependentUpon>ucDataGenerate.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmConnectionStrings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmConnectionStrings.Designer.cs">
+      <DependentUpon>frmConnectionStrings.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmRename.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmRename.Designer.cs">
+      <DependentUpon>frmRename.cs</DependentUpon>
     </Compile>
     <Compile Include="Monitor\frmQueryText.cs">
       <SubType>Form</SubType>
@@ -333,8 +346,14 @@
     <EmbeddedResource Include="DataGenerate\ucDataGenerate.resx">
       <DependentUpon>ucDataGenerate.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmConnectionStrings.resx">
+      <DependentUpon>frmConnectionStrings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\QueryBuilder\frmRename.resx">
+      <DependentUpon>frmRename.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Monitor\frmQueryText.resx">
       <DependentUpon>frmQueryText.cs</DependentUpon>

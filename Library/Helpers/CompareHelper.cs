@@ -215,28 +215,30 @@ namespace PaJaMa.Database.Library.Helpers
 							   from t in s.Tables
 							   select t);
 
-			var selectedItems = from ws in selectedWorkspaces
-								from si in ws.SynchronizationItems
-								where !si.Omit
-								select si;
-
-			var sync = DatabaseObjectSynchronizationBase.GetSynchronization(parent.Database, parent);
-
-			var missingDendencies = sync.GetMissingDependencies(toObjects, selectedItems.ToList(), isForDrop, IgnoreCase);
-			foreach (var child in missingDendencies)
+			foreach (var ws in selectedWorkspaces)
 			{
-				if (checkedObjects.Contains(child))
-					continue;
+				var sync = DatabaseObjectSynchronizationBase.GetSynchronization(parent.Database, parent);
 
-				checkedObjects.Add(child);
+				var missingDendencies = sync.GetMissingDependencies(toObjects, ws.SynchronizationItems.Where(si => !si.Omit).ToList(), isForDrop, IgnoreCase);
+				foreach (var child in missingDendencies)
+				{
+					if (checkedObjects.Contains(child))
+						continue;
 
-				if (!missing.ContainsKey(parent))
-					missing.Add(parent, new List<DatabaseObjectBase>());
+					if (child is ForeignKey fk && ws is TableWorkspace tw && 
+						(tw.RemoveAddKeys || selectedWorkspaces.Any(sw => sw is TableWorkspace tw2 && tw2.Select && tw2.SourceTable == fk.ParentTable)))
+						continue;
 
-				if (!missing[parent].Contains(child))
-					missing[parent].Add(child);
+					checkedObjects.Add(child);
 
-				recursivelyPopulateMissingDependencies(child, selectedWorkspaces, missing, checkedObjects, isForDrop);
+					if (!missing.ContainsKey(parent))
+						missing.Add(parent, new List<DatabaseObjectBase>());
+
+					if (!missing[parent].Contains(child))
+						missing[parent].Add(child);
+
+					recursivelyPopulateMissingDependencies(child, selectedWorkspaces, missing, checkedObjects, isForDrop);
+				}
 			}
 		}
 	}

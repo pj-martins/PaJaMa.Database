@@ -1,13 +1,8 @@
-﻿using PaJaMa.Common;
-using PaJaMa.Database.Library.DatabaseObjects;
+﻿using PaJaMa.Database.Library.DatabaseObjects;
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PaJaMa.Database.Library.Synchronization;
 
 namespace PaJaMa.Database.Library.DataSources
 {
@@ -211,11 +206,16 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 			{
 				if (_columnTypes == null)
 				{
+					var dtMaps = new Map[] {
+						new Map("mintime", "(getdate())"),
+						new Map("now", "(getdate())")
+					};
+
 					_columnTypes = new List<ColumnType>();
 					_columnTypes.Add(new ColumnType("uniqueidentifier", DataType.UniqueIdentifier, "(newid())", new Map("newid", "(newid())")));
-					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
-					_columnTypes.Add(new ColumnType("datetime2", DataType.DateTime, "(getdate())", new Map("now", "(getdate())")));
-					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "(getdate())", dtMaps));
+					_columnTypes.Add(new ColumnType("datetime2", DataType.DateTime, "(getdate())", dtMaps));
+					_columnTypes.Add(new ColumnType("smalldatetime", DataType.SmallDateTime, "(getdate())", dtMaps));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VaryingChar, "''"));
 					_columnTypes.Add(new ColumnType("varchar", DataType.VarChar, "''"));
 					_columnTypes.Add(new ColumnType("nvarchar", DataType.NVarChar, "''"));
@@ -236,9 +236,9 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 					_columnTypes.Add(new ColumnType("text", DataType.Json, "''") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("ntext", DataType.Text, "''") { IsFixedSize = true });
 					_columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
-					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "(getdate())", dtMaps));
 					_columnTypes.Add(new ColumnType("binary", DataType.Binary, "0"));
-					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())", new Map("now", "(getdate())")));
+					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "(getdate())", dtMaps));
 					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
 					_columnTypes.Add(new ColumnType("timestamp", DataType.RowVersion, ""));
 					_columnTypes.Add(new ColumnType("rowversion", DataType.RowVersion, ""));
@@ -267,7 +267,7 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 
 		public override string GetConvertedObjectName(string objectName)
 		{
-			return string.Format("[{0}]", objectName);
+			return string.IsNullOrEmpty(objectName) ? string.Empty : string.Format("[{0}]", objectName);
 		}
 
 		public override string GetPreTopN(int topN)
@@ -347,6 +347,21 @@ foreignKey.GetQueryObjectName(this));
 					return true;
 			}
 			return base.IgnoreDrop(sourceParent, obj);
+		}
+
+		public override string GetRenameScript(DatabaseObjectBase databaseObject, string targetName)
+		{
+			if (databaseObject is Table)
+			{
+				return $"exec sp_rename '{databaseObject.Schema.SchemaName}.{databaseObject.ObjectName}', '{targetName}'";
+			}
+			else if (databaseObject is IObjectWithTable)
+			{
+				var objWithTable = databaseObject as IObjectWithTable;
+				return $"exec sp_rename '{objWithTable.Table.Schema.SchemaName}.{objWithTable.Table.TableName}.{databaseObject.ObjectName}', '{targetName}'";
+			}
+
+			return $"exec sp_rename '{databaseObject.ObjectName}', '{targetName}'";
 		}
 	}
 }

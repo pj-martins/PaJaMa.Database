@@ -48,6 +48,7 @@ where type = 'table'
 		internal override string IndexSQL => throw new NotImplementedException();
 
 		internal override bool MatchConstraintsByColumns => true;
+		internal override bool BypassKeyConstraints => true;
 
 		protected override Type connectionType => typeof(SQLiteConnection);
 
@@ -244,6 +245,22 @@ where type = 'table'
 					}
 				}
 			}
+		}
+
+		internal override string GetKeyConstraintCreateScript(KeyConstraint keyConstraint)
+		{
+			return string.Empty;
+		}
+
+		internal override string GetForeignKeyCreateScript(ForeignKey foreignKey)
+		{
+			// TODO:
+			return string.Empty;
+		}
+
+		internal override string GetCreateIdentity(Column column)
+		{
+			return " PRIMARY KEY";
 		}
 	}
 }

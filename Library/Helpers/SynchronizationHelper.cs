@@ -21,7 +21,7 @@ namespace PaJaMa.Database.Library.Helpers
 			TransferHelper transferHelper = null;
 			if (dataSpaces.Any())
 				transferHelper = new TransferHelper(worker);
-            using (var conn = compareHelper.ToDataSource.OpenConnection())
+            using (var conn = compareHelper.ToDataSource.OpenConnection(string.Empty))
  			{
 				using (var trans = conn.BeginTransaction())
 				{

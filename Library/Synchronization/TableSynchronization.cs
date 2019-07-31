@@ -1,11 +1,9 @@
 ﻿using PaJaMa.Common;
 using PaJaMa.Database.Library.DatabaseObjects;
-using PaJaMa.Database.Library.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.Synchronization
 {
@@ -59,9 +57,12 @@ namespace PaJaMa.Database.Library.Synchronization
 			sb.AppendLineFormat("CREATE TABLE {0}(", DatabaseObject.GetObjectNameWithSchema(TargetDatabase.DataSource));
 
 			sb.AppendLine(getColumnCreates().ToString());
+
 			foreach (var kc in DatabaseObject.KeyConstraints)
 			{
-				sb.AppendLine(", " + TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc));
+				var script = TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc);
+				if (!string.IsNullOrEmpty(script))
+					sb.AppendLine(", " + TargetDatabase.DataSource.GetKeyConstraintCreateScript(kc));
 			}
 			sb.AppendLine(");");
 
@@ -543,6 +544,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		private List<SynchronizationItem> getTriggerUpdateItems(Table targetTable, bool ignoreCase)
 		{
+
 			if (TargetDatabase.DataSource.GetType().FullName != DatabaseObject.Database.GetType().FullName) return new List<SynchronizationItem>();
 
 			var skips = new List<string>();
@@ -601,7 +603,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					if (fk.Columns.Any(k => !toTbl.KeyConstraints.Any(kc => kc.Columns.Any(c => string.Compare(c.ColumnName, k.ParentColumn.ColumnName, ignoreCase) == 0))))
 					{
 						if (!selectedItems.Select(si => si.DatabaseObject).OfType<KeyConstraint>().Any(kc => string.Compare(kc.Table.TableName, fk.ParentTable.ObjectName, ignoreCase) == 0))
-							missing.Add(fk.ParentTable);
+							missing.Add(fk);
 					}
 					continue;
 				}
@@ -614,7 +616,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				if (item != null && !item.Omit)
 					continue;
 
-				missing.Add(fk.ParentTable);
+				missing.Add(fk);
 			}
 
 			if (!existingTargetObjects.OfType<Schema>().Any(s => string.Compare(s.MappedSchemaName, DatabaseObject.Schema.MappedSchemaName, ignoreCase) == 0))

@@ -56,7 +56,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Sequences = new List<Sequence>();
 		}
 
-		internal override void setObjectProperties(DbDataReader reader)
+		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties
