@@ -348,5 +348,20 @@ foreignKey.GetQueryObjectName(this));
 			}
 			return base.IgnoreDrop(sourceParent, obj);
 		}
+
+		public override string GetRenameScript(DatabaseObjectBase databaseObject, string targetName)
+		{
+			if (databaseObject is Table)
+			{
+				return $"exec sp_rename '{databaseObject.Schema.SchemaName}.{databaseObject.ObjectName}', '{targetName}'";
+			}
+			else if (databaseObject is IObjectWithTable)
+			{
+				var objWithTable = databaseObject as IObjectWithTable;
+				return $"exec sp_rename '{objWithTable.Table.Schema.SchemaName}.{objWithTable.Table.TableName}.{databaseObject.ObjectName}', '{targetName}'";
+			}
+
+			return $"exec sp_rename '{databaseObject.ObjectName}', '{targetName}'";
+		}
 	}
 }

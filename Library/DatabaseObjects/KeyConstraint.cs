@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-	public class KeyConstraint : DatabaseObjectBase
+	public class KeyConstraint : DatabaseObjectBase, IObjectWithTable
 	{
 		public Table Table { get; set; }
 		public string ConstraintName { get; set; }

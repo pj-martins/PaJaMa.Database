@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-	public class Column : DatabaseObjectWithExtendedProperties
+	public class Column : DatabaseObjectWithExtendedProperties, IObjectWithTable
 	{
 		public Column(Database database) : base(database)
 		{

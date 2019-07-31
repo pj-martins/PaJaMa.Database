@@ -48,6 +48,7 @@
 			this.refreshToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newForeignKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newColumnToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
@@ -185,6 +186,7 @@
             this.selectToolStripMenuItem,
             this.selectTop1000ToolStripMenuItem,
             this.scriptCreateToolStripMenuItem,
+            this.renameToolStripMenuItem,
             this.buildQueryToolStripMenuItem,
             this.refreshToolStripMenuItem,
             this.newForeignKeyToolStripMenuItem,
@@ -192,7 +194,7 @@
             this.deleteToolStripMenuItem,
             this.newTableToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(164, 202);
+			this.mnuTree.Size = new System.Drawing.Size(164, 224);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
@@ -243,6 +245,13 @@
 			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.newColumnToolStripMenuItem.Text = "New C&olumn";
 			this.newColumnToolStripMenuItem.Click += new System.EventHandler(this.newColumnToolStripMenuItem_Click);
+			// 
+			// renameToolStripMenuItem
+			// 
+			this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
+			this.renameToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.renameToolStripMenuItem.Text = "Re&name";
+			this.renameToolStripMenuItem.Click += new System.EventHandler(this.RenameToolStripMenuItem_Click);
 			// 
 			// deleteToolStripMenuItem
 			// 
@@ -338,6 +347,7 @@
 		private System.Windows.Forms.ToolStripMenuItem newColumnToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem newTableToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem renameToolStripMenuItem;
 	}
 }
 

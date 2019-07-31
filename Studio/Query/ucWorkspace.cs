@@ -857,5 +857,19 @@ namespace PaJaMa.Database.Studio.Query
 			Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
 			return output;
 		}
+
+		private void RenameToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var frm = new frmRename();
+			frm.DatabaseObject = treeTables.SelectedNode.Tag as DatabaseObjectBase;
+			frm.FormClosed += (object sender2, FormClosedEventArgs e2) =>
+			{
+				if (frm.DialogResult == DialogResult.OK)
+				{
+					addQueryOutput(null, new QueryOutput() { Database = frm.DatabaseObject.Database.DatabaseName, Query = frm.GetScript() });
+				}
+			};
+			frm.Show();
+		}
 	}
 }
