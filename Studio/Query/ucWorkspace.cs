@@ -322,12 +322,19 @@ namespace PaJaMa.Database.Studio.Query
 				var node2 = parentNode.Nodes.Add(table.TableName);
 				node2.Tag = table;
 				var node3 = node2.Nodes.Add("Columns");
-				foreach (var column in table.Columns)
+				if (table.Columns.Any())
 				{
-					var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName +
-						(column.CharacterMaximumLength.GetValueOrDefault() > 0 ? " (" + column.CharacterMaximumLength.Value.ToString() + ")" : "") +
-						", " + (column.IsNullable ? "null" : "not null") + ")");
-					node4.Tag = column;
+					foreach (var column in table.Columns)
+					{
+						var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName +
+							(column.CharacterMaximumLength.GetValueOrDefault() > 0 ? " (" + column.CharacterMaximumLength.Value.ToString() + ")" : "") +
+							", " + (column.IsNullable ? "null" : "not null") + ")");
+						node4.Tag = column;
+					}
+				}
+				else
+				{
+					node3.Nodes.Add(NONE);
 				}
 
 				node3 = node2.Nodes.Add("Keys");
