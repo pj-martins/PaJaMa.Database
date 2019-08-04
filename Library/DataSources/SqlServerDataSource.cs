@@ -79,7 +79,8 @@ join {0}.sys.tables t on t.object_id = c.object_id
 join {0}.sys.schemas sc on sc.schema_id = t.schema_id
 	and sc.name = co.TABLE_SCHEMA
 left join {0}.sys.default_constraints d on d.object_id = c.default_object_id
-left join {0}.sys.computed_columns cm on cm.name = co.column_name and c.is_computed = 1 and cm.object_id = t.object_id";
+left join {0}.sys.computed_columns cm on cm.name = co.column_name and c.is_computed = 1 and cm.object_id = t.object_id
+where 1 = 1 ";
 
 		internal override string ForeignKeySQL => @"
 select fk.name as ForeignKeyName, ct.name as ChildTableName, cc.name as ChildColumnName, pt.name as ParentTableName, 

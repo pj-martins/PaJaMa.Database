@@ -122,10 +122,13 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void ucQueryOutput_InfoMessage(object sender, SqlInfoMessageEventArgs e)
 		{
-			this.Invoke(new Action(() =>
-				{
-					txtMessages.Text += e.Message + "\r\n\r\n";
-				}));
+			if (this.IsHandleCreated)
+			{
+				this.Invoke(new Action(() =>
+					{
+						txtMessages.Text += e.Message + "\r\n\r\n";
+					}));
+			}
 		}
 
 		public void Disconnect()
@@ -531,6 +534,8 @@ namespace PaJaMa.Database.Studio.Query
 			else
 			{
 				var tbl = selectedNode.Tag as Table;
+				if (!tbl.Columns.Any())
+					tbl.Database.DataSource.PopulateColumnsForTable(CurrentConnection, tbl);
 				dbName = tbl.Database.DataSource.GetConvertedObjectName(tbl.Database.DatabaseName);
                 CurrentConnection.ChangeDatabase(tbl.Database.DatabaseName);
                 objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);

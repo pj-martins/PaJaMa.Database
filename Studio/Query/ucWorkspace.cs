@@ -554,7 +554,7 @@ namespace PaJaMa.Database.Studio.Query
 			selectTop1000ToolStripMenuItem.Enabled = selectToolStripMenuItem.Enabled = selectedNode != null &&
 				selectedNode.Tag != null && (selectedNode.Tag is Table || selectedNode.Tag is Library.DatabaseObjects.View);
 
-			newForeignKeyToolStripMenuItem.Visible = selectedNode.Tag is Table || selectedNode.Tag is Column;
+			newForeignKeyToolStripMenuItem.Visible = selectedNode != null && (selectedNode.Tag is Table || selectedNode.Tag is Column);
 			newColumnToolStripMenuItem.Visible = selectedNode.Tag is Table;
 			deleteToolStripMenuItem.Visible = selectedNode.Tag is DatabaseObjectBase;
 			newTableToolStripMenuItem.Visible = selectedNode.Tag is Library.DatabaseObjects.Schema ||
@@ -591,6 +591,7 @@ namespace PaJaMa.Database.Studio.Query
 		public ucWorkspace CopyWorkspace(bool andText, string initialConnString = null)
 		{
 			var uc = new ucWorkspace();
+			uc.Settings = Settings;
 			if (string.IsNullOrEmpty(initialConnString))
 				initialConnString = txtConnectionString.Text;
 
@@ -680,6 +681,10 @@ namespace PaJaMa.Database.Studio.Query
 				var obj = treeTables.SelectedNode.Tag as DatabaseObjectBase;
 				if (obj != null)
 				{
+					if (obj is Library.DatabaseObjects.Table t && !t.Columns.Any())
+					{
+						_dataSource.PopulateColumnsForTable(_currentConnection, t);
+					}
 					uc.PopulateScript(DatabaseObjectSynchronizationBase.GetSynchronization(obj.Database, obj).GetRawCreateText(), treeTables.SelectedNode);
 				}
 			}
