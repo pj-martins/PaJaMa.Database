@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.Common;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,8 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 				cboChildTable.Items.AddRange(value.OrderBy(v => v.TableName).ToArray());
 			}
 		}
+
+		public DbConnection Connection { get; set; }
 
 		public Table ChildTable
 		{
@@ -65,6 +68,10 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 			var parentTable = cboParentTable.SelectedItem as Table;
 			if (parentTable != null)
 			{
+				if (!parentTable.Columns.Any())
+				{
+					parentTable.Database.DataSource.PopulateColumnsForTable(Connection, parentTable);
+				}
 				cboParentColumn.Items.AddRange(parentTable.Columns.OrderBy(c => c.ColumnName).ToArray());
 				if (ChildColumn != null)
 					cboParentColumn.SelectedItem = cboParentColumn.Items.OfType<Column>().FirstOrDefault(c => c.ColumnName == ChildColumn.ColumnName);

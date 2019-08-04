@@ -681,10 +681,15 @@ namespace PaJaMa.Database.Studio.Query
 				var obj = treeTables.SelectedNode.Tag as DatabaseObjectBase;
 				if (obj != null)
 				{
+					// TODO: move to libs
 					if (obj is Library.DatabaseObjects.Table t && !t.Columns.Any())
 					{
 						_dataSource.PopulateColumnsForTable(_currentConnection, t);
+						if (!t.KeyConstraints.Any()) _dataSource.PopulateKeysForTable(_currentConnection, t);
+						if (!t.ForeignKeys.Any()) _dataSource.PopulateForeignKeysForTable(_currentConnection, t);
+						if (!t.Indexes.Any()) _dataSource.PopulateIndexesForTable(_currentConnection, t);
 					}
+
 					uc.PopulateScript(DatabaseObjectSynchronizationBase.GetSynchronization(obj.Database, obj).GetRawCreateText(), treeTables.SelectedNode);
 				}
 			}
@@ -798,9 +803,14 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				var table = tag is Table ? tag as Table : (tag as Column).Table;
 				var col = tag is Column ? tag as Column : null;
+				if (!table.Columns.Any())
+				{
+					_dataSource.PopulateColumnsForTable(_currentConnection, table);
+				}
 
 				using (var frm = new frmForeignKey())
 				{
+					frm.Connection = _currentConnection;
 					frm.Tables = table.Schema.Tables;
 					frm.ChildTable = table;
 					if (col != null)
