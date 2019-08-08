@@ -659,6 +659,7 @@ namespace PaJaMa.Database.Studio.Query
 			}
 			else if (e.KeyCode == Keys.Down && _intelliBox.Visible)
 			{
+				e.Handled = true;
 				_intelliBox.Focus();
 				_intelliBox.SelectedIndex++;
 			}
@@ -778,22 +779,29 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void showIntellisense()
 		{
-			var matches = _intellisenseHelper.GetIntellisenseMatches(txtQuery.Text, txtQuery.SelectionStart, CurrentConnection);
-			_intelliBox.Items.Clear();
-			string maxString = string.Empty;
-			foreach (var m in matches)
+			try
 			{
-				if (m.ShortName.Length > maxString.Length) maxString = m.ShortName;
-				_intelliBox.Items.Add(m);
+				var matches = _intellisenseHelper.GetIntellisenseMatches(txtQuery.Text, txtQuery.SelectionStart, CurrentConnection);
+				_intelliBox.Items.Clear();
+				string maxString = string.Empty;
+				foreach (var m in matches)
+				{
+					if (m.ShortName.Length > maxString.Length) maxString = m.ShortName;
+					_intelliBox.Items.Add(m);
+				}
+				if (_intelliBox.Items.Count > 0)
+					_intelliBox.SelectedIndex = 0;
+				Point p = new Point();
+				GetCaretPos(out p);
+				var measure = txtQuery.CreateGraphics().MeasureString(maxString, txtQuery.Font);
+				_intelliBox.SetBounds(p.X, p.Y + 20, 500, Math.Min(300, Math.Max(32, (int)(measure.Height * _intelliBox.Items.Count))));
+				_intelliBox.Show();
+				_intelliBox.BringToFront();
 			}
-			if (_intelliBox.Items.Count > 0)
-				_intelliBox.SelectedIndex = 0;
-			Point p = new Point();
-			GetCaretPos(out p);
-			var measure = txtQuery.CreateGraphics().MeasureString(maxString, txtQuery.Font);
-			_intelliBox.SetBounds(p.X, p.Y + 20, 500, Math.Min(300, Math.Max(32, (int)(measure.Height * _intelliBox.Items.Count))));
-			_intelliBox.Show();
-			_intelliBox.BringToFront();
+			catch (Exception e)
+			{
+				// TODO:
+			}
 		}
 
 

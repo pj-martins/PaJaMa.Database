@@ -636,8 +636,8 @@ ON UPDATE {6}
 			var keywords = new List<string>();
 			keywords.Add("SELECT");
 			keywords.Add("FROM");
-			keywords.Add("LEFT JOIN");
-			keywords.Add("INNER JOIN");
+			keywords.Add("LEFT");
+			keywords.Add("INNER");
 			keywords.Add("JOIN");
 			keywords.Add("ON");
 			keywords.Add("COALESCE");
@@ -652,6 +652,20 @@ ON UPDATE {6}
 			keywords.Add("OR");
 			keywords.Add("MAX");
 			keywords.Add("MIN");
+			keywords.Add("INSERT");
+			keywords.Add("UPDATE");
+			keywords.Add("DELETE");
+			keywords.Add("INTO");
+			keywords.Add("VALUES");
+			keywords.Add("CASE");
+			keywords.Add("WHEN");
+			keywords.Add("THEN");
+			keywords.Add("ELSE");
+			keywords.Add("END");
+			keywords.Add("GROUP");
+			keywords.Add("BY");
+			keywords.Add("AS");
+			keywords.Add("IF");
 			return keywords;
 		}
 
