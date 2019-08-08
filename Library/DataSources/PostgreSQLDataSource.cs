@@ -23,6 +23,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal override bool BypassKeyConstraints => true;
 
 		internal override List<string> SystemSchemaNames => new List<string>() { "pg_catalog", "information_schema" };
+		public override List<string> SurroundingCharacters => new List<string>() { "\"" };
 
 		#region SQLS
 		internal override string SchemaSQL => @"select schema_name as SchemaName, schema_owner as SchemaOwner from {0}.information_schema.schemata

@@ -129,7 +129,7 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
 				txtQuery.Settings.KeywordColor = Color.Blue;
 				txtQuery.CompileKeywords();
-				txtQuery.ProcessAllLines();
+				txtQuery.ProcessAllLines(true);
 				_lock = false;
 				return true;
 			}

@@ -14,6 +14,7 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public override string DefaultSchemaName => "dbo";
 		internal override bool NamedConstraints => true;
+		public override List<string> SurroundingCharacters => new List<string>() { "[", "]" };
 
 		#region SQLS
 		internal override string SchemaSQL => @"select SCHEMA_NAME as SchemaName, SCHEMA_OWNER as SchemaOwner from {0}.INFORMATION_SCHEMA.SCHEMATA";

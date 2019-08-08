@@ -30,7 +30,12 @@ namespace PaJaMa.Database.Studio.Classes
 				{
 					var obj = toCheck[i + 1];
 					var parts = obj.Split('.');
-					var db = parts.Length > 1 ? _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == parts[0].ToLower()) : _dataSource.CurrentDatabase;
+					var dbName = parts[0].ToLower();
+					foreach (var surr in _dataSource.SurroundingCharacters)
+					{
+						dbName = dbName.Replace(surr, "");
+					}
+					var db = parts.Length > 1 ? _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == dbName) : _dataSource.CurrentDatabase;
 					if (db.Schemas == null) _dataSource.PopulateSchemas(connection, db);
 					var noSchema = db.Schemas.Count == 1 && string.IsNullOrEmpty(db.Schemas[0].SchemaName);
 					var schema = db.Schemas[0];

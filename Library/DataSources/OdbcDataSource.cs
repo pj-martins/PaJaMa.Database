@@ -58,6 +58,8 @@ namespace PaJaMa.Database.Library.DataSources
 			}
 		}
 
+		public override List<string> SurroundingCharacters => throw new NotImplementedException();
+
 		public override string GetConvertedObjectName(string objectName)
 		{
 			if (objectName == CurrentDatabase.DatabaseName) return string.Empty;

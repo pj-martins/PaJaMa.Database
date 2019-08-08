@@ -17,6 +17,7 @@ namespace PaJaMa.Database.Library.DataSources
         internal override List<string> SystemSchemaNames => new List<string>() { "information_schema" };
 
         public override string DefaultSchemaName => "";
+		public override List<string> SurroundingCharacters => new List<string>() { "`" };
 
 		protected override Type connectionType => typeof(MySqlConnection);
 

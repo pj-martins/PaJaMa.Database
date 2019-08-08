@@ -21,6 +21,7 @@ namespace PaJaMa.Database.Library.DataSources
 		public abstract string DefaultSchemaName { get; }
 		public abstract string GetConvertedObjectName(string objectName);
 		public abstract List<ColumnType> ColumnTypes { get; }
+		public abstract List<string> SurroundingCharacters { get; }
 
 		protected abstract Type connectionType { get; }
 

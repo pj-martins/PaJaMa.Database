@@ -40,6 +40,8 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public override List<ColumnType> ColumnTypes => throw new NotImplementedException();
 
+		public override List<string> SurroundingCharacters => throw new NotImplementedException();
+
 		public override string GetConvertedObjectName(string objectName)
 		{
 			throw new NotImplementedException();
