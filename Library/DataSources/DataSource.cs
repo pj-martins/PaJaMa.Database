@@ -647,6 +647,11 @@ ON UPDATE {6}
 			keywords.Add("WHERE");
 			keywords.Add("IS NOT NULL");
 			keywords.Add("IS NULL");
+			keywords.Add("SET");
+			keywords.Add("AND");
+			keywords.Add("OR");
+			keywords.Add("MAX");
+			keywords.Add("MIN");
 			return keywords;
 		}
 

@@ -117,7 +117,7 @@ namespace PaJaMa.Database.Studio.Classes
 
 			if (!string.IsNullOrEmpty(partial))
 			{
-				matches = matches.Where(m => m.ShortName.ToLower().StartsWith(partial.ToLower())).ToList();
+				matches = matches.Where(m => m.ShortName.ToLower().Contains(partial.ToLower())).ToList();
 			}
 
 			return matches;

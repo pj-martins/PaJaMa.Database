@@ -25,6 +25,7 @@ namespace PaJaMa.Database.Studio.Query
 		private List<SplitContainer> _splitContainers = new List<SplitContainer>();
 		private bool _lock = false;
 		private bool _stopRequested = false;
+		private bool _kaying = false;
 		private DateTime _start;
 		private DbCommand _currentCommand;
 		private DataSource _dataSource;
@@ -128,6 +129,8 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
 				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
 				txtQuery.Settings.KeywordColor = Color.Blue;
+				txtQuery.Settings.EnableComments = true;
+				txtQuery.Settings.Comment = "--";
 				txtQuery.CompileKeywords();
 				txtQuery.ProcessAllLines(true);
 				_lock = false;
@@ -625,9 +628,26 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void txtQuery_KeyDown(object sender, KeyEventArgs e)
 		{
-			if ((e.KeyCode == Keys.E && e.Modifiers == Keys.Control) || e.KeyCode == Keys.F5)
+			if (_kaying)
+			{
+				if (e.KeyCode == Keys.C && e.Modifiers == Keys.Control)
+				{
+					txtQuery.CommentSelected();
+				}
+				else if (e.KeyCode == Keys.U && e.Modifiers == Keys.Control)
+				{
+					txtQuery.UnCommentSelected();
+				}
+				_kaying = false;
+			}
+			else if ((e.KeyCode == Keys.E && e.Modifiers == Keys.Control) || e.KeyCode == Keys.F5)
 			{
 				btnGo_Click(sender, e);
+				e.Handled = true;
+			}
+			else if (e.KeyCode == Keys.K && e.Modifiers == Keys.Control)
+			{
+				_kaying = true;
 				e.Handled = true;
 			}
 			else if (e.KeyCode == Keys.Space && e.Modifiers == Keys.Control)
