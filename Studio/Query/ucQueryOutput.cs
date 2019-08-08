@@ -129,8 +129,11 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
 				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
 				txtQuery.Settings.KeywordColor = Color.Blue;
+				txtQuery.Settings.QuoteColor = Color.Red;
+				txtQuery.Settings.QuoteIdentifier = "'";
 				txtQuery.Settings.EnableComments = true;
 				txtQuery.Settings.Comment = "--";
+				txtQuery.Settings.CommentBlockStartEnd = new Tuple<string, string>("/*", "*/");
 				txtQuery.CompileKeywords();
 				txtQuery.ProcessAllLines(true);
 				_lock = false;
@@ -657,7 +660,7 @@ namespace PaJaMa.Database.Studio.Query
 			else if (e.KeyCode == Keys.Down && _intelliBox.Visible)
 			{
 				_intelliBox.Focus();
-				_intelliBox.SelectedIndex = 0;
+				_intelliBox.SelectedIndex++;
 			}
 			else if (((int)(char)e.KeyCode < 65 || (int)(char)e.KeyCode > 90) && e.KeyCode != Keys.Back && e.KeyCode != Keys.Shift && e.KeyCode != Keys.ShiftKey && _intelliBox.Visible)
 			{
