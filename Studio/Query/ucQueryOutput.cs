@@ -9,7 +9,9 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -17,22 +19,34 @@ namespace PaJaMa.Database.Studio.Query
 {
 	public partial class ucQueryOutput : UserControl
 	{
+		[DllImport("user32.dll")]
+		public static extern bool GetCaretPos(out System.Drawing.Point lpPoint);
+
 		private List<SplitContainer> _splitContainers = new List<SplitContainer>();
 		private bool _lock = false;
 		private bool _stopRequested = false;
 		private DateTime _start;
 		private DbCommand _currentCommand;
-		private DataSource _server;
+		private DataSource _dataSource;
 		private string _query;
+		private bool _flagIntellisense;
+		private ListBox _intelliBox;
+		private IntellisenseHelper _intellisenseHelper;
 		private Dictionary<int, Dictionary<int, string>> _errorDict;
 
 		public DbConnection CurrentConnection;
 		public ucWorkspace Workspace { get; set; }
 		public QueryOutput QueryOutput { get; set; }
 
+		public const string PATTERN = "(.* |^|\n|.)([A-Za-z]+)$";
+
 		public ucQueryOutput()
 		{
 			InitializeComponent();
+			_intelliBox = new ListBox();
+			_intelliBox.Visible = false;
+			_intelliBox.Parent = this;
+			_intelliBox.KeyDown += _intelliBox_KeyDown;
 		}
 
 		private void btnGo_Click(object sender, EventArgs e)
@@ -77,19 +91,20 @@ namespace PaJaMa.Database.Studio.Query
 			else
 				new Thread(new ThreadStart(execute)).Start();
 
-			saveOutput();
+			SaveOutput();
 		}
 
-		public bool Connect(DbConnection connection, DataSource server, QueryOutput queryOutput, bool useDummyDA)
+		public bool Connect(DbConnection connection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
 		{
 			try
 			{
-				_server = server;
+				_dataSource = dataSource;
+				_intellisenseHelper = new IntellisenseHelper(_dataSource);
 				if (useDummyDA)
 					CurrentConnection = connection;
 				else
 				{
-					CurrentConnection = server.OpenConnection(string.Empty);
+					CurrentConnection = dataSource.OpenConnection(string.Empty);
 					// TODO: generic
 					if (CurrentConnection is SqlConnection)
 						(CurrentConnection as SqlConnection).InfoMessage += ucQueryOutput_InfoMessage;
@@ -98,11 +113,11 @@ namespace PaJaMa.Database.Studio.Query
 				pnlButtons.Enabled = splitQuery.Enabled = true;
 
 
-				lblDatabase.Visible = cboDatabases.Visible = server.Databases.Count > 1;
+				lblDatabase.Visible = cboDatabases.Visible = dataSource.Databases.Count > 1;
 
 
 				cboDatabases.Items.Clear();
-				cboDatabases.Items.AddRange(server.Databases.ToArray());
+				cboDatabases.Items.AddRange(dataSource.Databases.ToArray());
 
 				if (!string.IsNullOrEmpty(queryOutput.Database) && queryOutput.Database != CurrentConnection.Database)
 					CurrentConnection.ChangeDatabase(queryOutput.Database);
@@ -110,6 +125,11 @@ namespace PaJaMa.Database.Studio.Query
 				_lock = true;
 				cboDatabases.Text = CurrentConnection.Database;
 				txtQuery.Text = queryOutput.Query;
+				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
+				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
+				txtQuery.Settings.KeywordColor = Color.Blue;
+				txtQuery.CompileKeywords();
+				txtQuery.ProcessAllLines();
 				_lock = false;
 				return true;
 			}
@@ -214,8 +234,8 @@ namespace PaJaMa.Database.Studio.Query
 								{
 									foreach (var row in schema.Rows.OfType<DataRow>())
 									{
-									// int existingCount = dt.Columns.OfType<DataColumn>().Count(c => c.ColumnName == row["ColumnName"].ToString());
-									var colType = Type.GetType(row["DataType"].ToString());
+										// int existingCount = dt.Columns.OfType<DataColumn>().Count(c => c.ColumnName == row["ColumnName"].ToString());
+										var colType = Type.GetType(row["DataType"].ToString());
 										if (colType == null || colType.Equals(typeof(byte[])) || colType == typeof(Array))
 											colType = typeof(string);
 										string colName = row["ColumnName"].ToString();
@@ -226,8 +246,8 @@ namespace PaJaMa.Database.Studio.Query
 											curr++;
 										}
 										dt.Columns.Add(colName, colType);
-									// grid.Columns.Add(colName, row["ColumnName"].ToString());
-								}
+										// grid.Columns.Add(colName, row["ColumnName"].ToString());
+									}
 
 									var lastSplit = _splitContainers.LastOrDefault();
 									if (lastSplit != null)
@@ -241,10 +261,10 @@ namespace PaJaMa.Database.Studio.Query
 									grid.Dock = DockStyle.Fill;
 									grid.AllowUserToAddRows = grid.AllowUserToDeleteRows = false;
 									grid.ReadOnly = true;
-								// grid.VirtualMode = true;
-								// grid.RowCount = 0;
-								// grid.CellValueNeeded += grid_CellValueNeeded;
-								grid.CellFormatting += grid_CellFormatting;
+									// grid.VirtualMode = true;
+									// grid.RowCount = 0;
+									// grid.CellValueNeeded += grid_CellValueNeeded;
+									grid.CellFormatting += grid_CellFormatting;
 									grid.DataError += Grid_DataError;
 									grid.RowPostPaint += Grid_RowPostPaint;
 
@@ -273,9 +293,9 @@ namespace PaJaMa.Database.Studio.Query
 									splitDetails.SplitterDistance = (int)((double)splitDetails.Width * 0.7);
 									grid.DataSource = dt;
 									grid.AutoGenerateColumns = true;
-								// grid.Tag = new List<DataTable>() { dt };
+									// grid.Tag = new List<DataTable>() { dt };
 
-								foreach (DataGridViewColumn col in grid.Columns)
+									foreach (DataGridViewColumn col in grid.Columns)
 									{
 										if (!string.IsNullOrEmpty(col.Name))
 										{
@@ -518,7 +538,7 @@ namespace PaJaMa.Database.Studio.Query
 				}
 			}
 
-				
+
 			string objName = string.Empty;
 			var dbName = string.Empty;
 			string[] columns = null;
@@ -526,8 +546,8 @@ namespace PaJaMa.Database.Studio.Query
 			if (selectedNode.Tag is Library.DatabaseObjects.View)
 			{
 				var view = selectedNode.Tag as Library.DatabaseObjects.View;
-                CurrentConnection.ChangeDatabase(view.Database.DatabaseName);
-                dbName = view.Database.DataSource.GetConvertedObjectName(view.Database.DatabaseName);
+				CurrentConnection.ChangeDatabase(view.Database.DatabaseName);
+				dbName = view.Database.DataSource.GetConvertedObjectName(view.Database.DatabaseName);
 				objName = view.GetObjectNameWithSchema(view.Database.DataSource);
 				columns = view.Columns.Select(c => c.ColumnName).ToArray();
 			}
@@ -537,22 +557,22 @@ namespace PaJaMa.Database.Studio.Query
 				if (!tbl.Columns.Any())
 					tbl.Database.DataSource.PopulateColumnsForTable(CurrentConnection, tbl);
 				dbName = tbl.Database.DataSource.GetConvertedObjectName(tbl.Database.DatabaseName);
-                CurrentConnection.ChangeDatabase(tbl.Database.DatabaseName);
-                objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
+				CurrentConnection.ChangeDatabase(tbl.Database.DatabaseName);
+				objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
 				columns = tbl.Columns.Select(c => c.ColumnName).ToArray();
 			}
 
-            
 
-            txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
-				topN != null ? _server.GetPreTopN(topN.Value) : string.Empty,
-				_server.GetColumnSelectList(columns),
+
+			txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
+				topN != null ? _dataSource.GetPreTopN(topN.Value) : string.Empty,
+				_dataSource.GetColumnSelectList(columns),
 				objName,
-				topN != null ? _server.GetPostTopN(topN.Value) : string.Empty,
+				topN != null ? _dataSource.GetPostTopN(topN.Value) : string.Empty,
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 
-			saveOutput();
+			SaveOutput();
 		}
 
 		public void PopulateScript(string script, TreeNode selectedNode)
@@ -592,6 +612,7 @@ namespace PaJaMa.Database.Studio.Query
 			try
 			{
 				CurrentConnection.ChangeDatabase(cboDatabases.Text);
+				_dataSource.ChangeDatabase(cboDatabases.Text);
 			}
 			catch (Exception ex)
 			{
@@ -609,6 +630,24 @@ namespace PaJaMa.Database.Studio.Query
 				btnGo_Click(sender, e);
 				e.Handled = true;
 			}
+			else if (e.KeyCode == Keys.Space && e.Modifiers == Keys.Control)
+			{
+				_flagIntellisense = true;
+			}
+			else if (e.KeyCode == Keys.Down && _intelliBox.Visible)
+			{
+				_intelliBox.Focus();
+				_intelliBox.SelectedIndex = 0;
+			}
+			else if (((int)(char)e.KeyCode < 65 || (int)(char)e.KeyCode > 90) && e.KeyCode != Keys.Back && e.KeyCode != Keys.Shift && e.KeyCode != Keys.ShiftKey && _intelliBox.Visible)
+			{
+				_intelliBox.Hide();
+			}
+			else if (_intelliBox.Visible)
+			{
+				_flagIntellisense = true;
+			}
+
 			//else if (e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
 			//	(sender as TextBox).SelectAll();
 		}
@@ -690,10 +729,88 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private void saveOutput()
+		public void SaveOutput()
 		{
 			QueryOutput.Query = txtQuery.Text;
 			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
+		}
+
+		private void selectIntellisenseItem()
+		{
+			if (_intelliBox.SelectedItem != null)
+			{
+				var regex = Regex.Match(txtQuery.Text.Substring(0, txtQuery.SelectionStart), IntellisenseHelper.PATTERN);
+				if (regex.Success)
+				{
+					var replace = regex.Groups[2].Value.Split('.').Last();
+					txtQuery.SelectionStart = Math.Max(0, txtQuery.SelectionStart - replace.Length);
+					txtQuery.SelectionLength = replace.Length;
+					txtQuery.SelectedText = string.Empty;
+				}
+				txtQuery.SelectedText = (_intelliBox.SelectedItem as IntellisenseMatch).ShortName;
+			}
+			_intelliBox.Hide();
+			txtQuery.Focus();
+		}
+
+		private void showIntellisense()
+		{
+			var matches = _intellisenseHelper.GetIntellisenseMatches(txtQuery.Text, txtQuery.SelectionStart, CurrentConnection);
+			_intelliBox.Items.Clear();
+			string maxString = string.Empty;
+			foreach (var m in matches)
+			{
+				if (m.ShortName.Length > maxString.Length) maxString = m.ShortName;
+				_intelliBox.Items.Add(m);
+			}
+			if (_intelliBox.Items.Count > 0)
+				_intelliBox.SelectedIndex = 0;
+			Point p = new Point();
+			GetCaretPos(out p);
+			var measure = txtQuery.CreateGraphics().MeasureString(maxString, txtQuery.Font);
+			_intelliBox.SetBounds(p.X, p.Y + 20, 500, Math.Min(300, Math.Max(32, (int)(measure.Height * _intelliBox.Items.Count))));
+			_intelliBox.Show();
+			_intelliBox.BringToFront();
+		}
+
+
+
+		private void TxtQuery_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			e.Handled = e.KeyChar == 32 && _flagIntellisense;
+		}
+
+		private void _intelliBox_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Escape)
+			{
+				_intelliBox.Hide();
+				txtQuery.Focus();
+			}
+			else if ((e.KeyCode == Keys.Enter || e.KeyCode == Keys.Tab) && _intelliBox.SelectedItem != null)
+			{
+				this.selectIntellisenseItem();
+			}
+		}
+
+		private void TxtQuery_KeyUp(object sender, KeyEventArgs e)
+		{
+			if (_flagIntellisense)
+			{
+				showIntellisense();
+			}
+
+			_flagIntellisense = false;
+		}
+
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+		{
+			if (_intelliBox.Visible && keyData == Keys.Tab)
+			{
+				this.selectIntellisenseItem();
+				return true;
+			}
+			return base.ProcessCmdKey(ref msg, keyData);
 		}
 	}
 }

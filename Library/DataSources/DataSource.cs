@@ -262,19 +262,22 @@ namespace PaJaMa.Database.Library.DataSources
 			populateChildren<Index>(connection, table, table.Indexes, this.IndexSQL, string.Empty, indexesTableWhere(table));
 		}
 
-		public void PopulateSchemas(DatabaseObjects.Database database)
+		public void PopulateSchemas(DbConnection connection, DatabaseObjects.Database database)
 		{
 			database.Schemas = new List<Schema>();
 			if (string.IsNullOrEmpty(this.SchemaSQL))
 				database.Schemas.Add(new Schema(database) { SchemaName = "" });
 			else
 			{
-				using (var conn = OpenConnection(database.DatabaseName))
+				var conn = connection ?? OpenConnection(database.DatabaseName);
+				using (var cmd = conn.CreateCommand())
 				{
-					using (var cmd = conn.CreateCommand())
-					{
-						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, null);
-					}
+					populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, null);
+				}
+				if (connection == null)
+				{
+					conn.Dispose();
+					conn = null;
 				}
 			}
 		}
@@ -625,6 +628,25 @@ ON UPDATE {6}
 				.Where(t => t.IsSubclassOf(typeof(DataSource)))
 				.OrderBy(d => d.Name)
 				.ToList();
+		}
+
+		public virtual List<string> GetReservedKeywords()
+		{
+			var keywords = new List<string>();
+			keywords.Add("SELECT");
+			keywords.Add("FROM");
+			keywords.Add("LEFT JOIN");
+			keywords.Add("INNER JOIN");
+			keywords.Add("JOIN");
+			keywords.Add("ON");
+			keywords.Add("COALESCE");
+			keywords.Add("LIMIT");
+			keywords.Add("ORDER BY");
+			keywords.Add("DESC");
+			keywords.Add("WHERE");
+			keywords.Add("IS NOT NULL");
+			keywords.Add("IS NULL");
+			return keywords;
 		}
 
 

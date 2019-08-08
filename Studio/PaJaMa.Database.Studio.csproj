@@ -216,6 +216,7 @@
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="Classes\IntellisenseHelper.cs" />
     <Compile Include="Query\QueryBuilder\frmRename.cs">
       <SubType>Form</SubType>
     </Compile>

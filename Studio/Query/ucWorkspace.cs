@@ -298,6 +298,14 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void ucWorkspace_FormClosing(object sender, FormClosingEventArgs e)
 		{
+			foreach (var page in tabOutputs.TabPages)
+			{
+				if (page.Controls.Count > 0)
+				{
+					var uc = page.Controls[0] as ucQueryOutput;
+					uc.SaveOutput();
+				}
+			}
 			Disconnect();
 		}
 
@@ -443,7 +451,7 @@ namespace PaJaMa.Database.Studio.Query
 		private void refreshSchemaNodes(TreeNode node)
 		{
 			var db = node.Tag as Library.DatabaseObjects.Database;
-			db.DataSource.PopulateSchemas(db);
+			db.DataSource.PopulateSchemas(_currentConnection, db);
 			foreach (var schema in db.Schemas.OrderBy(s => s.SchemaName))
 			{
 				var node2 = string.IsNullOrEmpty(schema.SchemaName) ? node : node.Nodes.Add(schema.SchemaName);

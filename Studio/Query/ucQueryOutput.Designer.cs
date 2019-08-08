@@ -30,7 +30,7 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			this.splitQuery = new System.Windows.Forms.SplitContainer();
-			this.txtQuery = new System.Windows.Forms.RichTextBox();
+			this.txtQuery = new WinControls.SyntaxRichTextBox();
 			this.pnlResults = new System.Windows.Forms.Panel();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabResults = new System.Windows.Forms.TabPage();
@@ -87,6 +87,8 @@
 			this.txtQuery.TabIndex = 6;
 			this.txtQuery.Text = "";
 			this.txtQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtQuery_KeyDown);
+			this.txtQuery.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtQuery_KeyPress);
+			this.txtQuery.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtQuery_KeyUp);
 			// 
 			// pnlResults
 			// 
@@ -125,7 +127,7 @@
 			this.tabMessages.Location = new System.Drawing.Point(4, 22);
 			this.tabMessages.Name = "tabMessages";
 			this.tabMessages.Padding = new System.Windows.Forms.Padding(3);
-			this.tabMessages.Size = new System.Drawing.Size(918, 242);
+			this.tabMessages.Size = new System.Drawing.Size(1015, 242);
 			this.tabMessages.TabIndex = 1;
 			this.tabMessages.Text = "Messages";
 			this.tabMessages.UseVisualStyleBackColor = true;
@@ -139,7 +141,7 @@
 			this.txtMessages.Multiline = true;
 			this.txtMessages.Name = "txtMessages";
 			this.txtMessages.ReadOnly = true;
-			this.txtMessages.Size = new System.Drawing.Size(912, 236);
+			this.txtMessages.Size = new System.Drawing.Size(1009, 236);
 			this.txtMessages.TabIndex = 0;
 			// 
 			// pnlButtons
@@ -287,7 +289,7 @@
 		private System.Windows.Forms.ProgressBar progMain;
 		private System.Windows.Forms.Button btnGo;
 		private System.Windows.Forms.Timer timDuration;
-		private System.Windows.Forms.RichTextBox txtQuery;
+		private WinControls.SyntaxRichTextBox txtQuery;
 		private System.Windows.Forms.Label lblDatabase;
 		internal System.Windows.Forms.ComboBox cboDatabases;
 		private System.Windows.Forms.TabControl tabControl1;
