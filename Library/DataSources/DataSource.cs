@@ -642,11 +642,12 @@ ON UPDATE {6}
 			keywords.Add("ON");
 			keywords.Add("COALESCE");
 			keywords.Add("LIMIT");
-			keywords.Add("ORDER BY");
+			keywords.Add("ORDER");
 			keywords.Add("DESC");
 			keywords.Add("WHERE");
-			keywords.Add("IS NOT NULL");
-			keywords.Add("IS NULL");
+			keywords.Add("IS");
+			keywords.Add("NOT");
+			keywords.Add("NULL");
 			keywords.Add("SET");
 			keywords.Add("AND");
 			keywords.Add("OR");
@@ -666,6 +667,12 @@ ON UPDATE {6}
 			keywords.Add("BY");
 			keywords.Add("AS");
 			keywords.Add("IF");
+			keywords.Add("HAVING");
+			keywords.Add("COUNT");
+			keywords.Add("ALTER");
+			keywords.Add("TABLE");
+			keywords.Add("ADD");
+			keywords.Add("CREATE");
 			return keywords;
 		}
 

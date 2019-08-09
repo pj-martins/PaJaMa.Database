@@ -45,7 +45,7 @@ JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c ON c.CONSTRAINT_NAME = tc.CONS
 	AND c.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
 WHERE constraint_type = 'FOREIGN KEY' AND referenced_table_schema IS NOT NULL";
 
-        internal override string KeyConstraintSQL => @"select ku.CONSTRAINT_NAME as ConstraintName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as Ordinal2, 
+        internal override string KeyConstraintSQL => @"select distinct ku.CONSTRAINT_NAME as ConstraintName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as Ordinal2, 
 	ku.TABLE_NAME as TableName, tc.TABLE_SCHEMA as SchemaName, '' as ClusteredNonClustered, true as IsPrimaryKey2, false as Descending2
 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
 INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
