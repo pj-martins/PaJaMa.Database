@@ -577,6 +577,8 @@ namespace PaJaMa.Database.Studio.Query
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 
+			txtQuery.ProcessAllLines(true);
+
 			SaveOutput();
 		}
 
