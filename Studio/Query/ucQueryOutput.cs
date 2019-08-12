@@ -128,6 +128,8 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.Text = queryOutput.Query;
 				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
 				txtQuery.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
+				txtQuery.Settings.Keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToUpper()));
+				txtQuery.Settings.Keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToLower()));
 				txtQuery.Settings.QuoteIdentifier = "'";
 				txtQuery.Settings.Comment = "--";
 				//txtQuery.Settings.CommentBlockStartEnd = new Tuple<string, string>("/*", "*/");

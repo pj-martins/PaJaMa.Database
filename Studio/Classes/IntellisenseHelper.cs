@@ -38,16 +38,13 @@ namespace PaJaMa.Database.Studio.Classes
 					var db = parts.Length > 1 ? _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == dbName) : _dataSource.CurrentDatabase;
 					if (db.Schemas == null) _dataSource.PopulateSchemas(connection, db);
 					var noSchema = db.Schemas.Count == 1 && string.IsNullOrEmpty(db.Schemas[0].SchemaName);
-					var schema = db.Schemas[0];
-					if (noSchema)
+					var schema = noSchema ? db.Schemas[0] : db.Schemas.First(s => s.SchemaName == _dataSource.DefaultSchemaName);
+					if (!schema.Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { schema }, false);
+					var table = schema.Tables.FirstOrDefault(t => t.TableName.ToLower() == parts.Last().ToLower());
+					if (table != null)
 					{
-						if (!schema.Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { schema }, false);
-						var table = schema.Tables.FirstOrDefault(t => t.TableName.ToLower() == parts.Last().ToLower());
-						if (table != null)
-						{
-							if (!table.Columns.Any()) _dataSource.PopulateColumnsForTable(connection, table);
-							matches.AddRange(table.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(c.ColumnName, $"{table.TableName}.{c.ColumnName}")));
-						}
+						if (!table.Columns.Any()) _dataSource.PopulateColumnsForTable(connection, table);
+						matches.AddRange(table.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(c.ColumnName, $"{table.TableName}.{c.ColumnName}")));
 					}
 				}
 			}
@@ -103,7 +100,7 @@ namespace PaJaMa.Database.Studio.Classes
 				var noSchema = _dataSource.CurrentDatabase.Schemas.Count == 1 && string.IsNullOrEmpty(_dataSource.CurrentDatabase.Schemas[0].SchemaName);
 				if (!noSchema)
 				{
-					matches.AddRange(_dataSource.CurrentDatabase.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(s.SchemaName, $"{s.Database.DatabaseName}.{s.Schema.SchemaName}")));
+					matches.AddRange(_dataSource.CurrentDatabase.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(s.SchemaName, $"{s.Database.DatabaseName}.{s.SchemaName}")));
 				}
 				else
 				{

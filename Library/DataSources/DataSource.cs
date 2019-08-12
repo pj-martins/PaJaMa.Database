@@ -673,6 +673,10 @@ ON UPDATE {6}
 			keywords.Add("TABLE");
 			keywords.Add("ADD");
 			keywords.Add("CREATE");
+			keywords.Add("TOP");
+			keywords.Add("DISTINCT");
+			keywords.Add("DEFAULT");
+			keywords.Add("IDENTITY");
 			return keywords;
 		}
 
