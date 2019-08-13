@@ -12,12 +12,22 @@ namespace PaJaMa.Database.Studio.Classes
 {
 	public class IntellisenseHelper
 	{
-		public const string PATTERN = "(.* |.*\t|^|\n)([A-Za-z\\.\\[\\]\"`]+)$";
+		public const string PATTERN = "(.* |.*\t|^|\n)([A-Za-z\\.\\[\\]\"_`]+)$";
 
 		private DataSource _dataSource;
 		public IntellisenseHelper(DataSource dataSource)
 		{
 			_dataSource = dataSource;
+		}
+
+		private string stripSurroundingChars(string input)
+		{
+			string output = input;
+			foreach (var surr in _dataSource.SurroundingCharacters)
+			{
+				output = output.Replace(surr, "");
+			}
+			return output;
 		}
 
 		private List<IntellisenseMatch> getFromsAndJoinsMatches(string text, DbConnection connection)
@@ -30,21 +40,23 @@ namespace PaJaMa.Database.Studio.Classes
 				{
 					var obj = toCheck[i + 1];
 					var parts = obj.Split('.');
-					var dbName = parts[0].ToLower();
-					foreach (var surr in _dataSource.SurroundingCharacters)
+					var db = parts.Length > 1 ? _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == stripSurroundingChars(parts[0].ToLower())) : _dataSource.CurrentDatabase;
+					if (db != null)
 					{
-						dbName = dbName.Replace(surr, "");
-					}
-					var db = parts.Length > 1 ? _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == dbName) : _dataSource.CurrentDatabase;
-					if (db.Schemas == null) _dataSource.PopulateSchemas(connection, db);
-					var noSchema = db.Schemas.Count == 1 && string.IsNullOrEmpty(db.Schemas[0].SchemaName);
-					var schema = noSchema ? db.Schemas[0] : db.Schemas.First(s => s.SchemaName == _dataSource.DefaultSchemaName);
-					if (!schema.Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { schema }, false);
-					var table = schema.Tables.FirstOrDefault(t => t.TableName.ToLower() == parts.Last().ToLower());
-					if (table != null)
-					{
-						if (!table.Columns.Any()) _dataSource.PopulateColumnsForTable(connection, table);
-						matches.AddRange(table.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(c.ColumnName, $"{table.TableName}.{c.ColumnName}")));
+						if (db.Schemas == null) _dataSource.PopulateSchemas(connection, db);
+						var noSchema = db.Schemas.Count == 1 && string.IsNullOrEmpty(db.Schemas[0].SchemaName);
+						var schema = db.Schemas[0];
+						if (!noSchema)
+						{
+							schema = db.Schemas.First(s => s.SchemaName.ToLower() == (parts.Length > 2 ? stripSurroundingChars(parts[1]) : _dataSource.DefaultSchemaName));
+						}
+						if (!schema.Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { schema }, false);
+						var table = schema.Tables.FirstOrDefault(t => t.TableName.ToLower() == stripSurroundingChars(parts.Last().ToLower()));
+						if (table != null)
+						{
+							if (!table.Columns.Any()) _dataSource.PopulateColumnsForTable(connection, table);
+							matches.AddRange(table.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(c.ColumnName, $"{table.TableName}.{c.ColumnName}")));
+						}
 					}
 				}
 			}
@@ -55,7 +67,7 @@ namespace PaJaMa.Database.Studio.Classes
 		{
 			var startText = text.Substring(0, position);
 			var partial = string.Empty;
-			var match = Regex.Match(startText, PATTERN);
+			var match = Regex.Match(startText, PATTERN, RegexOptions.RightToLeft);
 			partial = match.Groups[2].Value;
 			string[] periodParts = null;
 			if (partial.Length > 0)
@@ -67,18 +79,23 @@ namespace PaJaMa.Database.Studio.Classes
 			if (periodParts != null && periodParts.Length > 1)
 			{
 				partial = periodParts.Last();
-				var selectedDb = _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == periodParts[0].ToLower());
+				var selectedDb = _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == stripSurroundingChars(periodParts[0].ToLower()));
 				if (selectedDb != null)
 				{
 					if (selectedDb.Schemas == null) _dataSource.PopulateSchemas(connection, selectedDb);
 					var noSchema = selectedDb.Schemas.Count == 1 && string.IsNullOrEmpty(selectedDb.Schemas[0].SchemaName);
 					if (periodParts.Length > 2 && !noSchema)
 					{
-
+						var childSchema = selectedDb.Schemas.FirstOrDefault(s => s.SchemaName == stripSurroundingChars(periodParts[1]));
+						if (childSchema != null)
+						{
+							matches.AddRange(childSchema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+							$"{t.Database.DatabaseName}.{childSchema.SchemaName}.{t.TableName}")));
+						}
 					}
 					else if (!noSchema)
 					{
-						matches.AddRange(selectedDb.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(s.SchemaName, $"{s.Database.DatabaseName}.{s.Schema.SchemaName}")));
+						matches.AddRange(selectedDb.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(s.SchemaName, $"{s.Database.DatabaseName}.{s.SchemaName}")));
 					}
 					else
 					{
@@ -86,6 +103,12 @@ namespace PaJaMa.Database.Studio.Classes
 						matches.AddRange(selectedDb.Schemas[0].Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
 							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.TableName}")));
 					}
+				}
+				var schema = _dataSource.CurrentDatabase.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == stripSurroundingChars(periodParts[0].ToLower()));
+				if (schema != null)
+				{
+					matches.AddRange(schema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+							$"{t.Database.DatabaseName}.{schema.SchemaName}.{t.TableName}")));
 				}
 
 				if (!_dataSource.CurrentDatabase.Schemas[0].Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { _dataSource.CurrentDatabase.Schemas[0] }, false);
@@ -101,6 +124,9 @@ namespace PaJaMa.Database.Studio.Classes
 				if (!noSchema)
 				{
 					matches.AddRange(_dataSource.CurrentDatabase.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(s.SchemaName, $"{s.Database.DatabaseName}.{s.SchemaName}")));
+					var defSchema = _dataSource.CurrentDatabase.Schemas.FirstOrDefault(s => s.SchemaName == _dataSource.DefaultSchemaName);
+					matches.AddRange(defSchema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.TableName}")));
 				}
 				else
 				{
