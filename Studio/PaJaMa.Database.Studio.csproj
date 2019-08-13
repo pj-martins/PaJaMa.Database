@@ -217,6 +217,12 @@
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Classes\IntellisenseHelper.cs" />
+    <Compile Include="Query\QueryBuilder\frmScriptInsert.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmScriptInsert.Designer.cs">
+      <DependentUpon>frmScriptInsert.cs</DependentUpon>
+    </Compile>
     <Compile Include="Query\QueryBuilder\frmRename.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -352,6 +358,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\QueryBuilder\frmScriptInsert.resx">
+      <DependentUpon>frmScriptInsert.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Query\QueryBuilder\frmRename.resx">
       <DependentUpon>frmRename.cs</DependentUpon>

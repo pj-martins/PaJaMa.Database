@@ -132,9 +132,9 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.Settings.Keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToLower()));
 				txtQuery.Settings.QuoteIdentifier = "'";
 				txtQuery.Settings.Comment = "--";
-				//txtQuery.Settings.CommentBlockStartEnd = new Tuple<string, string>("/*", "*/");
+				txtQuery.Settings.CommentBlockStartEnd = new Tuple<string, string>("/*", "*/");
 				txtQuery.CompileKeywords();
-				txtQuery.ProcessAllLines(true);
+				txtQuery.InitLines();
 				_lock = false;
 				return true;
 			}
@@ -577,7 +577,7 @@ namespace PaJaMa.Database.Studio.Query
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 
-			txtQuery.ProcessAllLines(true);
+			txtQuery.InitLines();
 
 			SaveOutput();
 		}

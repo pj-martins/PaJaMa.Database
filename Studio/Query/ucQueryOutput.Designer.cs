@@ -30,7 +30,7 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			this.splitQuery = new System.Windows.Forms.SplitContainer();
-			this.txtQuery = new WinControls.SyntaxRichTextBox();
+			this.txtQuery = new PaJaMa.WinControls.SyntaxRichTextBox();
 			this.pnlResults = new System.Windows.Forms.Panel();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabResults = new System.Windows.Forms.TabPage();

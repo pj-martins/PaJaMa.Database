@@ -677,13 +677,61 @@ ON UPDATE {6}
 			keywords.Add("DISTINCT");
 			keywords.Add("DEFAULT");
 			keywords.Add("IDENTITY");
+			keywords.Add("UNION");
+			keywords.Add("ALL");
 			return keywords;
 		}
 
+		private string getColumnInsert(Column column, object value)
+		{
+			if (value == DBNull.Value || value == null) return "NULL";
+			var dataType = column.ColumnType.DataType;
+			var attr = Common.EnumHelper.GetAttribute<DbTypeAttribute>(dataType);
+			// TODO: qi
+			if ((attr.DbType != System.Data.DbType.Int16 &&
+				attr.DbType != System.Data.DbType.Int32 &&
+				attr.DbType != System.Data.DbType.Int64 &&
+				attr.DbType != System.Data.DbType.Double &&
+				attr.DbType != System.Data.DbType.Decimal) || value is string)
+			{
+				return $"'{value.ToString()}'";
+			}
+			var val = value.ToString();
+			return string.IsNullOrEmpty(val) ? "0" : val;
+		}
+
+		public virtual string GetInsertScript(DbConnection connection, Table table, string filter)
+		{
+			if (!table.Columns.Any()) this.PopulateColumnsForTable(connection, table);
+			var sbScript = new StringBuilder();
+			var colsLine = string.Join(", ", table.Columns.Select(c => GetConvertedObjectName(c.ColumnName)));
+			var tableLine = GetConvertedObjectName(table.Database.DatabaseName) + "." +
+					(table.Schema != null && !string.IsNullOrEmpty(table.Schema.SchemaName) ? "." + table.Schema.SchemaName : "") + GetConvertedObjectName(table.TableName);
+			sbScript.AppendLine($"INSERT INTO {tableLine} ({colsLine})");
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = $"select {colsLine} from {tableLine} {filter}";
+				using (var rdr = cmd.ExecuteReader())
+				{
+					bool firstIn = true;
+					while (rdr.HasRows && rdr.Read())
+					{
+						string insertLine = "SELECT " + string.Join(", ", table.Columns.Select(c => this.getColumnInsert(c, rdr[c.ColumnName])));
+
+						if (!firstIn) sbScript.AppendLine("UNION ALL");
+						sbScript.AppendLine(insertLine);
+						firstIn = false;
+					}
+					
+				}
+			}
+			return sbScript.ToString();
+		}
 
 		public virtual string GetRenameScript(DatabaseObjectBase databaseObject, string targetName)
 		{
 			throw new NotImplementedException();
 		}
+
 	}
 }

@@ -559,7 +559,7 @@ namespace PaJaMa.Database.Studio.Query
 		private void mnuTree_Opening(object sender, CancelEventArgs e)
 		{
 			var selectedNode = treeTables.SelectedNode;
-			selectTop1000ToolStripMenuItem.Enabled = selectToolStripMenuItem.Enabled = selectedNode != null &&
+			selectTop1000ToolStripMenuItem.Enabled = selectToolStripMenuItem.Enabled = scriptInsertToolStripMenuItem.Enabled = selectedNode != null &&
 				selectedNode.Tag != null && (selectedNode.Tag is Table || selectedNode.Tag is Library.DatabaseObjects.View);
 
 			newForeignKeyToolStripMenuItem.Visible = selectedNode != null && (selectedNode.Tag is Table || selectedNode.Tag is Column);
@@ -903,6 +903,21 @@ namespace PaJaMa.Database.Studio.Query
 				if (frm.DialogResult == DialogResult.OK)
 				{
 					addQueryOutput(null, new QueryOutput() { Database = frm.DatabaseObject.Database.DatabaseName, Query = frm.GetScript() });
+				}
+			};
+			frm.Show();
+		}
+
+		private void ScriptInsertToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var frm = new frmScriptInsert();
+			frm.Table = treeTables.SelectedNode.Tag as Table;
+			frm.Connection = _currentConnection;
+			frm.FormClosed += (object sender2, FormClosedEventArgs e2) =>
+			{
+				if (frm.DialogResult == DialogResult.OK)
+				{
+					addQueryOutput(null, new QueryOutput() { Database = frm.Table.Database.DatabaseName, Query = frm.Script });
 				}
 			};
 			frm.Show();
