@@ -30,7 +30,7 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			this.splitQuery = new System.Windows.Forms.SplitContainer();
-			this.txtQuery = new PaJaMa.WinControls.SyntaxRichTextBox();
+			this.txtQuery = new PaJaMa.WinControls.SyntaxRichTextBox.SyntaxRichTextBox();
 			this.pnlResults = new System.Windows.Forms.Panel();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabResults = new System.Windows.Forms.TabPage();
@@ -289,7 +289,7 @@
 		private System.Windows.Forms.ProgressBar progMain;
 		private System.Windows.Forms.Button btnGo;
 		private System.Windows.Forms.Timer timDuration;
-		private WinControls.SyntaxRichTextBox txtQuery;
+		private WinControls.SyntaxRichTextBox.SyntaxRichTextBox txtQuery;
 		private System.Windows.Forms.Label lblDatabase;
 		internal System.Windows.Forms.ComboBox cboDatabases;
 		private System.Windows.Forms.TabControl tabControl1;

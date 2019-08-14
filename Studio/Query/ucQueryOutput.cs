@@ -8,6 +8,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -758,6 +759,11 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			QueryOutput.Query = txtQuery.Text;
 			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
+
+			var queryHistoryPath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+				"DatabaseStudio", "QueryHistory", "QueryHistory_" + DateTime.Now.ToString("yyyyMMdd") + ".sql"));
+			if (!queryHistoryPath.Directory.Exists) queryHistoryPath.Directory.Create();
+			File.AppendAllText(queryHistoryPath.FullName, "\r\n\r\n\r\n" + txtQuery.Text);
 		}
 
 		private void selectIntellisenseItem()
@@ -780,6 +786,25 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void showIntellisense()
 		{
+			int tries = 2;
+			if (CurrentConnection.State != ConnectionState.Open)
+			{
+				while (tries > 0)
+				{
+					try
+					{
+						CurrentConnection.Open();
+					}
+					catch (Exception ex)
+					{
+						tries--;
+						if (tries > 0 && ex.Message == "Fatal error encountered during command execution.")
+							continue;
+						return;
+					}
+				}
+			}
+
 			try
 			{
 				var matches = _intellisenseHelper.GetIntellisenseMatches(txtQuery.Text, txtQuery.SelectionStart, CurrentConnection);
