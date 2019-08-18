@@ -12,7 +12,7 @@ namespace PaJaMa.Database.Studio.Classes
 {
 	public class IntellisenseHelper
 	{
-		public const string PATTERN = "(.* |.*\t|^|\n)([A-Za-z\\.\\[\\]\"_`]+)$";
+		public const string PATTERN = "(.* |.*\t|^|\n|\\()([A-Za-z\\.\\[\\]\"_`]+)$";
 
 		private DataSource _dataSource;
 		public IntellisenseHelper(DataSource dataSource)
@@ -36,7 +36,8 @@ namespace PaJaMa.Database.Studio.Classes
 			var toCheck = text.Split(new string[] { " ", "\n" }, StringSplitOptions.RemoveEmptyEntries);
 			for (int i = 0; i < toCheck.Length - 1; i++)
 			{
-				if (toCheck[i].ToLower() == "from" || toCheck[i].ToLower() == "join")
+				if (toCheck[i].ToLower() == "from" || toCheck[i].ToLower() == "join" || toCheck[i].ToLower() == "update"
+					|| toCheck[i].ToLower() == "insert" || toCheck[i].ToLower() == "into")
 				{
 					var obj = toCheck[i + 1];
 					var parts = obj.Split('.');
@@ -55,7 +56,7 @@ namespace PaJaMa.Database.Studio.Classes
 						if (table != null)
 						{
 							if (!table.Columns.Any()) _dataSource.PopulateColumnsForTable(connection, table);
-							matches.AddRange(table.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(c.ColumnName, $"{table.TableName}.{c.ColumnName}")));
+							matches.AddRange(table.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(_dataSource.GetConvertedObjectName(c.ColumnName), $"{table.TableName}.{c.ColumnName}")));
 						}
 					}
 				}
@@ -89,13 +90,13 @@ namespace PaJaMa.Database.Studio.Classes
 						var childSchema = selectedDb.Schemas.FirstOrDefault(s => s.SchemaName == stripSurroundingChars(periodParts[1]));
 						if (childSchema != null)
 						{
-							matches.AddRange(childSchema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+							matches.AddRange(childSchema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
 							$"{t.Database.DatabaseName}.{childSchema.SchemaName}.{t.TableName}")));
 						}
 					}
 					else if (!noSchema)
 					{
-						matches.AddRange(selectedDb.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(s.SchemaName, $"{s.Database.DatabaseName}.{s.SchemaName}")));
+						matches.AddRange(selectedDb.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(_dataSource.GetConvertedObjectName(s.SchemaName), $"{s.Database.DatabaseName}.{s.SchemaName}")));
 					}
 					else
 					{
@@ -107,7 +108,7 @@ namespace PaJaMa.Database.Studio.Classes
 				var schema = _dataSource.CurrentDatabase.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == stripSurroundingChars(periodParts[0].ToLower()));
 				if (schema != null)
 				{
-					matches.AddRange(schema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+					matches.AddRange(schema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
 							$"{t.Database.DatabaseName}.{schema.SchemaName}.{t.TableName}")));
 				}
 
@@ -117,21 +118,21 @@ namespace PaJaMa.Database.Studio.Classes
 			else
 			{
 				var items = _dataSource.GetReservedKeywords().OrderBy(k => k).Select(k => new IntellisenseMatch(k, k)).ToList();
-				items.AddRange(_dataSource.Databases.OrderBy(d => d.DatabaseName).Select(d => new IntellisenseMatch(d.DatabaseName, d.DatabaseName)));
+				items.AddRange(_dataSource.Databases.OrderBy(d => d.DatabaseName).Select(d => new IntellisenseMatch(_dataSource.GetConvertedObjectName(d.DatabaseName), d.DatabaseName)));
 				matches.AddRange(items);
 				if (_dataSource.CurrentDatabase.Schemas == null) _dataSource.PopulateSchemas(connection, _dataSource.CurrentDatabase);
 				var noSchema = _dataSource.CurrentDatabase.Schemas.Count == 1 && string.IsNullOrEmpty(_dataSource.CurrentDatabase.Schemas[0].SchemaName);
 				if (!noSchema)
 				{
-					matches.AddRange(_dataSource.CurrentDatabase.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(s.SchemaName, $"{s.Database.DatabaseName}.{s.SchemaName}")));
+					matches.AddRange(_dataSource.CurrentDatabase.Schemas.OrderBy(s => s.SchemaName).Select(s => new IntellisenseMatch(_dataSource.GetConvertedObjectName(s.SchemaName), $"{s.Database.DatabaseName}.{s.SchemaName}")));
 					var defSchema = _dataSource.CurrentDatabase.Schemas.FirstOrDefault(s => s.SchemaName == _dataSource.DefaultSchemaName);
-					matches.AddRange(defSchema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+					matches.AddRange(defSchema.Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
 							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.TableName}")));
 				}
 				else
 				{
 					if (!_dataSource.CurrentDatabase.Schemas[0].Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { _dataSource.CurrentDatabase.Schemas[0] }, false);
-					matches.AddRange(_dataSource.CurrentDatabase.Schemas[0].Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+					matches.AddRange(_dataSource.CurrentDatabase.Schemas[0].Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
 							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.TableName}")));
 				}
 

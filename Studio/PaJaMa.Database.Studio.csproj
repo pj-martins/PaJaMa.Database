@@ -140,6 +140,7 @@
   <ItemGroup>
     <Compile Include="Classes\CommandLineHelper.cs" />
     <Compile Include="Classes\DatabaseStudioSettings.cs" />
+    <Compile Include="Classes\FormatHelper.cs" />
     <Compile Include="Classes\GridHelper.cs" />
     <Compile Include="Classes\Events.cs" />
     <Compile Include="Compare\CompareFormSettings.cs" />
@@ -434,6 +435,7 @@
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="Database.ico" />
+    <Content Include="todo.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Common\PaJaMa.Common.csproj">

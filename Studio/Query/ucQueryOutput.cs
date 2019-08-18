@@ -631,6 +631,19 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
+		private void formatSQL()
+		{
+			txtQuery.SuspendPainting();
+			var selectionStart = txtQuery.SelectionStart;
+			var selectionLen = txtQuery.SelectionLength;
+			txtQuery.Text = FormatHelper.GetFormattedSQL(_dataSource, txtQuery.Text);
+			txtQuery.SelectionStart = selectionStart;
+			txtQuery.SelectionLength = selectionLen;
+			txtQuery.InitLines();
+			txtQuery.ResumePainting();
+
+		}
+
 		private void txtQuery_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (_kaying)
@@ -643,7 +656,17 @@ namespace PaJaMa.Database.Studio.Query
 				{
 					txtQuery.UnCommentSelected();
 				}
+				else if (e.KeyCode == Keys.D && e.Modifiers == Keys.Control)
+				{
+					this.formatSQL();
+					e.Handled = true;
+				}
 				_kaying = false;
+			}
+			else if (e.KeyCode == Keys.F && e.Modifiers == (Keys.Shift|Keys.Alt))
+			{
+				this.formatSQL();
+				e.Handled = true;
 			}
 			else if ((e.KeyCode == Keys.E && e.Modifiers == Keys.Control) || e.KeyCode == Keys.F5)
 			{
