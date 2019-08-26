@@ -12,7 +12,7 @@ namespace PaJaMa.Database.Studio.Classes
 {
 	public class IntellisenseHelper
 	{
-		public const string PATTERN = "(.* |.*\t|^|\n|\\()([A-Za-z\\.\\[\\]\"_`]+)$";
+		public const string PATTERN = "(.* |.*\t|^|\n|\\()([A-Za-z0-9\\.\\[\\]\"_`]+)$";
 
 		private DataSource _dataSource;
 		public IntellisenseHelper(DataSource dataSource)
