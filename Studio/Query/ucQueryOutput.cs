@@ -190,6 +190,7 @@ namespace PaJaMa.Database.Studio.Query
 
 			var sbErrors = new StringBuilder();
 			int tries = 2;
+			bool hasTable = false;
 			foreach (var part in parts)
 			{
 				while (tries > 0)
@@ -234,6 +235,8 @@ namespace PaJaMa.Database.Studio.Query
 										recordsAffected += dr.RecordsAffected;
 									break;
 								}
+
+								hasTable = true;
 
 								var grid = new DataGridView();
 								this.Invoke(new Action(() =>
@@ -416,7 +419,7 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				lblResults.Text = totalResults == 0 ? (recordsAffected < 0 ? "Complete." : recordsAffected.ToString() + " record(s) affected") : (totalResults.ToString() + " Records.");
 				lblResults.Visible = true;
-				if (totalResults == 0 || sbErrors.Length > 0)
+				if (!hasTable && (totalResults == 0 || sbErrors.Length > 0))
 				{
 					txtMessages.Text += sbErrors.Length > 0 ? sbErrors.ToString() : lblResults.Text;
 					tabControl1.SelectedTab = tabMessages;
@@ -678,6 +681,10 @@ namespace PaJaMa.Database.Studio.Query
 				_kaying = true;
 				e.Handled = true;
 			}
+			else if (e.KeyCode == Keys.S && e.Control)
+			{
+				SaveCurrentQuery();
+			}
 			else if (e.KeyCode == Keys.Space && e.Modifiers == Keys.Control)
 			{
 				_flagIntellisense = true;
@@ -891,6 +898,16 @@ namespace PaJaMa.Database.Studio.Query
 				return true;
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
+		}
+
+		public void SaveCurrentQuery()
+		{
+			var dlg = new SaveFileDialog();
+			dlg.Filter = "(*.sql)|*.sql|All files (*.*)|*.*";
+			if (dlg.ShowDialog() == DialogResult.OK)
+			{
+				File.WriteAllText(dlg.FileName, txtQuery.Text);
+			}
 		}
 	}
 }

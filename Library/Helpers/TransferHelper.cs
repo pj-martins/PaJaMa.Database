@@ -27,6 +27,7 @@ namespace PaJaMa.Database.Library.Helpers
 			using (var cmd = trans.Connection.CreateCommand())
 			{
 				cmd.Transaction = trans;
+				cmd.CommandTimeout = 60000;
 
 				var sort = !workspaces.All(ws => ws.RemoveAddKeys);
 

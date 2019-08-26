@@ -101,7 +101,7 @@ namespace PaJaMa.Database.Studio.Classes
 					else
 					{
 						if (!selectedDb.Schemas[0].Tables.Any()) _dataSource.PopulateTables(connection, selectedDb.Schemas.ToArray(), false);
-						matches.AddRange(selectedDb.Schemas[0].Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(t.TableName,
+						matches.AddRange(selectedDb.Schemas[0].Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
 							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.TableName}")));
 					}
 				}

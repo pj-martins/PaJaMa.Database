@@ -143,6 +143,7 @@ namespace PaJaMa.Database.Library.DataSources
 			}
 			query += additionalPostWhere;
 			cmd.CommandText = query;
+			cmd.CommandTimeout = 60000;
 			using (var rdr = cmd.ExecuteReader())
 			{
 				if (rdr.HasRows)
@@ -679,6 +680,7 @@ ON UPDATE {6}
 			keywords.Add("IDENTITY");
 			keywords.Add("UNION");
 			keywords.Add("ALL");
+			keywords.Add("LIKE");
 			return keywords;
 		}
 
@@ -694,9 +696,9 @@ ON UPDATE {6}
 				attr.DbType != System.Data.DbType.Double &&
 				attr.DbType != System.Data.DbType.Decimal) || value is string)
 			{
-				return $"'{value.ToString()}'";
+				return $"'{value.ToString().Replace("'", "''")}'";
 			}
-			var val = value.ToString();
+			var val = value.ToString().Replace("'", "''");
 			return string.IsNullOrEmpty(val) ? "0" : val;
 		}
 

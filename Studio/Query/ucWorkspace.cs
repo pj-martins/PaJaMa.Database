@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -615,6 +616,24 @@ namespace PaJaMa.Database.Studio.Query
 			tabMain.TabPages.Add(tab);
 			tabMain.SelectedTab = tab;
 			return uc;
+		}
+
+		public void SaveCurrentQuery()
+		{
+			var uc = tabOutputs.SelectedTab.Controls[0] as ucQueryOutput;
+			uc.SaveCurrentQuery();
+		}
+
+		public void LoadQuery()
+		{
+			var dlg = new OpenFileDialog();
+			dlg.Filter = "(*.sql)|*.sql|All files (*.*)|*.*";
+			if (dlg.ShowDialog() == DialogResult.OK)
+			{
+				string query = File.ReadAllText(dlg.FileName);
+				var qo = new QueryOutput() { Database = _currentConnection.Database, Query = query };
+				addQueryOutput(null, createQueryOutput(qo));
+			}
 		}
 
 		private void treeTables_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)

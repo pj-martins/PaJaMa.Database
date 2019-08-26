@@ -139,5 +139,23 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			addWorkspace(e.TabPage);
 		}
+
+		private void SaveQueryToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (tabMain.SelectedTab != null)
+			{
+				var workSpace = tabMain.SelectedTab.Controls[0] as ucWorkspace;
+				workSpace.SaveCurrentQuery();
+			}
+		}
+
+		private void OpenQueryToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (tabMain.SelectedTab != null)
+			{
+				var workSpace = tabMain.SelectedTab.Controls[0] as ucWorkspace;
+				workSpace.LoadQuery();
+			}
+		}
 	}
 }

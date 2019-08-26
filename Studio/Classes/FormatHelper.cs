@@ -18,6 +18,7 @@ namespace PaJaMa.Database.Studio.Classes
 			{
 				output = Regex.Replace(output, $"\\b{kw}\\b", kw.ToUpper(), RegexOptions.IgnoreCase);
 			}
+			// output = Regex.Replace(output, "SELECT (.*?) FROM[ \t\n]", "SELECT\r\n$1\r\nFROM ", RegexOptions.IgnoreCase);
 			return output;
 		}
 	}
