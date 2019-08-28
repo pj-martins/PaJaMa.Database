@@ -747,10 +747,13 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void tabOutputs_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{
-			var uc = e.TabPage.Controls[0] as ucQueryOutput;
-			Settings.QueryOutputs[txtConnectionString.Text].Remove(uc.QueryOutput);
-			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
-			uc.Disconnect();
+			if (e.TabPage.Controls.Count > 0)
+			{
+				var uc = e.TabPage.Controls[0] as ucQueryOutput;
+				Settings.QueryOutputs[txtConnectionString.Text].Remove(uc.QueryOutput);
+				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
+				uc.Disconnect();
+			}
 		}
 
 		private void tabOutputs_TabAdding(object sender, WinControls.TabControl.TabEventArgs e)
