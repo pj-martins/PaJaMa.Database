@@ -419,7 +419,7 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				lblResults.Text = totalResults == 0 ? (recordsAffected < 0 ? "Complete." : recordsAffected.ToString() + " record(s) affected") : (totalResults.ToString() + " Records.");
 				lblResults.Visible = true;
-				if (!hasTable && (totalResults == 0 || sbErrors.Length > 0))
+				if ((!hasTable && totalResults == 0) || sbErrors.Length > 0)
 				{
 					txtMessages.Text += sbErrors.Length > 0 ? sbErrors.ToString() : lblResults.Text;
 					tabControl1.SelectedTab = tabMessages;
