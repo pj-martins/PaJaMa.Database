@@ -85,9 +85,9 @@
 			this.txtQuery.Size = new System.Drawing.Size(1023, 216);
 			this.txtQuery.TabIndex = 6;
 			this.txtQuery.Text = "";
-			this.txtQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtQuery_KeyDown);
-			this.txtQuery.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtQuery_KeyPress);
-			this.txtQuery.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtQuery_KeyUp);
+			this.txtQuery.TextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtQuery_KeyDown);
+			this.txtQuery.TextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtQuery_KeyPress);
+			this.txtQuery.TextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtQuery_KeyUp);
 			// 
 			// pnlResults
 			// 
