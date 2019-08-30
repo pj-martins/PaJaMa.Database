@@ -434,7 +434,7 @@ namespace PaJaMa.Database.Studio.Query
 				cboDatabases.Enabled = true;
 				btnStop.Visible = false;
 				txtQuery.TextBox.ReadOnly = false;
-				txtQuery.Focus();
+				txtQuery.TextBox.Focus();
 				this.Parent.Text = this.Parent.Text.Replace(" (Executing)", "");
 				populateDetailPanels();
 			}));
@@ -813,7 +813,7 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.TextBox.SelectedText = (_intelliBox.SelectedItem as IntellisenseMatch).ShortName;
 			}
 			_intelliBox.Hide();
-			txtQuery.Focus();
+			txtQuery.TextBox.Focus();
 		}
 
 		private void showIntellisense()
@@ -874,7 +874,7 @@ namespace PaJaMa.Database.Studio.Query
 			if (e.KeyCode == Keys.Escape)
 			{
 				_intelliBox.Hide();
-				txtQuery.Focus();
+				txtQuery.TextBox.Focus();
 			}
 			else if ((e.KeyCode == Keys.Enter || e.KeyCode == Keys.Tab) && _intelliBox.SelectedItem != null)
 			{
