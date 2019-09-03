@@ -1077,8 +1077,11 @@ namespace PaJaMa.Database.Studio.Query
 			txtQuery.SearchFlags = SearchFlags.None;
 			while (txtQuery.SearchInTarget(text) != -1)
 			{
-				// Mark the search results with the current indicator
-				txtQuery.IndicatorFillRange(txtQuery.TargetStart, txtQuery.TargetEnd - txtQuery.TargetStart);
+				if (txtQuery.TargetStart != txtQuery.SelectionStart)
+				{
+					// Mark the search results with the current indicator
+					txtQuery.IndicatorFillRange(txtQuery.TargetStart, txtQuery.TargetEnd - txtQuery.TargetStart);
+				}
 
 				// Search the remainder of the document
 				txtQuery.TargetStart = txtQuery.TargetEnd;
