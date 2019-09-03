@@ -2,6 +2,8 @@
 using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Workspaces;
 using PaJaMa.Database.Studio.Classes;
+using ScintillaNET;
+using ScintillaNET_FindReplaceDialog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -36,6 +38,8 @@ namespace PaJaMa.Database.Studio.Query
 		private IntellisenseHelper _intellisenseHelper;
 		private Dictionary<int, Dictionary<int, string>> _errorDict;
 
+		private FindReplace _findReplace;
+
 		public DbConnection CurrentConnection;
 		public ucWorkspace Workspace { get; set; }
 		public QueryOutput QueryOutput { get; set; }
@@ -53,9 +57,9 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void btnGo_Click(object sender, EventArgs e)
 		{
-			string query = txtQuery.TextBox.Text;
-			if (txtQuery.TextBox.SelectionLength > 0)
-				query = txtQuery.TextBox.SelectedText;
+			string query = txtQuery.Text;
+			if (txtQuery.SelectedText.Length > 0)
+				query = txtQuery.SelectedText;
 
 			// rich text replaces newlines
 			query = query.Replace("\n", "\r\n");
@@ -73,7 +77,7 @@ namespace PaJaMa.Database.Studio.Query
 			lblTime.Visible = true;
 			timDuration.Enabled = true;
 			progMain.Visible = true;
-			txtQuery.TextBox.ReadOnly = true;
+			txtQuery.ReadOnly = true;
 
 			var currControls = tabResults.Controls.OfType<Control>();
 			foreach (var ctrl in currControls)
@@ -126,17 +130,49 @@ namespace PaJaMa.Database.Studio.Query
 
 				_lock = true;
 				cboDatabases.Text = CurrentConnection.Database;
-				txtQuery.TextBox.Text = queryOutput.Query;
-				txtQuery.TextBox.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
-				txtQuery.TextBox.Settings.Keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
-				txtQuery.TextBox.Settings.Keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToUpper()));
-				txtQuery.TextBox.Settings.Keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToLower()));
-				txtQuery.TextBox.Settings.QuoteIdentifier = "'";
-				txtQuery.TextBox.Settings.Comment = "--";
-				txtQuery.TextBox.Settings.CommentBlockStartEnd = new Tuple<string, string>("/*", "*/");
-				txtQuery.TextBox.CompileKeywords();
-				txtQuery.TextBox.InitLines();
-				txtQuery.DrawLineNumbers();
+				txtQuery.Text = queryOutput.Query;
+				txtQuery.EmptyUndoBuffer();
+
+				txtQuery.Margins[0].Type = MarginType.Number;
+
+				// remove conflicting hotkeys from scintilla
+				txtQuery.ClearCmdKey(Keys.Control | Keys.F);
+				txtQuery.ClearCmdKey(Keys.Control | Keys.R);
+				txtQuery.ClearCmdKey(Keys.Control | Keys.H);
+				txtQuery.ClearCmdKey(Keys.Control | Keys.L);
+				txtQuery.ClearCmdKey(Keys.Control | Keys.U);
+
+				// Configure the default style
+				txtQuery.StyleResetDefault();
+				txtQuery.Styles[Style.Default].Font = "Consolas";
+				txtQuery.Styles[Style.Default].Size = 10;
+				txtQuery.StyleClearAll();
+
+				// Configure the CPP (C#) lexer styles
+				txtQuery.Styles[Style.Sql.Default].ForeColor = Color.Silver;
+				txtQuery.Styles[Style.Sql.Comment].ForeColor = Color.FromArgb(0, 128, 0); // Green
+				txtQuery.Styles[Style.Sql.CommentLine].ForeColor = Color.FromArgb(0, 128, 0); // Green
+				txtQuery.Styles[Style.Sql.CommentLineDoc].ForeColor = Color.FromArgb(128, 128, 128); // Gray
+				txtQuery.Styles[Style.Sql.Number].ForeColor = Color.Olive;
+				txtQuery.Styles[Style.Sql.Word].ForeColor = Color.Blue;
+				txtQuery.Styles[Style.Sql.Word2].ForeColor = Color.Blue;
+				txtQuery.Styles[Style.Sql.String].ForeColor = Color.FromArgb(163, 21, 21); // Red
+				txtQuery.Styles[Style.Sql.Character].ForeColor = Color.FromArgb(163, 21, 21); // Red
+				txtQuery.Styles[Style.Sql.Operator].ForeColor = Color.Purple;
+
+				var keywords = new List<string>();
+				keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
+				keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
+				txtQuery.SetKeywords(0, string.Join(" ", keywords.ToArray()));
+
+				keywords = new List<string>();
+				keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToUpper()));
+				keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToLower()));
+				txtQuery.SetKeywords(1, string.Join(" ", keywords.ToArray()));
+
+				_findReplace = new FindReplace(txtQuery);
+				_findReplace.KeyPressed += _findReplace_KeyPressed;
+
 				_lock = false;
 				return true;
 			}
@@ -145,6 +181,11 @@ namespace PaJaMa.Database.Studio.Query
 				MessageBox.Show(ex.Message);
 				return false;
 			}
+		}
+
+		private void _findReplace_KeyPressed(object sender, KeyEventArgs e)
+		{
+			
 		}
 
 		private void ucQueryOutput_InfoMessage(object sender, SqlInfoMessageEventArgs e)
@@ -433,8 +474,8 @@ namespace PaJaMa.Database.Studio.Query
 				btnGo.Visible = true;
 				cboDatabases.Enabled = true;
 				btnStop.Visible = false;
-				txtQuery.TextBox.ReadOnly = false;
-				txtQuery.TextBox.Focus();
+				//txtQuery.TextBox.ReadOnly = false;
+				//txtQuery.TextBox.Focus();
 				this.Parent.Text = this.Parent.Text.Replace(" (Executing)", "");
 				populateDetailPanels();
 			}));
@@ -532,7 +573,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		public void SelectTopN(int? topN, TreeNode selectedNode)
 		{
-			if (!string.IsNullOrEmpty(txtQuery.TextBox.Text))
+			if (!string.IsNullOrEmpty(txtQuery.Text))
 			{
 				var dlgResult = MessageBox.Show("Yes to overwrite, No to append.", "Append", MessageBoxButtons.YesNoCancel);
 				switch (dlgResult)
@@ -540,10 +581,10 @@ namespace PaJaMa.Database.Studio.Query
 					case DialogResult.Cancel:
 						return;
 					case DialogResult.Yes:
-						txtQuery.TextBox.Text = string.Empty;
+						txtQuery.Text = string.Empty;
 						break;
 					case DialogResult.No:
-						txtQuery.TextBox.AppendText(";\r\n");
+						txtQuery.AppendText(";\r\n");
 						break;
 				}
 			}
@@ -574,7 +615,7 @@ namespace PaJaMa.Database.Studio.Query
 
 
 
-			txtQuery.TextBox.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
+			txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
 				topN != null ? _dataSource.GetPreTopN(topN.Value) : string.Empty,
 				_dataSource.GetColumnSelectList(columns),
 				objName,
@@ -582,8 +623,8 @@ namespace PaJaMa.Database.Studio.Query
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 
-			txtQuery.TextBox.InitLines();
-			txtQuery.DrawLineNumbers();
+			//txtQuery.TextBox.InitLines();
+			//txtQuery.DrawLineNumbers();
 
 			SaveOutput();
 		}
@@ -603,7 +644,7 @@ namespace PaJaMa.Database.Studio.Query
 			if (dbName != CurrentConnection.Database)
 				CurrentConnection.ChangeDatabase(dbName);
 
-			txtQuery.TextBox.Text = script;
+			txtQuery.Text = script;
 		}
 
 		private void btnStop_Click(object sender, EventArgs e)
@@ -638,15 +679,48 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void formatSQL()
 		{
-			txtQuery.TextBox.SuspendPainting();
-			var selectionStart = txtQuery.TextBox.SelectionStart;
-			var selectionLen = txtQuery.TextBox.SelectionLength;
-			txtQuery.TextBox.Text = FormatHelper.GetFormattedSQL(_dataSource, txtQuery.TextBox.Text);
-			txtQuery.TextBox.SelectionStart = selectionStart;
-			txtQuery.TextBox.SelectionLength = selectionLen;
-			txtQuery.TextBox.InitLines();
-			txtQuery.TextBox.ResumePainting();
+			txtQuery.Text = FormatHelper.GetFormattedSQL(_dataSource, txtQuery.Text);
+		}
 
+		public void CommentSelected()
+		{
+			txtQuery.BeginUndoAction();
+			int lineStart = txtQuery.SelectionStart;
+			while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
+				lineStart--;
+			int selectionEnd = txtQuery.SelectionEnd;
+			for (int i = lineStart; i <= selectionEnd; i++)
+			{
+				if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
+				{
+					txtQuery.InsertText(i, "-- ");
+				}
+			}
+			txtQuery.EndUndoAction();
+		}
+
+		public void UnCommentSelected()
+		{
+			txtQuery.BeginUndoAction();
+			int lineStart = txtQuery.SelectionStart;
+			while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
+				lineStart--;
+			int selectionEnd = txtQuery.SelectionEnd;
+			for (int i = lineStart; i <= selectionEnd; i++)
+			{
+				if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
+				{
+					if (txtQuery.Text.Substring(i, 2) == "--")
+					{
+						txtQuery.DeleteRange(i, 2);
+					}
+					if (txtQuery.Text.Substring(i, 1) == " ")
+					{
+						txtQuery.DeleteRange(i, 1);
+					}
+				}
+			}
+			txtQuery.EndUndoAction();
 		}
 
 		private void txtQuery_KeyDown(object sender, KeyEventArgs e)
@@ -655,11 +729,11 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				if (e.KeyCode == Keys.C && e.Modifiers == Keys.Control)
 				{
-					txtQuery.TextBox.CommentSelected();
+					this.CommentSelected();
 				}
 				else if (e.KeyCode == Keys.U && e.Modifiers == Keys.Control)
 				{
-					txtQuery.TextBox.UnCommentSelected();
+					this.UnCommentSelected();
 				}
 				else if (e.KeyCode == Keys.D && e.Modifiers == Keys.Control)
 				{
@@ -681,6 +755,7 @@ namespace PaJaMa.Database.Studio.Query
 			else if (e.KeyCode == Keys.K && e.Modifiers == Keys.Control)
 			{
 				_kaying = true;
+				e.SuppressKeyPress = true;
 				e.Handled = true;
 			}
 			else if (e.KeyCode == Keys.S && e.Control)
@@ -704,6 +779,38 @@ namespace PaJaMa.Database.Studio.Query
 			else if (_intelliBox.Visible)
 			{
 				_flagIntellisense = true;
+			}
+
+			if (e.Control && e.KeyCode == Keys.F)
+			{
+				_findReplace.ShowFind();
+				e.SuppressKeyPress = true;
+			}
+			else if (e.Shift && e.KeyCode == Keys.F3)
+			{
+				_findReplace.Window.FindPrevious();
+				e.SuppressKeyPress = true;
+			}
+			else if (e.KeyCode == Keys.F3)
+			{
+				_findReplace.Window.FindNext();
+				e.SuppressKeyPress = true;
+			}
+			else if (e.Control && e.KeyCode == Keys.H)
+			{
+				_findReplace.ShowReplace();
+				e.SuppressKeyPress = true;
+			}
+			else if (e.Control && e.KeyCode == Keys.I)
+			{
+				_findReplace.ShowIncrementalSearch();
+				e.SuppressKeyPress = true;
+			}
+			else if (e.Control && e.KeyCode == Keys.G)
+			{
+				GoTo MyGoTo = new GoTo((Scintilla)sender);
+				MyGoTo.ShowGoToDialog();
+				e.SuppressKeyPress = true;
 			}
 
 			//else if (e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
@@ -789,31 +896,31 @@ namespace PaJaMa.Database.Studio.Query
 
 		public void SaveOutput()
 		{
-			QueryOutput.Query = txtQuery.TextBox.Text;
+			QueryOutput.Query = txtQuery.Text;
 			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
 
 			var queryHistoryPath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 				"DatabaseStudio", "QueryHistory", "QueryHistory_" + DateTime.Now.ToString("yyyyMMdd") + ".sql"));
 			if (!queryHistoryPath.Directory.Exists) queryHistoryPath.Directory.Create();
-			File.AppendAllText(queryHistoryPath.FullName, "\r\n\r\n\r\n" + txtQuery.TextBox.Text);
+			File.AppendAllText(queryHistoryPath.FullName, "\r\n\r\n\r\n" + txtQuery.Text);
 		}
 
 		private void selectIntellisenseItem()
 		{
 			if (_intelliBox.SelectedItem != null)
 			{
-				var regex = Regex.Match(txtQuery.TextBox.Text.Substring(0, txtQuery.TextBox.SelectionStart), IntellisenseHelper.PATTERN);
+				var regex = Regex.Match(txtQuery.Text.Substring(0, txtQuery.SelectionStart), IntellisenseHelper.PATTERN);
 				if (regex.Success)
 				{
 					var replace = regex.Groups[2].Value.Split('.').Last();
-					txtQuery.TextBox.SelectionStart = Math.Max(0, txtQuery.TextBox.SelectionStart - replace.Length);
-					txtQuery.TextBox.SelectionLength = replace.Length;
-					txtQuery.TextBox.SelectedText = string.Empty;
+					txtQuery.SelectionStart = Math.Max(0, txtQuery.SelectionStart - replace.Length);
+					txtQuery.SelectionEnd = txtQuery.SelectionStart + replace.Length;
+					txtQuery.ReplaceSelection(string.Empty);
 				}
-				txtQuery.TextBox.SelectedText = (_intelliBox.SelectedItem as IntellisenseMatch).ShortName;
+				txtQuery.ReplaceSelection((_intelliBox.SelectedItem as IntellisenseMatch).ShortName);
 			}
 			_intelliBox.Hide();
-			txtQuery.TextBox.Focus();
+			txtQuery.Focus();
 		}
 
 		private void showIntellisense()
@@ -839,7 +946,7 @@ namespace PaJaMa.Database.Studio.Query
 
 			try
 			{
-				var matches = _intellisenseHelper.GetIntellisenseMatches(txtQuery.TextBox.Text, txtQuery.TextBox.SelectionStart, CurrentConnection);
+				var matches = _intellisenseHelper.GetIntellisenseMatches(txtQuery.Text, txtQuery.SelectionStart, CurrentConnection);
 				_intelliBox.Items.Clear();
 				string maxString = string.Empty;
 				foreach (var m in matches)
@@ -851,7 +958,7 @@ namespace PaJaMa.Database.Studio.Query
 					_intelliBox.SelectedIndex = 0;
 				Point p = new Point();
 				GetCaretPos(out p);
-				var measure = txtQuery.TextBox.CreateGraphics().MeasureString(maxString, txtQuery.TextBox.Font);
+				var measure = txtQuery.CreateGraphics().MeasureString(maxString, txtQuery.Font);
 				_intelliBox.SetBounds(p.X, p.Y + 20, 500, Math.Min(300, Math.Max(32, (int)(measure.Height * _intelliBox.Items.Count))));
 				_intelliBox.Show();
 				_intelliBox.BringToFront();
@@ -874,7 +981,7 @@ namespace PaJaMa.Database.Studio.Query
 			if (e.KeyCode == Keys.Escape)
 			{
 				_intelliBox.Hide();
-				txtQuery.TextBox.Focus();
+				txtQuery.Focus();
 			}
 			else if ((e.KeyCode == Keys.Enter || e.KeyCode == Keys.Tab) && _intelliBox.SelectedItem != null)
 			{
@@ -887,6 +994,25 @@ namespace PaJaMa.Database.Studio.Query
 			if (_flagIntellisense)
 			{
 				showIntellisense();
+			}
+			if (e.KeyCode == Keys.Enter)
+			{
+				if (txtQuery.SelectionStart > 0 && txtQuery.SelectedText.Length == 0)
+				{
+					int lineStart = txtQuery.SelectionStart - 1;
+					while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
+					{
+						lineStart--;
+					}
+					var indentMatch = Regex.Match(txtQuery.Text.Substring(lineStart, (txtQuery.SelectionStart - lineStart)),
+						"^([ \t]+)");
+					if (indentMatch.Success)
+					{
+						txtQuery.InsertText(txtQuery.SelectionStart, indentMatch.Groups[1].Value);
+						txtQuery.SelectionStart += indentMatch.Groups[1].Value.Length;
+					}
+				}
+
 			}
 
 			_flagIntellisense = false;
@@ -908,7 +1034,58 @@ namespace PaJaMa.Database.Studio.Query
 			dlg.Filter = "(*.sql)|*.sql|All files (*.*)|*.*";
 			if (dlg.ShowDialog() == DialogResult.OK)
 			{
-				File.WriteAllText(dlg.FileName, txtQuery.TextBox.Text);
+				File.WriteAllText(dlg.FileName, txtQuery.Text);
+			}
+		}
+
+		private int maxLineNumberCharLength;
+		private void TxtQuery_TextChanged(object sender, EventArgs e)
+		{
+			// Did the number of characters in the line number display change?
+			// i.e. nnn VS nn, or nnnn VS nn, etc...
+			var maxLineNumberCharLength = txtQuery.Lines.Count.ToString().Length;
+			if (maxLineNumberCharLength == this.maxLineNumberCharLength)
+				return;
+
+			// Calculate the width required to display the last line number
+			// and include some padding for good measure.
+			const int padding = 2;
+			txtQuery.Margins[0].Width = txtQuery.TextWidth(Style.LineNumber, new string('9', maxLineNumberCharLength + 1)) + padding;
+			this.maxLineNumberCharLength = maxLineNumberCharLength;
+		}
+
+		private void TxtQuery_MouseUp(object sender, MouseEventArgs e)
+		{
+			// Indicators 0-7 could be in use by a lexer
+			// so we'll use indicator 8 to highlight words.
+			const int NUM = 8;
+
+			// Remove all uses of our indicator
+			txtQuery.IndicatorCurrent = NUM;
+			txtQuery.IndicatorClearRange(0, txtQuery.TextLength);
+
+			var text = txtQuery.SelectedText;
+			if (string.IsNullOrEmpty(text)) return;
+
+			// Update indicator appearance
+			txtQuery.Indicators[NUM].Style = IndicatorStyle.StraightBox;
+			txtQuery.Indicators[NUM].Under = true;
+			txtQuery.Indicators[NUM].ForeColor = Color.Green;
+			txtQuery.Indicators[NUM].OutlineAlpha = 50;
+			txtQuery.Indicators[NUM].Alpha = 30;
+
+			// Search the document
+			txtQuery.TargetStart = 0;
+			txtQuery.TargetEnd = txtQuery.TextLength;
+			txtQuery.SearchFlags = SearchFlags.None;
+			while (txtQuery.SearchInTarget(text) != -1)
+			{
+				// Mark the search results with the current indicator
+				txtQuery.IndicatorFillRange(txtQuery.TargetStart, txtQuery.TargetEnd - txtQuery.TargetStart);
+
+				// Search the remainder of the document
+				txtQuery.TargetStart = txtQuery.TargetEnd;
+				txtQuery.TargetEnd = txtQuery.TextLength;
 			}
 		}
 	}

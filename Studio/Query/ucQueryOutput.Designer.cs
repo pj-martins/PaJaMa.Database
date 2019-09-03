@@ -30,7 +30,7 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			this.splitQuery = new System.Windows.Forms.SplitContainer();
-			this.txtQuery = new PaJaMa.WinControls.SyntaxRichTextBox.LinedSyntaxRichTextBox();
+			this.txtQuery = new ScintillaNET.Scintilla();
 			this.pnlResults = new System.Windows.Forms.Panel();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabResults = new System.Windows.Forms.TabPage();
@@ -80,14 +80,16 @@
 			// 
 			this.txtQuery.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.txtQuery.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.txtQuery.Lexer = ScintillaNET.Lexer.Sql;
 			this.txtQuery.Location = new System.Drawing.Point(0, 0);
 			this.txtQuery.Name = "txtQuery";
 			this.txtQuery.Size = new System.Drawing.Size(1023, 216);
 			this.txtQuery.TabIndex = 6;
-			this.txtQuery.Text = "";
-			this.txtQuery.TextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtQuery_KeyDown);
-			this.txtQuery.TextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtQuery_KeyPress);
-			this.txtQuery.TextBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtQuery_KeyUp);
+			this.txtQuery.TextChanged += new System.EventHandler(this.TxtQuery_TextChanged);
+			this.txtQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtQuery_KeyDown);
+			this.txtQuery.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtQuery_KeyPress);
+			this.txtQuery.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtQuery_KeyUp);
+			this.txtQuery.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TxtQuery_MouseUp);
 			// 
 			// pnlResults
 			// 
@@ -288,7 +290,7 @@
 		private System.Windows.Forms.ProgressBar progMain;
 		private System.Windows.Forms.Button btnGo;
 		private System.Windows.Forms.Timer timDuration;
-		private WinControls.SyntaxRichTextBox.LinedSyntaxRichTextBox txtQuery;
+		private ScintillaNET.Scintilla txtQuery;
 		private System.Windows.Forms.Label lblDatabase;
 		internal System.Windows.Forms.ComboBox cboDatabases;
 		private System.Windows.Forms.TabControl tabControl1;
