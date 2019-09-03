@@ -474,8 +474,8 @@ namespace PaJaMa.Database.Studio.Query
 				btnGo.Visible = true;
 				cboDatabases.Enabled = true;
 				btnStop.Visible = false;
-				//txtQuery.TextBox.ReadOnly = false;
-				//txtQuery.TextBox.Focus();
+				txtQuery.ReadOnly = false;
+				txtQuery.Focus();
 				this.Parent.Text = this.Parent.Text.Replace(" (Executing)", "");
 				populateDetailPanels();
 			}));
@@ -622,9 +622,6 @@ namespace PaJaMa.Database.Studio.Query
 				topN != null ? _dataSource.GetPostTopN(topN.Value) : string.Empty,
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
-
-			//txtQuery.TextBox.InitLines();
-			//txtQuery.DrawLineNumbers();
 
 			SaveOutput();
 		}
