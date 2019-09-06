@@ -70,7 +70,7 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 			{
 				if (!parentTable.Columns.Any())
 				{
-					parentTable.Database.DataSource.PopulateColumnsForTable(Connection, parentTable);
+					parentTable.Database.DataSource.PopulateChildColumns(Connection, parentTable);
 				}
 				cboParentColumn.Items.AddRange(parentTable.Columns.OrderBy(c => c.ColumnName).ToArray());
 				if (ChildColumn != null)

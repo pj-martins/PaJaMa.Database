@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-	public class View : DatabaseObjectWithExtendedProperties
+	public class View : DatabaseObjectWithColumns
 	{
 		public override string ObjectName
 		{
@@ -21,9 +21,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public string ViewName { get; set; }
 
-		[Ignore]
-		public List<Column> Columns { get; set; }
-
 		public override string ToString()
 		{
 			return Schema.SchemaName + "." + ViewName;
@@ -31,7 +28,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public View(Database database) : base(database)
 		{
-			Columns = new List<Column>();
 		}
 
 		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)

@@ -51,9 +51,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			{
 				foreignKey = this;
 				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == values["ParentTableName"].ToString());
-				if (!foreignKey.ParentTable.Columns.Any()) Database.DataSource.PopulateColumnsForTable(connection, foreignKey.ParentTable);
+				if (!foreignKey.ParentTable.Columns.Any()) Database.DataSource.PopulateChildColumns(connection, foreignKey.ParentTable);
 				foreignKey.ChildTable = childTable;
-				if (!foreignKey.ChildTable.Columns.Any()) Database.DataSource.PopulateColumnsForTable(connection, foreignKey.ChildTable);
+				if (!foreignKey.ChildTable.Columns.Any()) Database.DataSource.PopulateChildColumns(connection, foreignKey.ChildTable);
 				foreignKey.ChildTable.ForeignKeys.Add(foreignKey);
 			}
 

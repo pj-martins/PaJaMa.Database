@@ -105,12 +105,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == values["SchemaName"].ToString());
 			if (schema == null) throw new Exception("Schema " + values["SchemaName"].ToString() + " not found for column " + this.ColumnName);
 			ColumnType = Database.DataSource.GetColumnType(values["DataType"].ToString(), this.ColumnDefault);
-			this.Table = schema.Tables.FirstOrDefault(t => t.TableName == values["TableName"].ToString());
-			if (this.Table == null) throw new Exception("Table " + values["TableName"].ToString() + " not found for column " + this.ColumnName);
-			this.Table.Columns.Add(this);
+			DatabaseObjectWithColumns objWithColumns = null;
+			objWithColumns = schema.Tables.FirstOrDefault(t => t.TableName == values["TableName"].ToString());
+			if (objWithColumns == null)
+			{
+				objWithColumns = schema.Views.FirstOrDefault(t => t.ViewName == values["TableName"].ToString());
+			}
+			if (objWithColumns == null) throw new Exception("Object " + objWithColumns + " not found for column " + this.ColumnName);
+			objWithColumns.Columns.Add(this);
 			if (Database.ExtendedProperties != null)
-				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == this.Table.ObjectName
-				&& ep.SchemaName == this.Table.Schema.SchemaName &&
+				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == objWithColumns.ObjectName
+				&& ep.SchemaName == objWithColumns.Schema.SchemaName &&
 				ep.Level2Object == this.ColumnName).ToList();
 		}
 	}

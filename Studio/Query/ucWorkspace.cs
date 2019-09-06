@@ -509,7 +509,7 @@ namespace PaJaMa.Database.Studio.Query
 						else if (node.Text == "Columns")
 						{
 							var table = node.Parent.Tag as Table;
-							_dataSource.PopulateColumnsForTable(_currentConnection, table);
+							_dataSource.PopulateChildColumns(_currentConnection, table);
 							refreshColumnNodes(table, node);
 						}
 						else if (node.Text == "ForeignKeys")
@@ -711,7 +711,7 @@ namespace PaJaMa.Database.Studio.Query
 					// TODO: move to libs
 					if (obj is Library.DatabaseObjects.Table t && !t.Columns.Any())
 					{
-						_dataSource.PopulateColumnsForTable(_currentConnection, t);
+						_dataSource.PopulateChildColumns(_currentConnection, t);
 						if (!t.KeyConstraints.Any()) _dataSource.PopulateKeysForTable(_currentConnection, t);
 						if (!t.ForeignKeys.Any()) _dataSource.PopulateForeignKeysForTable(_currentConnection, t);
 						if (!t.Indexes.Any()) _dataSource.PopulateIndexesForTable(_currentConnection, t);
@@ -803,13 +803,13 @@ namespace PaJaMa.Database.Studio.Query
 					else if (treeTables.SelectedNode.Text == "Columns" && treeTables.SelectedNode.Parent.Tag is Table table)
 					{
 						treeTables.SelectedNode.Nodes.Clear();
-						_dataSource.PopulateColumnsForTable(_currentConnection, table);
+						_dataSource.PopulateChildColumns(_currentConnection, table);
 						refreshColumnNodes(table, treeTables.SelectedNode);
 					}
 					else if (treeTables.SelectedNode.Tag is Table table2)
 					{
 						treeTables.SelectedNode.FirstNode.Nodes.Clear();
-						_dataSource.PopulateColumnsForTable(_currentConnection, table2);
+						_dataSource.PopulateChildColumns(_currentConnection, table2);
 						refreshColumnNodes(table2, treeTables.SelectedNode.FirstNode);
 						// TODO: other table props
 					}
@@ -835,7 +835,7 @@ namespace PaJaMa.Database.Studio.Query
 				var col = tag is Column ? tag as Column : null;
 				if (!table.Columns.Any())
 				{
-					_dataSource.PopulateColumnsForTable(_currentConnection, table);
+					_dataSource.PopulateChildColumns(_currentConnection, table);
 				}
 
 				using (var frm = new frmForeignKey())

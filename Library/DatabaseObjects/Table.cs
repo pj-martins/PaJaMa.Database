@@ -13,14 +13,11 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-	public class Table : DatabaseObjectWithExtendedProperties
+	public class Table : DatabaseObjectWithColumns
 	{
 		//private DataTable _removedKeys;
 
 		public string TableName { get; set; }
-
-		[Ignore]
-		public List<Column> Columns { get; private set; }
 
 		[Ignore]
 		public List<Index> Indexes { get; private set; }
@@ -44,7 +41,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public Table(Database database) : base(database)
 		{
-			Columns = new List<Column>();
 			Indexes = new List<Index>();
 			KeyConstraints = new List<KeyConstraint>();
 			ForeignKeys = new List<ForeignKey>();

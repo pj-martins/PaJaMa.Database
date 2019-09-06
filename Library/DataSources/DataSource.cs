@@ -33,6 +33,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal virtual string ServerLoginSQL => "";
 		internal virtual string PermissionSQL => "";
 		internal virtual string CredentialSQL => "";
+		internal virtual string SchemaViewSQL => "";
 		internal abstract string TableSQL { get; }
 		internal abstract string ColumnSQL { get; }
 		internal abstract string ForeignKeySQL { get; }
@@ -170,6 +171,19 @@ namespace PaJaMa.Database.Library.DataSources
 			return objs;
 		}
 
+		private List<View> _schemaViews;
+		public virtual List<View> GetSchemaViews(DbConnection connection, DatabaseObjects.Database database)
+		{
+			// if (_schemaViews != null) return _schemaViews;
+			_schemaViews = new List<View>();
+			if (string.IsNullOrEmpty(this.SchemaViewSQL)) return _schemaViews;
+			using (var cmd = connection.CreateCommand())
+			{
+				_schemaViews = populateObjects<View>(database, cmd, string.Format(this.SchemaViewSQL, database.DatabaseName), string.Empty, true, string.Empty, string.Empty, null);
+			}
+			return _schemaViews;
+		}
+
 		public virtual void PopulateTables(DbConnection connection, Schema[] schemas, bool andChildren)
 		{
 			// TODO: assumes all schemas are from same db
@@ -211,15 +225,15 @@ namespace PaJaMa.Database.Library.DataSources
 			}
 		}
 
-		private void populateChildren<TDatabaseObject>(DbConnection connection, Table table, List<TDatabaseObject> arrayToClear, string sql, string additionalPreWhere, string additionalPostWhere)
+		private void populateChildren<TDatabaseObject>(DbConnection connection, DatabaseObjectBase parent, List<TDatabaseObject> arrayToClear, string sql, string additionalPreWhere, string additionalPostWhere)
 			where TDatabaseObject : DatabaseObjectBase
 		{
-			var conn = connection ?? OpenConnection(table.Database.DatabaseName);
+			var conn = connection ?? OpenConnection(parent.Database.DatabaseName);
 			// TODO: assumes all schemas are from same db
 			using (var cmd = conn.CreateCommand())
 			{
 				arrayToClear.Clear();
-				populateObjects<TDatabaseObject>(table.Database, cmd, string.Format(sql, table.Database.DatabaseName), table.Schema.SchemaName, true, additionalPreWhere, additionalPostWhere, null);
+				populateObjects<TDatabaseObject>(parent.Database, cmd, string.Format(sql, parent.Database.DatabaseName), parent.Schema.SchemaName, true, additionalPreWhere, additionalPostWhere, null);
 			}
 			if (connection == null)
 			{
@@ -228,10 +242,10 @@ namespace PaJaMa.Database.Library.DataSources
 			}
 		}
 
-		protected virtual string columnsTableWhere(Table table) => $" and co.TABLE_NAME = '{table.TableName}'" + (string.IsNullOrEmpty(table.Schema.SchemaName) ? string.Empty : $" and co.TABLE_SCHEMA = '{table.Schema.SchemaName}'");
-		public virtual void PopulateColumnsForTable(DbConnection connection, Table table)
+		protected virtual string childColumnsWhere(DatabaseObjectWithColumns obj) => $" and co.TABLE_NAME = '{obj.ObjectName}'" + (string.IsNullOrEmpty(obj.Schema.SchemaName) ? string.Empty : $" and co.TABLE_SCHEMA = '{obj.Schema.SchemaName}'");
+		public virtual void PopulateChildColumns(DbConnection connection, DatabaseObjectWithColumns obj)
 		{
-			populateChildren<Column>(connection, table, table.Columns, this.ColumnSQL, columnsTableWhere(table), string.Empty);
+			populateChildren<Column>(connection, obj, obj.Columns, this.ColumnSQL, childColumnsWhere(obj), string.Empty);
 		}
 
 		protected virtual string foreignKeysTableWhere(Table table) => $" and ChildTableName = '{table.TableName}'";
@@ -704,7 +718,7 @@ ON UPDATE {6}
 
 		public virtual string GetInsertScript(DbConnection connection, Table table, string filter)
 		{
-			if (!table.Columns.Any()) this.PopulateColumnsForTable(connection, table);
+			if (!table.Columns.Any()) this.PopulateChildColumns(connection, table);
 			var sbScript = new StringBuilder();
 			var colsLine = string.Join(", ", table.Columns.Select(c => GetConvertedObjectName(c.ColumnName)));
 			var tableLine = GetConvertedObjectName(table.Database.DatabaseName) + "." +
@@ -724,7 +738,7 @@ ON UPDATE {6}
 						sbScript.AppendLine(insertLine);
 						firstIn = false;
 					}
-					
+
 				}
 			}
 			return sbScript.ToString();

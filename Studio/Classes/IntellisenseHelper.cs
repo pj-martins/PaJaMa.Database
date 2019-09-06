@@ -55,8 +55,15 @@ namespace PaJaMa.Database.Studio.Classes
 						var table = schema.Tables.FirstOrDefault(t => t.TableName.ToLower() == stripSurroundingChars(parts.Last().ToLower()));
 						if (table != null)
 						{
-							if (!table.Columns.Any()) _dataSource.PopulateColumnsForTable(connection, table);
+							if (!table.Columns.Any()) _dataSource.PopulateChildColumns(connection, table);
 							matches.AddRange(table.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(_dataSource.GetConvertedObjectName(c.ColumnName), $"{table.TableName}.{c.ColumnName}")));
+						}
+						// if (!schema.Views.Any()) _dataSource.PopulateViews()
+						var view = schema.Views.FirstOrDefault(s => s.ViewName.ToLower() == stripSurroundingChars(parts.Last().ToLower()));
+						if (view != null)
+						{
+							if (!view.Columns.Any()) _dataSource.PopulateChildColumns(connection, view);
+							matches.AddRange(view.Columns.OrderBy(c => c.ColumnName).Select(c => new IntellisenseMatch(_dataSource.GetConvertedObjectName(c.ColumnName), $"{view.ViewName}.{c.ColumnName}")));
 						}
 					}
 				}
@@ -103,6 +110,11 @@ namespace PaJaMa.Database.Studio.Classes
 						if (!selectedDb.Schemas[0].Tables.Any()) _dataSource.PopulateTables(connection, selectedDb.Schemas.ToArray(), false);
 						matches.AddRange(selectedDb.Schemas[0].Tables.OrderBy(t => t.TableName).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
 							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.TableName}")));
+						if (selectedDb.DatabaseName.ToLower() == "information_schema")
+						{
+							matches.AddRange(_dataSource.GetSchemaViews(connection, selectedDb).OrderBy(t => t.ViewName).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.ViewName),
+							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.ViewName}")).Distinct());
+						}
 					}
 				}
 				var schema = _dataSource.CurrentDatabase.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == stripSurroundingChars(periodParts[0].ToLower()));

@@ -59,6 +59,7 @@
     <Compile Include="DatabaseObjects\Credential.cs" />
     <Compile Include="DatabaseObjects\Database.cs" />
     <Compile Include="DatabaseObjects\DatabaseObjectBase.cs" />
+    <Compile Include="DatabaseObjects\DatabaseObjectWithColumns.cs" />
     <Compile Include="DatabaseObjects\DatabasePrincipal.cs" />
     <Compile Include="DataSources\MySqlDataSourceForCompare.cs" />
     <Compile Include="DataSources\MySqlDataSource.cs" />

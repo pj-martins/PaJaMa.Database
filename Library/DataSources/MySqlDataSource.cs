@@ -24,7 +24,7 @@ namespace PaJaMa.Database.Library.DataSources
 		// TODO: owner
 		internal override string SchemaSQL => "";
 
-        internal override string ViewSQL => ""; /*@"
+        internal override string ViewSQL => @"
 select
 	c.TABLE_SCHEMA as SchemaName,
 	c.TABLE_NAME as ViewName,
@@ -37,9 +37,17 @@ select
 FROM INFORMATION_SCHEMA.COLUMNS c
 JOIN INFORMATION_SCHEMA.VIEWS t on t.TABLE_NAME = c.TABLE_NAME
 	AND t.TABLE_SCHEMA = c.TABLE_SCHEMA
-";*/
+";
 
-        internal override string TableSQL => "select TABLE_NAME as TableName, '' as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = '{0}'";
+		internal override string SchemaViewSQL => @"
+select
+	'' as SchemaName,
+	t.TABLE_NAME as ViewName,
+	null as Definition
+FROM INFORMATION_SCHEMA.TABLES t
+WHERE t.TABLE_SCHEMA = 'information_schema'";
+
+		internal override string TableSQL => "select TABLE_NAME as TableName, '' as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = '{0}'";
 
 		internal override string ColumnSQL => @"
 select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition2, 
@@ -51,7 +59,7 @@ select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION a
 	  '' AS SchemaName, null AS Increment
 FROM INFORMATION_SCHEMA.COLUMNS co
 JOIN INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME and t.TABLE_SCHEMA = co.TABLE_SCHEMA
-WHERE t.TABLE_TYPE = 'BASE TABLE' and co.TABLE_SCHEMA = '{0}'";
+WHERE (t.TABLE_TYPE = 'BASE TABLE' or t.TABLE_TYPE = 'SYSTEM VIEW') and co.TABLE_SCHEMA = '{0}'";
 
 		internal override string ForeignKeySQL => @"
 SELECT distinct
