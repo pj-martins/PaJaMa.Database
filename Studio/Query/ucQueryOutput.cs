@@ -912,6 +912,12 @@ namespace PaJaMa.Database.Studio.Query
 					var replace = regex.Groups[2].Value.Split('.').Last();
 					txtQuery.SelectionStart = Math.Max(0, txtQuery.SelectionStart - replace.Length);
 					txtQuery.SelectionEnd = txtQuery.SelectionStart + replace.Length;
+					if (txtQuery.Text.Length > txtQuery.SelectionEnd &&
+						_dataSource.SurroundingCharacters.Contains(txtQuery.Text.Substring(txtQuery.SelectionEnd, 1)))
+					{
+						txtQuery.SelectionEnd++;
+					}
+						
 					txtQuery.ReplaceSelection(string.Empty);
 				}
 				txtQuery.ReplaceSelection((_intelliBox.SelectedItem as IntellisenseMatch).ShortName);
