@@ -33,7 +33,7 @@ namespace PaJaMa.Database.Studio.Classes
 		private List<IntellisenseMatch> getFromsAndJoinsMatches(string text, DbConnection connection)
 		{
 			var matches = new List<IntellisenseMatch>();
-			var toCheck = text.Split(new string[] { " ", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+			var toCheck = text.Split(new string[] { " ", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
 			for (int i = 0; i < toCheck.Length - 1; i++)
 			{
 				if (toCheck[i].ToLower() == "from" || toCheck[i].ToLower() == "join" || toCheck[i].ToLower() == "update"
