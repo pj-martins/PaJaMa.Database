@@ -22,10 +22,10 @@ namespace PaJaMa.Database.Library.Workspaces.Generate
 			if (Column.IsIdentity || !string.IsNullOrEmpty(Column.Formula))
 				return;
 
-			var fks = from s in Column.Table.Schema.Database.Schemas
+			var fks = from s in Column.Parent.Schema.Database.Schemas
 					  from t in s.Tables
 					  from fk in t.ForeignKeys
-					  where fk.ChildTable.TableName == Column.Table.TableName
+					  where fk.ChildTable.TableName == Column.Parent.ObjectName
 					   && fk.Columns.Any(c => c.ChildColumn.ColumnName == Column.ColumnName)
 					  select fk;
 
@@ -41,8 +41,8 @@ namespace PaJaMa.Database.Library.Workspaces.Generate
 			{
 				var clrType = PaJaMa.Common.DataHelper.GetClrType(type);
 
-				if (Column.Table.KeyConstraints.Any(k => k.Columns.Any(c => c.ColumnName == Column.ColumnName)) && clrType.IsNumericType())
-					Content = new KeyContent(Column.Table.KeyConstraints.First(k => k.Columns.Any(c => c.ColumnName == Column.ColumnName)), type);
+				if (Column.Parent is Table && (Column.Parent as Table).KeyConstraints.Any(k => k.Columns.Any(c => c.ColumnName == Column.ColumnName)) && clrType.IsNumericType())
+					Content = new KeyContent((Column.Parent as Table).KeyConstraints.First(k => k.Columns.Any(c => c.ColumnName == Column.ColumnName)), type);
 				else if (type == SqlDbType.Timestamp)
 					return;
 				else if (clrType.Equals(typeof(DateTime)) || clrType.Equals(typeof(DateTime?)))

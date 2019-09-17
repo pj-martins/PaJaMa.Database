@@ -348,6 +348,10 @@ namespace PaJaMa.Database.Studio.Monitor
 			if (startProfiling())
 			{
 				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+				if (string.IsNullOrEmpty(settings.MonitorConnectionStrings))
+				{
+					settings.MonitorConnectionStrings = string.Empty;
+				}
 				List<string> connStrings = settings.MonitorConnectionStrings.Split('|').ToList();
 				if (!connStrings.Any(s => s == cboConnectionString.Text))
 					connStrings.Add(cboConnectionString.Text);

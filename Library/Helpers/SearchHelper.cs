@@ -31,7 +31,7 @@ namespace PaJaMa.Database.Library.Helpers
 			if (!columns.Any()) return;
 
 			var tblsToSearch = from c in columns
-							   group c by c.Column.Table into g
+							   group c by c.Column.Parent into g
 							   select g;
 
 			using (var conn = DataSource.OpenConnection(string.Empty))
@@ -42,7 +42,7 @@ namespace PaJaMa.Database.Library.Helpers
 					{
 						cmd.Parameters.Clear();
 
-						var dt = new DataTable(tbl.Key.TableName);
+						var dt = new DataTable(tbl.Key.ObjectName);
 						var sb = new StringBuilder(string.Format("select * from {0}", tbl.Key.GetObjectNameWithSchema(DataSource)));
 						var firstIn = true;
 						foreach (var col in tbl)

@@ -101,7 +101,7 @@ namespace PaJaMa.Database.Library.DataSources
 							CharacterMaximumLength = Convert.ToInt16(drCol["COLUMN_SIZE"]),
 							ColumnType = colType,
 							OrdinalPosition = Convert.ToInt16(drCol["ORDINAL_POSITION"]),
-							Table = tbl,
+							Parent = tbl,
 							Schema = schema,
 							ColumnDefault = drCol["COLUMN_DEF"] == DBNull.Value ? "" : drCol["COLUMN_DEF"].ToString()
 

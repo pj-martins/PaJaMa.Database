@@ -20,7 +20,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP COLUMN {1};",
-						DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+						DatabaseObject.Parent.GetObjectNameWithSchema(TargetDatabase.DataSource),
 						DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
 						sourceParent, 1);
 		}
@@ -38,7 +38,8 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (!string.IsNullOrEmpty(colDef) && colDef.StartsWith("((") && colDef.EndsWith("))"))
 				colDef = colDef.Substring(1, colDef.Length - 2);
 
-			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(DatabaseObject.ConstraintName) && !DatabaseObject.Table.KeyConstraints.Any(k => k.ConstraintName == DatabaseObject.ConstraintName))
+			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(DatabaseObject.ConstraintName) && DatabaseObject.Parent is Table
+				&& !(DatabaseObject.Parent as Table).KeyConstraints.Any(k => k.ConstraintName == DatabaseObject.ConstraintName))
 				def = "CONSTRAINT " + TargetDatabase.DataSource.GetConvertedObjectName(DatabaseObject.ConstraintName) + " DEFAULT(" + colDef + ")";
 			else if (!string.IsNullOrEmpty(colDef))
 				def = "DEFAULT(" + colDef + ")";
@@ -63,11 +64,11 @@ namespace PaJaMa.Database.Library.Synchronization
 					item = new SynchronizationItem(DatabaseObject);
 					item.Differences.Add(diff);
 					if (targetColumn != null)
-						item.AddScript(1, string.Format("ALTER TABLE {0} DROP COLUMN {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+						item.AddScript(1, string.Format("ALTER TABLE {0} DROP COLUMN {1};", DatabaseObject.Parent.GetObjectNameWithSchema(TargetDatabase.DataSource),
 							DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)));
 
 					item.AddScript(3, string.Format("ALTER TABLE {0} ADD {1} AS {2}",
-						DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+						DatabaseObject.Parent.GetObjectNameWithSchema(TargetDatabase.DataSource),
 						DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource),
 						DatabaseObject.Formula));
 
@@ -92,8 +93,8 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				item = new SynchronizationItem(DatabaseObject);
 				item.AddScript(2, string.Format("EXEC sp_rename '{0}.{1}.{2}', '{3}', 'COLUMN'",
-							targetColumn.Table.Schema.SchemaName,
-							targetColumn.Table.TableName,
+							targetColumn.Parent.Schema.SchemaName,
+							targetColumn.Parent.ObjectName,
 							targetColumn.ColumnName,
 							DatabaseObject.ColumnName));
 				var diff = getDifference(DifferenceType.Alter, DatabaseObject, targetColumn,
@@ -140,12 +141,12 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn, part2, def));
 
-			if (hasTempConstraint)
+			if (hasTempConstraint && DatabaseObject.Parent is Table)
 			{
 				// sb.AppendLine(TargetDatabase.DataSource.GetColumnAddAlterScript(DatabaseObject, targetColumn, part2, string.Empty));
 				var defConstraint = new DefaultConstraint(TargetDatabase);
 				defConstraint.ConstraintName = tempConstraint;
-				defConstraint.Table = DatabaseObject.Table;
+				defConstraint.Table = DatabaseObject.Parent as Table;
 				defConstraint.Column = DatabaseObject;
 				var defSync = new DefaultConstraintSynchronization(TargetDatabase, defConstraint);
 				sb.AppendLine(defSync.GetRawDropText());
@@ -156,7 +157,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			item.Differences.AddRange(differences);
 			items.Add(item);
 
-			var kcs = DatabaseObject.Table.KeyConstraints.Where(k => !k.IsPrimaryKey && k.Columns.Any(ic => ic.ColumnName == DatabaseObject.ColumnName));
+			var kcs = (DatabaseObject.Parent as Table).KeyConstraints.Where(k => !k.IsPrimaryKey && k.Columns.Any(ic => ic.ColumnName == DatabaseObject.ColumnName));
 			foreach (var kc in kcs)
 			{
 				var syncItem = new KeyConstraintSynchronization(TargetDatabase, kc);
@@ -166,7 +167,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 			if (targetColumn != null)
 			{
-				var dcs = DatabaseObject.Table.DefaultConstraints.Where(dc => dc.Column.ColumnName == DatabaseObject.ColumnName);
+				var dcs = (DatabaseObject.Parent as Table).DefaultConstraints.Where(dc => dc.Column.ColumnName == DatabaseObject.ColumnName);
 				foreach (var dc in dcs)
 				{
 					var syncItem = new DefaultConstraintSynchronization(TargetDatabase, dc);

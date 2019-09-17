@@ -452,7 +452,7 @@ namespace PaJaMa.Database.Library.DataSources
 			if (this.GetType() == column.Database.DataSource.GetType())
 				colType = column.ColumnType.TypeName;
 			return string.Format("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
-				   column.Table.GetObjectNameWithSchema(this),
+				   column.Parent.GetObjectNameWithSchema(this),
 				   column.GetQueryObjectName(this),
 				   colType,
 				   postScript,

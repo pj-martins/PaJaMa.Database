@@ -357,10 +357,10 @@ foreignKey.GetQueryObjectName(this));
 			{
 				return $"exec sp_rename '{databaseObject.Schema.SchemaName}.{databaseObject.ObjectName}', '{targetName}'";
 			}
-			else if (databaseObject is IObjectWithTable)
+			else if (databaseObject is IObjectWithParent)
 			{
-				var objWithTable = databaseObject as IObjectWithTable;
-				return $"exec sp_rename '{objWithTable.Table.Schema.SchemaName}.{objWithTable.Table.TableName}.{databaseObject.ObjectName}', '{targetName}'";
+				var objWithTable = databaseObject as IObjectWithParent;
+				return $"exec sp_rename '{objWithTable.Parent.Schema.SchemaName}.{objWithTable.Parent.ObjectName}.{databaseObject.ObjectName}', '{targetName}'";
 			}
 
 			return $"exec sp_rename '{databaseObject.ObjectName}', '{targetName}'";

@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-	public class KeyConstraint : DatabaseObjectBase, IObjectWithTable
+	public class KeyConstraint : DatabaseObjectBase, IObjectWithParent
 	{
-		public Table Table { get; set; }
+		public DatabaseObjectWithColumns Parent { get; set; }
 		public string ConstraintName { get; set; }
 
 		public override string ObjectName
@@ -43,13 +43,14 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
 			if (!schema.Tables.Any()) Database.DataSource.PopulateTables(connection, new Schema[] { schema }, true);
 			var table = schema.Tables.First(t => t.TableName == values["TableName"].ToString());
-			var constraint = table.KeyConstraints.FirstOrDefault(c => c.ConstraintName == this.ConstraintName && c.Table.TableName == tableName
-				&& c.Table.Schema.SchemaName == schema.SchemaName);
+			var constraint = table.KeyConstraints.FirstOrDefault(c => c.ConstraintName == this.ConstraintName && c.Parent.ObjectName == tableName
+				&& c.Parent.Schema.SchemaName == schema.SchemaName);
 			if (constraint == null)
 			{
 				constraint = this;
-				constraint.Table = schema.Tables.First(t => t.TableName == values["TableName"].ToString());
-				constraint.Table.KeyConstraints.Add(constraint);
+				var tbl = schema.Tables.First(t => t.TableName == values["TableName"].ToString());
+				constraint.Parent = tbl;
+				tbl.KeyConstraints.Add(constraint);
 			}
 
 			var col = values.DictionaryToObject<IndexColumn>();

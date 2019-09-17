@@ -175,8 +175,8 @@ namespace PaJaMa.Database.DataGenerate.Content
 				using (var cmd = conn.CreateCommand())
 				{
 					// TODO: multi cols
-					cmd.CommandText = string.Format("select max([{0}]) from [{1}].[{2}]", KeyConstraint.Columns[0].ColumnName, KeyConstraint.Table.Schema.SchemaName,
-						KeyConstraint.Table.TableName);
+					cmd.CommandText = string.Format("select max([{0}]) from [{1}].[{2}]", KeyConstraint.Columns[0].ColumnName, KeyConstraint.Parent.Schema.SchemaName,
+						KeyConstraint.Parent.ObjectName);
 					cmd.Transaction = trans;
 					var obj = cmd.ExecuteScalar();
 					_max = obj.Equals(DBNull.Value) ? 1 : (int)obj;

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DatabaseObjects
 {
-	public class Column : DatabaseObjectWithExtendedProperties, IObjectWithTable
+	public class Column : DatabaseObjectWithExtendedProperties, IObjectWithParent
 	{
 		public Column(Database database) : base(database)
 		{
@@ -25,7 +25,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		}
 
 		[Ignore]
-		public Table Table { get; set; }
+		public DatabaseObjectWithColumns Parent { get; set; }
 
 		public ColumnType ColumnType { get; set; }
 
@@ -111,7 +111,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			{
 				objWithColumns = schema.Views.FirstOrDefault(t => t.ViewName == values["TableName"].ToString());
 			}
-			if (objWithColumns == null) throw new Exception("Object " + objWithColumns + " not found for column " + this.ColumnName);
+			this.Parent = objWithColumns ?? throw new Exception("Object " + objWithColumns + " not found for column " + this.ColumnName);
 			objWithColumns.Columns.Add(this);
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == objWithColumns.ObjectName

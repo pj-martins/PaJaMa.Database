@@ -831,7 +831,7 @@ namespace PaJaMa.Database.Studio.Query
 			var tag = treeTables.SelectedNode.Tag;
 			if (tag is Table || tag is Column)
 			{
-				var table = tag is Table ? tag as Table : (tag as Column).Table;
+				var table = tag is Table ? tag as Table : (tag as Column).Parent as Table;
 				var col = tag is Column ? tag as Column : null;
 				if (!table.Columns.Any())
 				{

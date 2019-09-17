@@ -73,7 +73,7 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 			tbl.Columns.AddRange((gridMain.DataSource as BindingList<Column>).ToList());
 			foreach (var c in tbl.Columns)
 			{
-				c.Table = tbl;
+				c.Parent = tbl;
 			}
 			var keyConstraints = new List<KeyConstraint>();
 			foreach (var row in gridMain.Rows.OfType<DataGridViewRow>())

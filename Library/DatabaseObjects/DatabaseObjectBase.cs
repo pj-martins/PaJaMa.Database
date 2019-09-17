@@ -83,8 +83,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		List<ExtendedProperty> ExtendedProperties { get; set; }
 	}
 
-	public interface IObjectWithTable
+	public interface IObjectWithParent
 	{
-		Table Table { get; }
+		DatabaseObjectWithColumns Parent { get; }
 	}
 }

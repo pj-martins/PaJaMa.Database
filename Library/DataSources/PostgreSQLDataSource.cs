@@ -247,7 +247,7 @@ from {0}.INFORMATION_SCHEMA.SEQUENCES";
 
 		internal override string GetCreateIdentity(Column column)
 		{
-			return string.Format(" DEFAULT NEXTVAL('{0}')", column.Table.TableName + "_" + column.ColumnName + "_seq");
+			return string.Format(" DEFAULT NEXTVAL('{0}')", column.Parent.ObjectName + "_" + column.ColumnName + "_seq");
 		}
 
 		internal override string GetColumnAddAlterScript(Column column, Column targetColumn, string postScript, string defaultValue)
@@ -257,7 +257,7 @@ from {0}.INFORMATION_SCHEMA.SEQUENCES";
 			if (targetColumn == null)
 			{
 				sb.AppendLineFormat("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
-				   column.Table.GetObjectNameWithSchema(this),
+				   column.Parent.GetObjectNameWithSchema(this),
 				   column.GetQueryObjectName(this),
 				   dataType,
 				   postScript,
@@ -268,7 +268,7 @@ from {0}.INFORMATION_SCHEMA.SEQUENCES";
 			}
 			else
 			{
-				sb.AppendLineFormat("ALTER TABLE {0}", column.Table.GetObjectNameWithSchema(this));
+				sb.AppendLineFormat("ALTER TABLE {0}", column.Parent.GetObjectNameWithSchema(this));
 				sb.AppendLineFormat("ALTER COLUMN {0} SET DATA TYPE {1}{2},", column.GetQueryObjectName(this), dataType, postScript);
 				sb.AppendLineFormat("ALTER COLUMN {0} {1} DEFAULT {2},", column.GetQueryObjectName(this), string.IsNullOrEmpty(defaultValue) ? "DROP" : "SET",
 					defaultValue);

@@ -20,14 +20,14 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			var items = getStandardItems(string.Format("ALTER TABLE {0} ADD {1};", DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), 
+			var items = getStandardItems(string.Format("ALTER TABLE {0} ADD {1};", DatabaseObject.Parent.GetObjectNameWithSchema(TargetDatabase.DataSource), 
 				TargetDatabase.DataSource.GetKeyConstraintCreateScript(DatabaseObject)));
 
 			if (TargetDatabase.DataSource.BypassKeyConstraints)
 			{
 				foreach (var col in DatabaseObject.Columns)
 				{
-					var tableCol = DatabaseObject.Table.Columns.FirstOrDefault(c => c.ColumnName == col.ColumnName);
+					var tableCol = (DatabaseObject.Parent as DatabaseObjectWithColumns).Columns.FirstOrDefault(c => c.ColumnName == col.ColumnName);
 					if (tableCol != null && !string.IsNullOrEmpty(tableCol.ColumnDefault))
 					{
 						string def = tableCol.ColumnDefault;
@@ -35,7 +35,7 @@ namespace PaJaMa.Database.Library.Synchronization
 							def = def.Substring(1, def.Length - 2);
 
 						items.AddRange(getStandardItems(string.Format("ALTER TABLE {0} ALTER COLUMN \"{1}\" SET DEFAULT {2};",
-							DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), tableCol.ColumnName, def)));
+							DatabaseObject.Parent.GetObjectNameWithSchema(TargetDatabase.DataSource), tableCol.ColumnName, def)));
 					}
 				}
 			}
@@ -46,7 +46,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP CONSTRAINT {1};",
-				DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource),
+				DatabaseObject.Parent.GetObjectNameWithSchema(TargetDatabase.DataSource),
 				DatabaseObject.ConstraintName), sourceParent);
 		}
 
@@ -56,9 +56,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (target != null)
 			{
 				var targetKey = target as KeyConstraint;
-				var childKeys = from t in DatabaseObject.Table.Schema.Tables
+				var childKeys = from t in DatabaseObject.Parent.Schema.Tables
 								from fk in t.ForeignKeys
-								where fk.ParentTable.TableName == targetKey.Table.TableName
+								where fk.ParentTable.TableName == targetKey.Parent.ObjectName
 								select fk;
 				foreach (var childKey in childKeys)
 				{

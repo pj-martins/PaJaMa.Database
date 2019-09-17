@@ -110,7 +110,7 @@ where type = 'table'
 							if (def != DBNull.Value)
 								col.ColumnDefault = def.ToString();
 							col.IsIdentity = rdr["pk"].ToString() == "1";
-							col.Table = tbl;
+							col.Parent = tbl;
 							tbl.Columns.Add(col);
 						}
 					}
@@ -167,8 +167,8 @@ where type = 'table'
 								var constraint = new KeyConstraint(database);
 								constraint.ConstraintName = tbl + "_pkey";
 								constraint.IsPrimaryKey = true;
-								constraint.Table = tbl;
-								constraint.Table.KeyConstraints.Add(constraint);
+								constraint.Parent = tbl;
+								tbl.KeyConstraints.Add(constraint);
 
 								var col = new IndexColumn();
 								col.ColumnName = rdr["name"].ToString();

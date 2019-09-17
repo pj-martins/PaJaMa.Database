@@ -51,7 +51,7 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 			if (numPrecision.Value > 0) col.NumericPrecision = (int)numPrecision.Value;
 			if (numScale.Value > 0) col.NumericScale = (int)numScale.Value;
 			col.Schema = table.Schema;
-			col.Table = table;
+			col.Parent = table;
 			return new ColumnSynchronization(table.Database, col).GetRawCreateText(true);
 		}
 
