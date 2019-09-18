@@ -677,6 +677,7 @@ namespace PaJaMa.Database.Studio.Query
 		private void formatSQL()
 		{
 			txtQuery.Text = FormatHelper.GetFormattedSQL(_dataSource, txtQuery.Text);
+			txtQuery.Focus();
 		}
 
 		public void CommentSelected()
