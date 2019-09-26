@@ -49,6 +49,22 @@ namespace PaJaMa.Database.Studio.Classes
 					output = newOutput;
 				}
 			}
+
+			patterns = new string[]
+			{
+				$"( LIMIT .*?)"
+			};
+
+			foreach (var pattern in patterns)
+			{
+				while ((m = Regex.Match(output, pattern)).Success)
+				{
+					var newOutput = output.Substring(0, m.Groups[1].Index).Trim();
+					newOutput += "\r\n" + output.Substring(m.Groups[1].Index).Trim();
+					output = newOutput;
+				}
+			}
+
 			return output;
 		}
 	}

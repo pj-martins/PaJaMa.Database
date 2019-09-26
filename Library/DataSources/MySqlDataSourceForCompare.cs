@@ -43,7 +43,7 @@ JOIN information_schema.key_column_usage AS kcu
 	AND tc.table_name = kcu.TABLE_NAME
 JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c ON c.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
 	AND c.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
-WHERE constraint_type = 'FOREIGN KEY' AND referenced_table_schema IS NOT NULL";
+WHERE constraint_type = 'FOREIGN KEY' AND referenced_table_schema IS NOT NULL AND tc.CONSTRAINT_SCHEMA <> 'tmp'";
 
         internal override string KeyConstraintSQL => @"select distinct ku.CONSTRAINT_NAME as ConstraintName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as Ordinal2, 
 	ku.TABLE_NAME as TableName, tc.TABLE_SCHEMA as SchemaName, '' as ClusteredNonClustered, true as IsPrimaryKey2, false as Descending2
