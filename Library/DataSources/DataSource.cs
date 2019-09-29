@@ -134,13 +134,13 @@ namespace PaJaMa.Database.Library.DataSources
 			{
 				query = $@"select * from (
 				{query}
-				) z where SchemaName = '{forSchema}'";
+				) z where {GetConvertedObjectName("SchemaName")} = '{forSchema}'";
 			}
 			else if (!includeSystemSchemas && SystemSchemaNames.Count > 0)
 			{
 				query = $@"select * from (
 				{query}
-				) z where SchemaName is null or SchemaName not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
+				) z where {GetConvertedObjectName("SchemaName")} is null or {GetConvertedObjectName("SchemaName")} not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
 			}
 			query += additionalPostWhere;
 			cmd.CommandText = query;
