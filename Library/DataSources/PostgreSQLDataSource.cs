@@ -26,68 +26,68 @@ namespace PaJaMa.Database.Library.DataSources
 		public override List<string> SurroundingCharacters => new List<string>() { "\"" };
 
 		#region SQLS
-		internal override string SchemaSQL => @"select schema_name as SchemaName, schema_owner as SchemaOwner from {0}.information_schema.schemata
+		internal override string SchemaSQL => @"select schema_name as ""SchemaName"", schema_owner as ""SchemaOwner"" from {0}.information_schema.schemata
 ";
 
 		internal override string RoutineSynonymSQL => @"
 select 
-	n.nspname as SchemaName, 
-	proname as Name, 
+	n.nspname as ""SchemaName"", 
+	proname as ""Name"", 
 	-- t.typname as Type,
-	'Function' as Type,
-	pg_get_functiondef(p.oid) as Definition
+	'Function' as ""Type"",
+	pg_get_functiondef(p.oid) as ""Definition""
 from pg_proc p
 -- JOIN pg_type t on p.prorettype = t.oid
 JOIN pg_namespace n on n.oid = p.pronamespace
 ";
 
 		internal override string ViewSQL => @"select distinct
-	VIEW_SCHEMA as SchemaName,
-	vcu.VIEW_NAME as ViewName,
-	vcu.COLUMN_NAME as ColumnName,
-	false as IsIdentity,
-	c.DATA_TYPE as DataType,
-	c.CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength,
-	case when c.IS_NULLABLE = 'YES' then true else false end as IsNullable,
-	VIEW_DEFINITION as Definition
+	VIEW_SCHEMA as ""SchemaName"",
+	vcu.VIEW_NAME as ""ViewName"",
+	vcu.COLUMN_NAME as ""ColumnName"",
+	false as ""IsIdentity"",
+	c.DATA_TYPE as ""DataType"",
+	c.CHARACTER_MAXIMUM_LENGTH as ""CharacterMaximumLength"",
+	case when c.IS_NULLABLE = 'YES' then true else false end as ""IsNullable"",
+	VIEW_DEFINITION as ""Definition""
 from {0}.INFORMATION_SCHEMA.VIEW_COLUMN_USAGE vcu
 join {0}.INFORMATION_SCHEMA.COLUMNS c on c.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 	and c.TABLE_NAME = c.TABLE_NAME and c.COLUMN_NAME = vcu.COLUMN_NAME
 join {0}.INFORMATION_SCHEMA.VIEWS v on v.TABLE_NAME = vcu.VIEW_NAME and v.TABLE_SCHEMA = vcu.VIEW_SCHEMA
 ";
-		internal override string TableSQL => @"select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from {0}.INFORMATION_SCHEMA.TABLES 
+		internal override string TableSQL => @"select TABLE_NAME as ""TableName"", TABLE_SCHEMA as ""SchemaName"", null as ""Definition"" from {0}.INFORMATION_SCHEMA.TABLES 
 where TABLE_TYPE = 'BASE TABLE'";
 
 		internal override string ColumnSQL => @"
-select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
-	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
-    case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then true else false end as IsNullable, case when is_identity = 'NO' then false else true end as IsIdentity,
-	COLUMN_DEFAULT as ColumnDefault, ConstraintName, null as Formula, NUMERIC_PRECISION as NumericPrecision, NUMERIC_SCALE as NumericScale,
-	co.TABLE_SCHEMA as SchemaName, udt_name as UDTName
+select co.TABLE_NAME as ""TableName"", COLUMN_NAME as ""ColumnName"", ORDINAL_POSITION as ""OrdinalPosition"", 
+	CHARACTER_MAXIMUM_LENGTH as ""CharacterMaximumLength"", DATA_TYPE as ""DataType"",
+    case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then true else false end as ""IsNullable"", case when is_identity = 'NO' then false else true end as ""IsIdentity"",
+	COLUMN_DEFAULT as ""ColumnDefault"", ""ConstraintName"", null as ""Formula"", NUMERIC_PRECISION as ""NumericPrecision"", NUMERIC_SCALE as ""NumericScale"",
+	co.TABLE_SCHEMA as ""SchemaName"", udt_name as ""UDTName""
 from {0}.INFORMATION_SCHEMA.COLUMNS co
 join {0}.INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME
 left join
 (
 	select 
-		t.relname as TableName,
-		coalesce(c.conname, 'DF_' || t.relname || '_' || a.attname) as ConstraintName,
-		a.attname as ColumnName,
-		d.adsrc as ColumnDefault,
-		n.nspname as SchemaName
+		t.relname as ""TableName"",
+		coalesce(c.conname, 'DF_' || t.relname || '_' || a.attname) as ""ConstraintName"",
+		a.attname as ""ColumnName"",
+		d.adsrc as ""ColumnDefault"",
+		n.nspname as ""SchemaName""
 	from pg_constraint c
 	join pg_class t on t.oid = c.conrelid
 	join pg_attribute a on a.attrelid = c.conrelid and ARRAY[attnum] <@ c.conkey
 	join pg_attrdef d on d.adnum = a.attnum and d.adrelid = t.oid
 	join pg_catalog.pg_namespace n on n.oid = t.relnamespace
-) dc on dc.tablename = co.table_name and dc.columnname = co.column_name and dc.schemaname = co.table_schema and dc.columndefault = co.column_default
+) dc on dc.""TableName"" = co.table_name and dc.""ColumnName"" = co.column_name and dc.""SchemaName"" = co.table_schema and dc.""ColumnDefault"" = co.column_default
 where t.TABLE_TYPE = 'BASE TABLE'
 ";
 
 		internal override string ForeignKeySQL => @"
 SELECT distinct
-    tc.constraint_name as ForeignKeyName, tc.table_name as ChildTableName, kcu.column_name as ChildColumnName, 
-    ccu.table_name AS ParentTableName, ccu.column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
-	ccu.TABLE_SCHEMA as ParentTableSchema, tc.TABLE_SCHEMA as ChildTableSchema, tc.CONSTRAINT_SCHEMA as SchemaName
+    tc.constraint_name as ""ForeignKeyName"", tc.table_name as ""ChildTableName"", kcu.column_name as ""ChildColumnName"", 
+    ccu.table_name AS ""ParentTableName"", ccu.column_name AS ""ParentColumnName"", UPDATE_RULE as ""UpdateRule"", DELETE_RULE as ""DeleteRule"",
+	ccu.TABLE_SCHEMA as ""ParentTableSchema"", tc.TABLE_SCHEMA as ""ChildTableSchema"", tc.CONSTRAINT_SCHEMA as ""SchemaName""
 FROM 
     {0}.information_schema.table_constraints AS tc 
 JOIN {0}.information_schema.key_column_usage AS kcu
@@ -100,8 +100,8 @@ join {0}.INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c on c.CONSTRAINT_NAME = tc.
 WHERE constraint_type = 'FOREIGN KEY'
 ";
 		internal override string KeyConstraintSQL => @"
-select ku.CONSTRAINT_NAME as ConstraintName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as Ordinal, 
-	ku.TABLE_NAME as TableName, tc.TABLE_SCHEMA as SchemaName, '' as ClusteredNonClustered, true as IsPrimaryKey, false as Descending
+select ku.CONSTRAINT_NAME as ""ConstraintName"", COLUMN_NAME as ""ColumnName"", ORDINAL_POSITION as ""Ordinal"", 
+	ku.TABLE_NAME as ""TableName"", tc.TABLE_SCHEMA as ""SchemaName"", '' as ""ClusteredNonClustered"", true as ""IsPrimaryKey"", false as ""Descending""
 FROM {0}.INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS tc
 INNER JOIN {0}.INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS ku
 ON tc.CONSTRAINT_TYPE = 'PRIMARY KEY' 
@@ -167,7 +167,7 @@ SELECT
 	trigger_name as TriggerName,
 	event_object_schema as SchemaName,
 	event_manipulation as OnInsertUpdateDelete,
-	action_statement as Definition,
+	action_statement as ""Definition"",
 	action_timing as BeforeAfter
 FROM {0}.information_schema.triggers
 ";
@@ -184,7 +184,7 @@ from {0}.INFORMATION_SCHEMA.SEQUENCES";
 
 		internal override string ExtensionSQL => "select *, ''::text as SchemaName from pg_available_extensions where installed_version <> ''";
 
-		internal override string DatabaseSQL => "select \"datname\" as DatabaseName from \"pg_database\"";
+		internal override string DatabaseSQL => "select \"datname\" as \"DatabaseName\" from \"pg_database\"";
 
 		#endregion
 

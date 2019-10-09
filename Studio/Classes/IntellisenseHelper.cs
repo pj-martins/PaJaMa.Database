@@ -41,15 +41,20 @@ namespace PaJaMa.Database.Studio.Classes
 				{
 					var obj = toCheck[i + 1];
 					var parts = obj.Split('.');
-					var db = parts.Length > 1 ? _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == stripSurroundingChars(parts[0].ToLower())) : _dataSource.CurrentDatabase;
+					Schema schema = null;
+					Library.DatabaseObjects.Database db = null;
+					if (parts.Length > 1) db = _dataSource.Databases.FirstOrDefault(d => d.DatabaseName.ToLower() == stripSurroundingChars(parts[0].ToLower()));
+					if (db == null) db = _dataSource.CurrentDatabase;
 					if (db != null)
 					{
 						if (db.Schemas == null) _dataSource.PopulateSchemas(connection, db);
 						var noSchema = db.Schemas.Count == 1 && string.IsNullOrEmpty(db.Schemas[0].SchemaName);
-						var schema = db.Schemas[0];
+						schema = db.Schemas[0];
 						if (!noSchema)
 						{
-							schema = db.Schemas.First(s => s.SchemaName.ToLower() == (parts.Length > 2 ? stripSurroundingChars(parts[1]) : _dataSource.DefaultSchemaName));
+							if (parts.Length > 2) schema = db.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == stripSurroundingChars(parts[1]));
+							if (schema == null && parts.Length > 1) schema = db.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == stripSurroundingChars(parts[0]));
+							if (schema == null) schema = db.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == db.DataSource.DefaultSchemaName.ToLower());
 						}
 						if (!schema.Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { schema }, false);
 						var table = schema.Tables.FirstOrDefault(t => t.TableName.ToLower() == stripSurroundingChars(parts.Last().ToLower()));
@@ -157,6 +162,7 @@ namespace PaJaMa.Database.Studio.Classes
 				{
 					matches.AddRange(getSortObjects<Schema>(_dataSource.CurrentDatabase.Schemas, partial).Select(s => new IntellisenseMatch(_dataSource.GetConvertedObjectName(s.SchemaName), $"{s.Database.DatabaseName}.{s.SchemaName}")));
 					var defSchema = _dataSource.CurrentDatabase.Schemas.FirstOrDefault(s => s.SchemaName == _dataSource.DefaultSchemaName);
+					// if (!defSchema.Tables.Any()) _dataSource.PopulateTables(connection, new Schema[] { defSchema }, false);
 					matches.AddRange(getSortObjects<Table>(defSchema.Tables, partial).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
 							$"{t.Database.DatabaseName}.{(noSchema ? "" : $"{t.Schema.SchemaName}.")}{t.TableName}")));
 				}
