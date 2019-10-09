@@ -996,7 +996,7 @@ namespace PaJaMa.Database.Studio.Query
 						var tableNodes = tblHeaderNode.Nodes.Find(obj.Database.DatabaseName + "_" + tableName, true);
 						foreach (var tableNode in tableNodes)
 						{
-							if (!string.IsNullOrEmpty(txtSearchTable.Text) && tableNode.Text.ToLower().Contains(txtSearchTable.Text.ToLower()))
+							if (!string.IsNullOrEmpty(txtSearchTable.Text) && tableNode.Text.ToLower().Contains(txtSearchTable.Text.Replace("*", "").ToLower()))
 							{
 								tableNode.BackColor = Color.Yellow;
 								_coloredNodes.Add(tableNode);
@@ -1010,7 +1010,7 @@ namespace PaJaMa.Database.Studio.Query
 								var columnNodes = columnHeaderNode.Nodes.Find(obj.Database.DatabaseName + "_" + tableName + "_" + col.ColumnName, true);
 								foreach (var columnNode in columnNodes)
 								{
-									if (columnNode.Text.ToLower().Contains(txtSearchColumn.Text.ToLower()))
+									if (columnNode.Text.ToLower().Contains(txtSearchColumn.Text.Replace("*", "").ToLower()))
 									{
 										columnNode.BackColor = Color.Yellow;
 										_coloredNodes.Add(columnNode);
