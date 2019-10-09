@@ -146,6 +146,7 @@ namespace PaJaMa.Database.Studio.Compare
 				refreshPage(false);
 
 				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+				if (string.IsNullOrEmpty(settings.ConnectionStrings)) settings.ConnectionStrings = string.Empty;
 				List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
 				if (!connStrings.Any(s => s == cboSource.Text))
 					connStrings.Add(cboSource.Text);

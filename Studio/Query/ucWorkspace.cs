@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -199,7 +200,8 @@ namespace PaJaMa.Database.Studio.Query
 
 			foreach (var db in _dataSource.Databases)
 			{
-				var node = treeTables.Nodes.Add(db.DatabaseName);
+				if (db.DatabaseName == "information_schema") continue;
+				var node = treeTables.Nodes.Add(db.DatabaseName, db.DatabaseName);
 				node.Nodes.Add(NONE);
 				node.Tag = db;
 			}
@@ -328,14 +330,14 @@ namespace PaJaMa.Database.Studio.Query
 								  orderby t.TableName
 								  select t)
 			{
-				var node2 = parentNode.Nodes.Add(table.TableName);
+				var node2 = parentNode.Nodes.Add(table.Database + "_" + table.TableName, table.TableName);
 				node2.Tag = table;
 				var node3 = node2.Nodes.Add("Columns");
 				if (table.Columns.Any())
 				{
 					foreach (var column in table.Columns)
 					{
-						var node4 = node3.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName +
+						var node4 = node3.Nodes.Add(table.Database + "_" + table.TableName + "_" + column.ColumnName, column.ColumnName + " (" + column.ColumnType.TypeName +
 							(column.CharacterMaximumLength.GetValueOrDefault() > 0 ? " (" + column.CharacterMaximumLength.Value.ToString() + ")" : "") +
 							", " + (column.IsNullable ? "null" : "not null") + ")");
 						node4.Tag = column;
@@ -367,7 +369,7 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			foreach (var column in table.Columns)
 			{
-				var node = parentNode.Nodes.Add(column.ColumnName + " (" + column.ColumnType.TypeName +
+				var node = parentNode.Nodes.Add(table.Database + "_" + table.TableName + "_" + column.ColumnName, column.ColumnName + " (" + column.ColumnType.TypeName +
 						(column.CharacterMaximumLength != null && column.CharacterMaximumLength.GetValueOrDefault() > 0 ? "(" + column.CharacterMaximumLength.Value.ToString() + ")" : "")
 						+ ", " + (column.IsNullable ? "null" : "not null") + ")");
 				node.Tag = column;
@@ -943,6 +945,95 @@ namespace PaJaMa.Database.Studio.Query
 				}
 			};
 			frm.Show();
+		}
+
+		private void BtnSearch_Click(object sender, EventArgs e)
+		{
+			pnlSearch.Visible = !pnlSearch.Visible;
+			clearColoredNodes();
+		}
+
+		private List<TreeNode> _coloredNodes;
+		private void clearColoredNodes()
+		{
+			if (_coloredNodes != null)
+			{
+				foreach (var n in _coloredNodes)
+				{
+					n.BackColor = Color.White;
+				}
+				_coloredNodes = null;
+			}
+			btnListResults.Visible = false;
+		}
+
+		private void BtnDoSearch_Click(object sender, EventArgs e)
+		{
+			clearColoredNodes();
+			if (string.IsNullOrEmpty(txtSearchColumn.Text) && string.IsNullOrEmpty(txtSearchTable.Text)) return;
+			_coloredNodes = new List<TreeNode>();
+			List<DatabaseObjectBase> objs = null;
+			BackgroundWorker worker = new BackgroundWorker();
+			worker.DoWork += (object sender2, DoWorkEventArgs e2) =>
+			{
+				objs = _dataSource.SearchObjects(_currentConnection, txtSearchTable.Text, txtSearchColumn.Text, worker);
+			};
+
+			WinControls.WinProgressBox.ShowProgress(worker, "Searching", this, true);
+
+			if (objs != null)
+			{
+				treeTables.SuspendLayout();
+				foreach (var obj in objs)
+				{
+					var nodes = treeTables.Nodes.Find(obj.Database.DatabaseName, false);
+					foreach (var node in nodes)
+					{
+						node.Expand();
+						var tblHeaderNode = node.Nodes.OfType<TreeNode>().First(n => n.Text == SchemaNodeType.Tables.ToString());
+						tblHeaderNode.Expand();
+						var tableName = obj is Table tbl ? tbl.TableName : (obj as Column).Parent.ObjectName;
+						var tableNodes = tblHeaderNode.Nodes.Find(obj.Database.DatabaseName + "_" + tableName, true);
+						foreach (var tableNode in tableNodes)
+						{
+							if (!string.IsNullOrEmpty(txtSearchTable.Text) && tableNode.Text.ToLower().Contains(txtSearchTable.Text.ToLower()))
+							{
+								tableNode.BackColor = Color.Yellow;
+								_coloredNodes.Add(tableNode);
+							}
+
+							if (obj is Column col)
+							{
+								tableNode.Expand();
+								var columnHeaderNode = tableNode.Nodes.OfType<TreeNode>().First(n => n.Text == "Columns");
+								columnHeaderNode.Expand();
+								var columnNodes = columnHeaderNode.Nodes.Find(obj.Database.DatabaseName + "_" + tableName + "_" + col.ColumnName, true);
+								foreach (var columnNode in columnNodes)
+								{
+									if (columnNode.Text.ToLower().Contains(txtSearchColumn.Text.ToLower()))
+									{
+										columnNode.BackColor = Color.Yellow;
+										_coloredNodes.Add(columnNode);
+									}
+								}
+							}
+						}
+					}
+				}
+				treeTables.ResumeLayout();
+			}
+
+			btnListResults.Visible = _coloredNodes != null && _coloredNodes.Any();
+			if (btnListResults.Visible) btnListResults.Text = "(" + _coloredNodes.Count + ") results";
+		}
+
+		private void btnListResults_Click(object sender, EventArgs e)
+		{
+			if (_coloredNodes != null && _coloredNodes.Any())
+			{
+				MessageBox.Show(string.Join("\r\n", _coloredNodes.Select(n => (n.Tag as DatabaseObjectBase).Database.DatabaseName + "." +
+					(n.Tag is Column col ? col.Parent.ObjectName + "." + col.ColumnName : (n.Tag as Table).TableName))));
+			}
 		}
 	}
 }

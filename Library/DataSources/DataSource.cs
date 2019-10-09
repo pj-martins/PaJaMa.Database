@@ -749,5 +749,54 @@ ON UPDATE {6}
 			throw new NotImplementedException();
 		}
 
+		// TODO: dbs and schemas??
+		public virtual List<DatabaseObjectBase> SearchObjects(DbConnection connection, string tableSearch, string columnSearch, BackgroundWorker worker = null)
+		{
+			var objs = new List<DatabaseObjectBase>();
+			using (var cmd = connection.CreateCommand())
+			{
+				int totalProgress = Databases.Count;
+				int currProgress = 1;
+				// TODO: performance?
+				foreach (var db in Databases)
+				{
+					if (db.DatabaseName == "information_schema") continue;
+
+					if (worker.CancellationPending) return null;
+					if (worker != null) worker.ReportProgress(100 * (currProgress++) / totalProgress, "Searching " + db.DatabaseName);
+					var dt = new System.Data.DataTable();
+					if (!string.IsNullOrEmpty(columnSearch))
+					{
+						cmd.CommandText = $"select SchemaName, TableName, ColumnName from ({string.Format(this.ColumnSQL, db.DatabaseName)}) z where ColumnName like '{columnSearch.Replace("'", "''").Replace("*", "%")}'";
+						if (!string.IsNullOrEmpty(tableSearch))
+							cmd.CommandText += $" and TableName like '{tableSearch.Replace("'", "''").Replace("*", "%")}'";
+						using (var rdr = cmd.ExecuteReader()) dt.Load(rdr);
+					}
+					else if (!string.IsNullOrEmpty(tableSearch))
+					{
+						cmd.CommandText = $"select SchemaName, TableName, null as ColumnName from ({string.Format(this.TableSQL, db.DatabaseName)}) z where TableName like '{tableSearch.Replace("'", "''").Replace("*", "%")}'";
+						using (var rdr = cmd.ExecuteReader()) dt.Load(rdr);
+					}
+
+					foreach (System.Data.DataRow dataRow in dt.Rows)
+					{
+						if (db.Schemas == null || !db.Schemas.Any()) PopulateSchemas(connection, db);
+						var schema = string.IsNullOrEmpty(dataRow["SchemaName"].ToString()) ? db.Schemas[0] : db.Schemas.First(s => s.SchemaName == dataRow["SchemaName"].ToString());
+						if (!schema.Tables.Any()) PopulateTables(connection, new Schema[] { schema }, false);
+						var tbl = schema.Tables.First(t => t.TableName == dataRow["TableName"].ToString());
+						if (dataRow["ColumnName"] != DBNull.Value)
+						{
+							if (!tbl.Columns.Any()) PopulateChildColumns(connection, tbl);
+							objs.Add(tbl.Columns.First(c => c.ColumnName == dataRow["ColumnName"].ToString()));
+						}
+						else
+						{
+							objs.Add(tbl);
+						}
+					}
+				}
+			}
+			return objs;
+		}
 	}
 }
