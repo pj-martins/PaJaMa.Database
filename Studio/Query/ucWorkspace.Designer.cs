@@ -61,6 +61,8 @@
 			this.label3 = new System.Windows.Forms.Label();
 			this.btnDoSearch = new System.Windows.Forms.Button();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
+			this.txtSearchDatabase = new System.Windows.Forms.TextBox();
+			this.label2 = new System.Windows.Forms.Label();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -180,9 +182,9 @@
 			// 
 			this.treeTables.ContextMenuStrip = this.mnuTree;
 			this.treeTables.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.treeTables.Location = new System.Drawing.Point(0, 82);
+			this.treeTables.Location = new System.Drawing.Point(0, 105);
 			this.treeTables.Name = "treeTables";
-			this.treeTables.Size = new System.Drawing.Size(213, 545);
+			this.treeTables.Size = new System.Drawing.Size(213, 522);
 			this.treeTables.TabIndex = 8;
 			this.treeTables.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.treeTables_BeforeExpand);
 			this.treeTables.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.treeTables_NodeMouseClick);
@@ -305,6 +307,8 @@
 			// 
 			// pnlSearch
 			// 
+			this.pnlSearch.Controls.Add(this.txtSearchDatabase);
+			this.pnlSearch.Controls.Add(this.label2);
 			this.pnlSearch.Controls.Add(this.btnListResults);
 			this.pnlSearch.Controls.Add(this.txtSearchColumn);
 			this.pnlSearch.Controls.Add(this.label4);
@@ -314,14 +318,14 @@
 			this.pnlSearch.Dock = System.Windows.Forms.DockStyle.Top;
 			this.pnlSearch.Location = new System.Drawing.Point(0, 0);
 			this.pnlSearch.Name = "pnlSearch";
-			this.pnlSearch.Size = new System.Drawing.Size(213, 82);
+			this.pnlSearch.Size = new System.Drawing.Size(213, 105);
 			this.pnlSearch.TabIndex = 9;
 			this.pnlSearch.Visible = false;
 			// 
 			// btnListResults
 			// 
 			this.btnListResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnListResults.Location = new System.Drawing.Point(69, 56);
+			this.btnListResults.Location = new System.Drawing.Point(69, 79);
 			this.btnListResults.Name = "btnListResults";
 			this.btnListResults.Size = new System.Drawing.Size(85, 23);
 			this.btnListResults.TabIndex = 7;
@@ -334,15 +338,15 @@
 			// 
 			this.txtSearchColumn.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtSearchColumn.Location = new System.Drawing.Point(69, 32);
+			this.txtSearchColumn.Location = new System.Drawing.Point(69, 55);
 			this.txtSearchColumn.Name = "txtSearchColumn";
 			this.txtSearchColumn.Size = new System.Drawing.Size(141, 20);
-			this.txtSearchColumn.TabIndex = 6;
+			this.txtSearchColumn.TabIndex = 1002;
 			// 
 			// label4
 			// 
 			this.label4.AutoSize = true;
-			this.label4.Location = new System.Drawing.Point(10, 35);
+			this.label4.Location = new System.Drawing.Point(10, 58);
 			this.label4.Name = "label4";
 			this.label4.Size = new System.Drawing.Size(42, 13);
 			this.label4.TabIndex = 5;
@@ -352,15 +356,15 @@
 			// 
 			this.txtSearchTable.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtSearchTable.Location = new System.Drawing.Point(69, 6);
+			this.txtSearchTable.Location = new System.Drawing.Point(69, 29);
 			this.txtSearchTable.Name = "txtSearchTable";
 			this.txtSearchTable.Size = new System.Drawing.Size(141, 20);
-			this.txtSearchTable.TabIndex = 4;
+			this.txtSearchTable.TabIndex = 1001;
 			// 
 			// label3
 			// 
 			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(10, 9);
+			this.label3.Location = new System.Drawing.Point(10, 32);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(34, 13);
 			this.label3.TabIndex = 3;
@@ -369,7 +373,7 @@
 			// btnDoSearch
 			// 
 			this.btnDoSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnDoSearch.Location = new System.Drawing.Point(161, 56);
+			this.btnDoSearch.Location = new System.Drawing.Point(161, 79);
 			this.btnDoSearch.Name = "btnDoSearch";
 			this.btnDoSearch.Size = new System.Drawing.Size(49, 23);
 			this.btnDoSearch.TabIndex = 0;
@@ -390,6 +394,24 @@
 			this.tabOutputs.Visible = false;
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
+			// 
+			// txtSearchDatabase
+			// 
+			this.txtSearchDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSearchDatabase.Location = new System.Drawing.Point(69, 3);
+			this.txtSearchDatabase.Name = "txtSearchDatabase";
+			this.txtSearchDatabase.Size = new System.Drawing.Size(141, 20);
+			this.txtSearchDatabase.TabIndex = 1000;
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(10, 6);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(53, 13);
+			this.label2.TabIndex = 8;
+			this.label2.Text = "Database";
 			// 
 			// ucWorkspace
 			// 
@@ -450,6 +472,8 @@
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.Button btnDoSearch;
 		private System.Windows.Forms.Button btnListResults;
+		private System.Windows.Forms.TextBox txtSearchDatabase;
+		private System.Windows.Forms.Label label2;
 	}
 }
 

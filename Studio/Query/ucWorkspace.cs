@@ -976,7 +976,7 @@ namespace PaJaMa.Database.Studio.Query
 			BackgroundWorker worker = new BackgroundWorker();
 			worker.DoWork += (object sender2, DoWorkEventArgs e2) =>
 			{
-				objs = _dataSource.SearchObjects(_currentConnection, txtSearchTable.Text, txtSearchColumn.Text, worker);
+				objs = _dataSource.SearchObjects(_currentConnection, txtSearchDatabase.Text, txtSearchTable.Text, txtSearchColumn.Text, worker);
 			};
 
 			WinControls.WinProgressBox.ShowProgress(worker, "Searching", this, true);
@@ -990,7 +990,19 @@ namespace PaJaMa.Database.Studio.Query
 					foreach (var node in nodes)
 					{
 						node.Expand();
-						var tblHeaderNode = node.Nodes.OfType<TreeNode>().First(n => n.Text == SchemaNodeType.Tables.ToString());
+						var childNode = node;
+						var schema = obj.Schema;
+						if (schema == null && obj is Column c)
+						{
+							schema = c.Parent.Schema;
+						}
+						if (schema != null && !string.IsNullOrEmpty(schema.SchemaName))
+						{
+							childNode = node.Nodes.OfType<TreeNode>().First(n => n.Text == schema.SchemaName);
+							childNode.Expand();
+						}
+
+						var tblHeaderNode = childNode.Nodes.OfType<TreeNode>().First(n => n.Text == SchemaNodeType.Tables.ToString());
 						tblHeaderNode.Expand();
 						var tableName = obj is Table tbl ? tbl.TableName : (obj as Column).Parent.ObjectName;
 						var tableNodes = tblHeaderNode.Nodes.Find(obj.Database.DatabaseName + "_" + tableName, true);
