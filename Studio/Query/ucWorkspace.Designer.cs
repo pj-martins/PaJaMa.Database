@@ -37,6 +37,7 @@
 			this.cboServer = new System.Windows.Forms.ComboBox();
 			this.btnDisconnect = new System.Windows.Forms.Button();
 			this.pnlControls = new System.Windows.Forms.Panel();
+			this.btnSearch = new System.Windows.Forms.Button();
 			this.lblConnString = new System.Windows.Forms.Label();
 			this.treeTables = new System.Windows.Forms.TreeView();
 			this.mnuTree = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -52,15 +53,14 @@
 			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.scriptInsertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
-			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
-			this.btnSearch = new System.Windows.Forms.Button();
 			this.pnlSearch = new System.Windows.Forms.Panel();
-			this.btnDoSearch = new System.Windows.Forms.Button();
-			this.txtSearchTable = new System.Windows.Forms.TextBox();
-			this.label3 = new System.Windows.Forms.Label();
+			this.btnListResults = new System.Windows.Forms.Button();
 			this.txtSearchColumn = new System.Windows.Forms.TextBox();
 			this.label4 = new System.Windows.Forms.Label();
-			this.btnListResults = new System.Windows.Forms.Button();
+			this.txtSearchTable = new System.Windows.Forms.TextBox();
+			this.label3 = new System.Windows.Forms.Label();
+			this.btnDoSearch = new System.Windows.Forms.Button();
+			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -156,6 +156,16 @@
 			this.pnlControls.Size = new System.Drawing.Size(997, 40);
 			this.pnlControls.TabIndex = 4;
 			this.pnlControls.Visible = false;
+			// 
+			// btnSearch
+			// 
+			this.btnSearch.Location = new System.Drawing.Point(123, 8);
+			this.btnSearch.Name = "btnSearch";
+			this.btnSearch.Size = new System.Drawing.Size(102, 23);
+			this.btnSearch.TabIndex = 11;
+			this.btnSearch.Text = "Search";
+			this.btnSearch.UseVisualStyleBackColor = true;
+			this.btnSearch.Click += new System.EventHandler(this.BtnSearch_Click);
 			// 
 			// lblConnString
 			// 
@@ -293,30 +303,6 @@
 			this.splitMain.SplitterDistance = 213;
 			this.splitMain.TabIndex = 9;
 			// 
-			// tabOutputs
-			// 
-			this.tabOutputs.AllowAdd = true;
-			this.tabOutputs.AllowRemove = true;
-			this.tabOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.tabOutputs.Location = new System.Drawing.Point(0, 0);
-			this.tabOutputs.Name = "tabOutputs";
-			this.tabOutputs.SelectedTab = null;
-			this.tabOutputs.Size = new System.Drawing.Size(780, 627);
-			this.tabOutputs.TabIndex = 0;
-			this.tabOutputs.Visible = false;
-			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
-			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
-			// 
-			// btnSearch
-			// 
-			this.btnSearch.Location = new System.Drawing.Point(123, 8);
-			this.btnSearch.Name = "btnSearch";
-			this.btnSearch.Size = new System.Drawing.Size(102, 23);
-			this.btnSearch.TabIndex = 11;
-			this.btnSearch.Text = "Search";
-			this.btnSearch.UseVisualStyleBackColor = true;
-			this.btnSearch.Click += new System.EventHandler(this.BtnSearch_Click);
-			// 
 			// pnlSearch
 			// 
 			this.pnlSearch.Controls.Add(this.btnListResults);
@@ -332,34 +318,17 @@
 			this.pnlSearch.TabIndex = 9;
 			this.pnlSearch.Visible = false;
 			// 
-			// btnDoSearch
+			// btnListResults
 			// 
-			this.btnDoSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnDoSearch.Location = new System.Drawing.Point(135, 56);
-			this.btnDoSearch.Name = "btnDoSearch";
-			this.btnDoSearch.Size = new System.Drawing.Size(75, 23);
-			this.btnDoSearch.TabIndex = 0;
-			this.btnDoSearch.Text = "Search";
-			this.btnDoSearch.UseVisualStyleBackColor = true;
-			this.btnDoSearch.Click += new System.EventHandler(this.BtnDoSearch_Click);
-			// 
-			// txtSearchTable
-			// 
-			this.txtSearchTable.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtSearchTable.Location = new System.Drawing.Point(69, 6);
-			this.txtSearchTable.Name = "txtSearchTable";
-			this.txtSearchTable.Size = new System.Drawing.Size(141, 20);
-			this.txtSearchTable.TabIndex = 4;
-			// 
-			// label3
-			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(10, 9);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(34, 13);
-			this.label3.TabIndex = 3;
-			this.label3.Text = "Table";
+			this.btnListResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnListResults.Location = new System.Drawing.Point(69, 56);
+			this.btnListResults.Name = "btnListResults";
+			this.btnListResults.Size = new System.Drawing.Size(85, 23);
+			this.btnListResults.TabIndex = 7;
+			this.btnListResults.Text = "List Results";
+			this.btnListResults.UseVisualStyleBackColor = true;
+			this.btnListResults.Visible = false;
+			this.btnListResults.Click += new System.EventHandler(this.btnListResults_Click);
 			// 
 			// txtSearchColumn
 			// 
@@ -379,17 +348,48 @@
 			this.label4.TabIndex = 5;
 			this.label4.Text = "Column";
 			// 
-			// btnListResults
+			// txtSearchTable
 			// 
-			this.btnListResults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnListResults.Location = new System.Drawing.Point(44, 56);
-			this.btnListResults.Name = "btnListResults";
-			this.btnListResults.Size = new System.Drawing.Size(85, 23);
-			this.btnListResults.TabIndex = 7;
-			this.btnListResults.Text = "List Results";
-			this.btnListResults.UseVisualStyleBackColor = true;
-			this.btnListResults.Visible = false;
-			this.btnListResults.Click += new System.EventHandler(this.btnListResults_Click);
+			this.txtSearchTable.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSearchTable.Location = new System.Drawing.Point(69, 6);
+			this.txtSearchTable.Name = "txtSearchTable";
+			this.txtSearchTable.Size = new System.Drawing.Size(141, 20);
+			this.txtSearchTable.TabIndex = 4;
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Location = new System.Drawing.Point(10, 9);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(34, 13);
+			this.label3.TabIndex = 3;
+			this.label3.Text = "Table";
+			// 
+			// btnDoSearch
+			// 
+			this.btnDoSearch.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnDoSearch.Location = new System.Drawing.Point(161, 56);
+			this.btnDoSearch.Name = "btnDoSearch";
+			this.btnDoSearch.Size = new System.Drawing.Size(49, 23);
+			this.btnDoSearch.TabIndex = 0;
+			this.btnDoSearch.Text = "Go";
+			this.btnDoSearch.UseVisualStyleBackColor = true;
+			this.btnDoSearch.Click += new System.EventHandler(this.BtnDoSearch_Click);
+			// 
+			// tabOutputs
+			// 
+			this.tabOutputs.AllowAdd = true;
+			this.tabOutputs.AllowRemove = true;
+			this.tabOutputs.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tabOutputs.Location = new System.Drawing.Point(0, 0);
+			this.tabOutputs.Name = "tabOutputs";
+			this.tabOutputs.SelectedTab = null;
+			this.tabOutputs.Size = new System.Drawing.Size(780, 627);
+			this.tabOutputs.TabIndex = 0;
+			this.tabOutputs.Visible = false;
+			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
+			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
 			// ucWorkspace
 			// 
