@@ -63,6 +63,7 @@
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
 			this.txtSearchDatabase = new System.Windows.Forms.TextBox();
 			this.label2 = new System.Windows.Forms.Label();
+			this.collapseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -204,9 +205,10 @@
             this.newColumnToolStripMenuItem,
             this.deleteToolStripMenuItem,
             this.newTableToolStripMenuItem,
-            this.scriptInsertToolStripMenuItem});
+            this.scriptInsertToolStripMenuItem,
+            this.collapseAllToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(164, 246);
+			this.mnuTree.Size = new System.Drawing.Size(181, 290);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
@@ -413,6 +415,13 @@
 			this.label2.TabIndex = 8;
 			this.label2.Text = "Database";
 			// 
+			// collapseAllToolStripMenuItem
+			// 
+			this.collapseAllToolStripMenuItem.Name = "collapseAllToolStripMenuItem";
+			this.collapseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.collapseAllToolStripMenuItem.Text = "Collapse &All";
+			this.collapseAllToolStripMenuItem.Click += new System.EventHandler(this.CollapseAllToolStripMenuItem_Click);
+			// 
 			// ucWorkspace
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -474,6 +483,7 @@
 		private System.Windows.Forms.Button btnListResults;
 		private System.Windows.Forms.TextBox txtSearchDatabase;
 		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.ToolStripMenuItem collapseAllToolStripMenuItem;
 	}
 }
 

@@ -1047,5 +1047,14 @@ namespace PaJaMa.Database.Studio.Query
 					(n.Tag is Column col ? col.Parent.ObjectName + "." + col.ColumnName : (n.Tag as Table).TableName))));
 			}
 		}
+
+		private void CollapseAllToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			if (treeTables.SelectedNode == null) return;
+			foreach (TreeNode node in treeTables.SelectedNode.Nodes)
+			{
+				if (node.IsExpanded) node.Collapse();
+			}
+		}
 	}
 }
