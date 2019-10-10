@@ -66,21 +66,21 @@ where p.type in ('U', 'S') and p.name not in ('INFORMATION_SCHEMA', 'sys', 'gues
 
 		internal override string CredentialSQL => "select name as CredentialName, credential_identity as CredentialIdentity from {0}.sys.credentials";
 
-		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from {0}.INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
+		internal override string TableSQL => "select TABLE_NAME as TableName, TABLE_SCHEMA as SchemaName, null as Definition from [{0}].INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE'";
 
 		internal override string ColumnSQL => @"select TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition, 
 	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength, DATA_TYPE as DataType,
     IsNullable = convert(bit, case when UPPER(ltrim(rtrim(co.IS_NULLABLE))) = 'YES' then 1 else 0 end), convert(bit, COLUMNPROPERTY(object_id(co.TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME, 'IsIdentity')) as IsIdentity, d.name as ConstraintName,
 	isnull(d.definition, COLUMN_DEFAULT) as ColumnDefault, cm.definition as Formula, convert(int, NUMERIC_PRECISION) as NumericPrecision, NUMERIC_SCALE as NumericScale,
 	SchemaName = co.TABLE_SCHEMA, IDENT_INCR(co.TABLE_SCHEMA + '.' + TABLE_NAME) AS Increment
-from {0}.INFORMATION_SCHEMA.COLUMNS co
-join {0}.sys.all_columns c on c.name = co.column_name
-join {0}.sys.tables t on t.object_id = c.object_id
+from [{0}].INFORMATION_SCHEMA.COLUMNS co
+join [{0}].sys.all_columns c on c.name = co.column_name
+join [{0}].sys.tables t on t.object_id = c.object_id
 	and t.name = co.TABLE_NAME
-join {0}.sys.schemas sc on sc.schema_id = t.schema_id
+join [{0}].sys.schemas sc on sc.schema_id = t.schema_id
 	and sc.name = co.TABLE_SCHEMA
-left join {0}.sys.default_constraints d on d.object_id = c.default_object_id
-left join {0}.sys.computed_columns cm on cm.name = co.column_name and c.is_computed = 1 and cm.object_id = t.object_id
+left join [{0}].sys.default_constraints d on d.object_id = c.default_object_id
+left join [{0}].sys.computed_columns cm on cm.name = co.column_name and c.is_computed = 1 and cm.object_id = t.object_id
 where 1 = 1 ";
 
 		internal override string ForeignKeySQL => @"

@@ -192,7 +192,7 @@ namespace PaJaMa.Database.Library.DataSources
 			{
 				foreach (var schema in schemas)
 				{
-					populateObjects<Table>(schema.Database, cmd, string.Format(this.TableSQL, GetConvertedObjectName(schema.Database.DatabaseName)), schema.SchemaName, true, string.Empty, string.Empty, null);
+					populateObjects<Table>(schema.Database, cmd, string.Format(this.TableSQL, schema.Database.DatabaseName), schema.SchemaName, true, string.Empty, string.Empty, null);
 					if (andChildren) PopulateColumns(schema.Database, cmd, schema.SchemaName, false, null);
 				}
 
@@ -233,7 +233,7 @@ namespace PaJaMa.Database.Library.DataSources
 			using (var cmd = conn.CreateCommand())
 			{
 				arrayToClear.Clear();
-				populateObjects<TDatabaseObject>(parent.Database, cmd, string.Format(sql, GetConvertedObjectName(parent.Database.DatabaseName)), parent.Schema.SchemaName, true, additionalPreWhere, additionalPostWhere, null);
+				populateObjects<TDatabaseObject>(parent.Database, cmd, string.Format(sql, parent.Database.DatabaseName), parent.Schema.SchemaName, true, additionalPreWhere, additionalPostWhere, null);
 			}
 			if (connection == null)
 			{
@@ -288,7 +288,7 @@ namespace PaJaMa.Database.Library.DataSources
 				var conn = connection ?? OpenConnection(database.DatabaseName);
 				using (var cmd = conn.CreateCommand())
 				{
-					populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, GetConvertedObjectName(database.DatabaseName)), string.Empty, false, string.Empty, string.Empty, null);
+					populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, null);
 				}
 				if (connection == null)
 				{
@@ -768,14 +768,14 @@ ON UPDATE {6}
 					var dt = new System.Data.DataTable();
 					if (!string.IsNullOrEmpty(columnSearch))
 					{
-						cmd.CommandText = $"select SchemaName, TableName, ColumnName from ({string.Format(this.ColumnSQL, GetConvertedObjectName(db.DatabaseName))}) z where ColumnName like '{columnSearch.Replace("'", "''").Replace("*", "%")}'";
+						cmd.CommandText = $"select SchemaName, TableName, ColumnName from ({string.Format(this.ColumnSQL, db.DatabaseName)}) z where ColumnName like '{columnSearch.Replace("'", "''").Replace("*", "%")}'";
 						if (!string.IsNullOrEmpty(tableSearch))
 							cmd.CommandText += $" and TableName like '{tableSearch.Replace("'", "''").Replace("*", "%")}'";
 						using (var rdr = cmd.ExecuteReader()) dt.Load(rdr);
 					}
 					else if (!string.IsNullOrEmpty(tableSearch))
 					{
-						cmd.CommandText = $"select SchemaName, TableName, null as ColumnName from ({string.Format(this.TableSQL, GetConvertedObjectName(db.DatabaseName))}) z where TableName like '{tableSearch.Replace("'", "''").Replace("*", "%")}'";
+						cmd.CommandText = $"select SchemaName, TableName, null as ColumnName from ({string.Format(this.TableSQL, db.DatabaseName)}) z where TableName like '{tableSearch.Replace("'", "''").Replace("*", "%")}'";
 						using (var rdr = cmd.ExecuteReader()) dt.Load(rdr);
 					}
 
