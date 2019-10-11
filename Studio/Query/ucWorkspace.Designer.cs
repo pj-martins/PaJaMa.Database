@@ -52,8 +52,11 @@
 			this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.scriptInsertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.collapseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
 			this.pnlSearch = new System.Windows.Forms.Panel();
+			this.txtSearchDatabase = new System.Windows.Forms.TextBox();
+			this.label2 = new System.Windows.Forms.Label();
 			this.btnListResults = new System.Windows.Forms.Button();
 			this.txtSearchColumn = new System.Windows.Forms.TextBox();
 			this.label4 = new System.Windows.Forms.Label();
@@ -61,9 +64,7 @@
 			this.label3 = new System.Windows.Forms.Label();
 			this.btnDoSearch = new System.Windows.Forms.Button();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
-			this.txtSearchDatabase = new System.Windows.Forms.TextBox();
-			this.label2 = new System.Windows.Forms.Label();
-			this.collapseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -206,87 +207,95 @@
             this.deleteToolStripMenuItem,
             this.newTableToolStripMenuItem,
             this.scriptInsertToolStripMenuItem,
-            this.collapseAllToolStripMenuItem});
+            this.collapseAllToolStripMenuItem,
+            this.searchToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(181, 290);
+			this.mnuTree.Size = new System.Drawing.Size(181, 312);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
 			// 
 			this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-			this.selectToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.selectToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.selectToolStripMenuItem.Text = "Select";
 			this.selectToolStripMenuItem.Click += new System.EventHandler(this.selectToolStripMenuItem_Click);
 			// 
 			// selectTop1000ToolStripMenuItem
 			// 
 			this.selectTop1000ToolStripMenuItem.Name = "selectTop1000ToolStripMenuItem";
-			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.selectTop1000ToolStripMenuItem.Text = "Select Top 1000";
 			this.selectTop1000ToolStripMenuItem.Click += new System.EventHandler(this.selectTop1000ToolStripMenuItem_Click);
 			// 
 			// scriptCreateToolStripMenuItem
 			// 
 			this.scriptCreateToolStripMenuItem.Name = "scriptCreateToolStripMenuItem";
-			this.scriptCreateToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.scriptCreateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.scriptCreateToolStripMenuItem.Text = "Script &Create";
 			this.scriptCreateToolStripMenuItem.Click += new System.EventHandler(this.scriptCreateToolStripMenuItem_Click);
 			// 
 			// renameToolStripMenuItem
 			// 
 			this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
-			this.renameToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.renameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.renameToolStripMenuItem.Text = "Re&name";
 			this.renameToolStripMenuItem.Click += new System.EventHandler(this.RenameToolStripMenuItem_Click);
 			// 
 			// buildQueryToolStripMenuItem
 			// 
 			this.buildQueryToolStripMenuItem.Name = "buildQueryToolStripMenuItem";
-			this.buildQueryToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.buildQueryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.buildQueryToolStripMenuItem.Text = "&Build Query";
 			this.buildQueryToolStripMenuItem.Click += new System.EventHandler(this.buildQueryToolStripMenuItem_Click);
 			// 
 			// refreshToolStripMenuItem
 			// 
 			this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
-			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.refreshToolStripMenuItem.Text = "&Refresh";
 			this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
 			// 
 			// newForeignKeyToolStripMenuItem
 			// 
 			this.newForeignKeyToolStripMenuItem.Name = "newForeignKeyToolStripMenuItem";
-			this.newForeignKeyToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newForeignKeyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.newForeignKeyToolStripMenuItem.Text = "New &Foreign Key";
 			this.newForeignKeyToolStripMenuItem.Click += new System.EventHandler(this.newForeignKeyToolStripMenuItem_Click);
 			// 
 			// newColumnToolStripMenuItem
 			// 
 			this.newColumnToolStripMenuItem.Name = "newColumnToolStripMenuItem";
-			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.newColumnToolStripMenuItem.Text = "New C&olumn";
 			this.newColumnToolStripMenuItem.Click += new System.EventHandler(this.newColumnToolStripMenuItem_Click);
 			// 
 			// deleteToolStripMenuItem
 			// 
 			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.deleteToolStripMenuItem.Text = "&Delete";
 			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
 			// 
 			// newTableToolStripMenuItem
 			// 
 			this.newTableToolStripMenuItem.Name = "newTableToolStripMenuItem";
-			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.newTableToolStripMenuItem.Text = "New &Table";
 			this.newTableToolStripMenuItem.Click += new System.EventHandler(this.newTableToolStripMenuItem_Click);
 			// 
 			// scriptInsertToolStripMenuItem
 			// 
 			this.scriptInsertToolStripMenuItem.Name = "scriptInsertToolStripMenuItem";
-			this.scriptInsertToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.scriptInsertToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.scriptInsertToolStripMenuItem.Text = "Script &Insert";
 			this.scriptInsertToolStripMenuItem.Click += new System.EventHandler(this.ScriptInsertToolStripMenuItem_Click);
+			// 
+			// collapseAllToolStripMenuItem
+			// 
+			this.collapseAllToolStripMenuItem.Name = "collapseAllToolStripMenuItem";
+			this.collapseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.collapseAllToolStripMenuItem.Text = "Collapse &All";
+			this.collapseAllToolStripMenuItem.Click += new System.EventHandler(this.CollapseAllToolStripMenuItem_Click);
 			// 
 			// splitMain
 			// 
@@ -323,6 +332,24 @@
 			this.pnlSearch.Size = new System.Drawing.Size(213, 105);
 			this.pnlSearch.TabIndex = 9;
 			this.pnlSearch.Visible = false;
+			// 
+			// txtSearchDatabase
+			// 
+			this.txtSearchDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSearchDatabase.Location = new System.Drawing.Point(69, 3);
+			this.txtSearchDatabase.Name = "txtSearchDatabase";
+			this.txtSearchDatabase.Size = new System.Drawing.Size(141, 20);
+			this.txtSearchDatabase.TabIndex = 1000;
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(10, 6);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(53, 13);
+			this.label2.TabIndex = 8;
+			this.label2.Text = "Database";
 			// 
 			// btnListResults
 			// 
@@ -397,30 +424,12 @@
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
 			// 
-			// txtSearchDatabase
+			// searchToolStripMenuItem
 			// 
-			this.txtSearchDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.txtSearchDatabase.Location = new System.Drawing.Point(69, 3);
-			this.txtSearchDatabase.Name = "txtSearchDatabase";
-			this.txtSearchDatabase.Size = new System.Drawing.Size(141, 20);
-			this.txtSearchDatabase.TabIndex = 1000;
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(10, 6);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(53, 13);
-			this.label2.TabIndex = 8;
-			this.label2.Text = "Database";
-			// 
-			// collapseAllToolStripMenuItem
-			// 
-			this.collapseAllToolStripMenuItem.Name = "collapseAllToolStripMenuItem";
-			this.collapseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.collapseAllToolStripMenuItem.Text = "Collapse &All";
-			this.collapseAllToolStripMenuItem.Click += new System.EventHandler(this.CollapseAllToolStripMenuItem_Click);
+			this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
+			this.searchToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.searchToolStripMenuItem.Text = "&Search";
+			this.searchToolStripMenuItem.Click += new System.EventHandler(this.SearchToolStripMenuItem_Click);
 			// 
 			// ucWorkspace
 			// 
@@ -484,6 +493,7 @@
 		private System.Windows.Forms.TextBox txtSearchDatabase;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.ToolStripMenuItem collapseAllToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
 	}
 }
 

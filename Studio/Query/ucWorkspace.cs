@@ -568,8 +568,9 @@ namespace PaJaMa.Database.Studio.Query
 			newForeignKeyToolStripMenuItem.Visible = selectedNode != null && (selectedNode.Tag is Table || selectedNode.Tag is Column);
 			newColumnToolStripMenuItem.Visible = selectedNode.Tag is Table;
 			deleteToolStripMenuItem.Visible = selectedNode.Tag is DatabaseObjectBase;
-			newTableToolStripMenuItem.Visible = selectedNode.Tag is Library.DatabaseObjects.Schema ||
+			newTableToolStripMenuItem.Visible = selectedNode.Tag is Schema ||
 				(selectedNode.Tag is SchemaNode && (selectedNode.Tag as SchemaNode).SchemaNodeType == SchemaNodeType.Tables);
+			searchToolStripMenuItem.Visible = selectedNode.Tag is Library.DatabaseObjects.Database;
 		}
 
 
@@ -1055,6 +1056,13 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				if (node.IsExpanded) node.Collapse();
 			}
+		}
+
+		private void SearchToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var tag = treeTables.SelectedNode.Tag as Library.DatabaseObjects.Database;
+			txtSearchDatabase.Text = tag.DatabaseName;
+			pnlSearch.Visible = true;
 		}
 	}
 }
