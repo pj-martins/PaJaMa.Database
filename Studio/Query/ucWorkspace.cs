@@ -1049,13 +1049,18 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
+		private void collapseNodes(TreeNode parentNode)
+		{
+			foreach (TreeNode node in parentNode.Nodes)
+			{
+				collapseNodes(node);
+			}
+			parentNode.Collapse();
+		}
 		private void CollapseAllToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			if (treeTables.SelectedNode == null) return;
-			foreach (TreeNode node in treeTables.SelectedNode.Nodes)
-			{
-				if (node.IsExpanded) node.Collapse();
-			}
+			collapseNodes(treeTables.SelectedNode);
 		}
 
 		private void SearchToolStripMenuItem_Click(object sender, EventArgs e)

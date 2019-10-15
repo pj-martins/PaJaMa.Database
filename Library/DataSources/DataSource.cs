@@ -4,6 +4,7 @@ using PaJaMa.Database.Library.Synchronization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
@@ -752,6 +753,9 @@ ON UPDATE {6}
 		// TODO: schemas??
 		public virtual List<DatabaseObjectBase> SearchObjects(DbConnection connection, string databaseSearch, string tableSearch, string columnSearch, BackgroundWorker worker = null)
 		{
+			if (connection.State != ConnectionState.Open)
+				connection.Open();
+
 			var objs = new List<DatabaseObjectBase>();
 			using (var cmd = connection.CreateCommand())
 			{
