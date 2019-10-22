@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Windows.Forms;
 
 namespace PaJaMa.Database.Studio.Query
@@ -879,7 +880,18 @@ namespace PaJaMa.Database.Studio.Query
 			if (tag != null)
 			{
 				var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
-				addQueryOutput(null, new QueryOutput() { Database = tag.Database.DatabaseName, Query = syncItem.GetRawDropText() });
+				var sb = new StringBuilder();
+				if (tag is Column col && !string.IsNullOrEmpty(col.ColumnDefault) && col.Parent is Table tbl)
+				{
+					if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
+					foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+					{
+						var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
+						sb.AppendLine(dcSyncItem.GetRawDropText() + ";");
+					}
+				}
+				sb.AppendLine(syncItem.GetRawDropText());
+				addQueryOutput(null, new QueryOutput() { Database = tag.Database.DatabaseName, Query = sb.ToString() });
 			}
 		}
 
