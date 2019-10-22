@@ -29,6 +29,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
 			this.Table = schema.Tables.First(t => t.TableName == values["TableName"].ToString());
+			if (!this.Table.Columns.Any()) Database.DataSource.PopulateChildColumns(connection, this.Table);
 			this.Column = this.Table.Columns.First(c => c.ObjectName == values["ColumnName"].ToString());
 			this.Table.DefaultConstraints.Add(this);
 		}
