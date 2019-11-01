@@ -50,6 +50,13 @@ namespace PaJaMa.Database.Studio.Classes
 				}
 			}
 
+			while ((m = Regex.Match(output, "\n(AND )")).Success)
+			{
+				var newOutput = output.Substring(0, m.Groups[1].Index).Trim();
+				newOutput += "\n\t" + output.Substring(m.Groups[1].Index).Trim();
+				output = newOutput;
+			}
+
 			patterns = new string[]
 			{
 				$"( LIMIT .*?)"
