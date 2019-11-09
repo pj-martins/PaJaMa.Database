@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PaJaMa.Database.Studio.Properties {
+namespace PaJaMa.Database.UnitTests.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace PaJaMa.Database.Studio.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PaJaMa.Database.Studio.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("PaJaMa.Database.UnitTests.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,61 @@ namespace PaJaMa.Database.Studio.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string MySQL {
+            get {
+                return ResourceManager.GetString("MySQL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        internal static string PostgreSQL {
+            get {
+                return ResourceManager.GetString("PostgreSQL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] SQLite {
+            get {
+                object obj = ResourceManager.GetObject("SQLite", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to create table Table1 (
+        ///	Table1Key int not null identity(1, 1),
+        ///	Table1Column1 nvarchar(255),
+        ///	Table1Column2 int not null,
+        ///	Table1Column3 date,
+        ///	Table1Column4 smalldatetime default(getdate()),
+        ///	Table1Column5 bit not null default(1),
+        ///	Table1Column6 nvarchar(1000),
+        ///	Table1Column7 int,
+        ///	Table1Column8 real,
+        ///	Table1Column9 nvarchar(255),
+        ///	constraint PK_Table1Key primary key (Table1Key)
+        ///)
+        ///go
+        ///
+        ///create unique index IX_Table1Column1 on Table1 (Table1Column1)
+        ///go
+        ///create table Table2 (
+        ///	Table2Key int not [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string SQLServer {
+            get {
+                return ResourceManager.GetString("SQLServer", resourceCulture);
             }
         }
     }

@@ -111,16 +111,16 @@ and ku.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
 
 		internal override string IndexSQL => @"
 select
-    t.relname as TableName,
-    i.relname as IndexName,
-    a.attname as ColumnName,
+    t.relname as ""TableName"",
+    i.relname as ""IndexName"",
+    a.attname as ""ColumnName"",
 	-- TODO: case when ix.indisclustered = true then 'CLUSTERED' else 'NONCLUSTERED' end as IndexType,
-    '' as IndexType,
-	row_number() over (partition by t.relname, i.relname, a.attname)::integer as Ordinal,
-	ix.indisunique as IsUnique,
-	n.nspname as SchemaName,
+    '' as ""IndexType"",
+	row_number() over (partition by t.relname, i.relname, a.attname)::integer as ""Ordinal"",
+	ix.indisunique as ""IsUnique"",
+	n.nspname as ""SchemaName"",
 	-- TODO:
-	false as Descending
+	false as ""Descending""
 from
     pg_class t,
     pg_class i,
@@ -138,51 +138,51 @@ where
 ";
 
 		internal override string DefaultConstraintSQL => @"select 
-	c.table_name as TableName,
-	coalesce(constraintname, 'DF_' || c.table_name || '_' || c.column_name) as ConstraintName, 
-	c.column_name as ColumnName, 
-	c.column_default as ColumnDefault, 
-	c.table_schema as SchemaName
+	c.table_name as ""TableName"",
+	coalesce(""ConstraintName"", 'DF_' || c.table_name || '_' || c.column_name) as ""ConstraintName"", 
+	c.column_name as ""ColumnName"", 
+	c.column_default as ""ColumnDefault"", 
+	c.table_schema as ""SchemaName""
 from {0}.INFORMATION_SCHEMA.COLUMNS c
 left join
 (
 	select 
-		t.relname as TableName,
-		c.conname as ConstraintName,
-		a.attname as ColumnName,
-		d.adsrc as ColumnDefault,
-		n.nspname as SchemaName
+		t.relname as ""TableName"",
+		c.conname as ""ConstraintName"",
+		a.attname as ""ColumnName"",
+		d.adsrc as ""ColumnDefault"",
+		n.nspname as ""SchemaName""
 	from pg_constraint c
 	join pg_class t on t.oid = c.conrelid
 	join pg_attribute a on a.attrelid = c.conrelid and ARRAY[attnum] <@ c.conkey
 	join pg_attrdef d on d.adnum = a.attnum and d.adrelid = t.oid
 	join pg_catalog.pg_namespace n on n.oid = t.relnamespace
-) co on co.tablename = c.table_name and co.columnname = c.column_name and co.schemaname = c.table_schema and co.columndefault = c.column_default
+) co on co.""TableName"" = c.table_name and co.""ColumnName"" = c.column_name and co.""SchemaName"" = c.table_schema and co.""ColumnDefault"" = c.column_default
 where c.column_default is not null
 ";
 
 		internal override string TriggerSQL => @"
 SELECT 
-	event_object_table as TableName,
-	trigger_name as TriggerName,
-	event_object_schema as SchemaName,
-	event_manipulation as OnInsertUpdateDelete,
+	event_object_table as ""TableName"",
+	trigger_name as ""TriggerName"",
+	event_object_schema as ""SchemaName"",
+	event_manipulation as ""OnInsertUpdateDelete"",
 	action_statement as ""Definition"",
-	action_timing as BeforeAfter
+	action_timing as ""BeforeAfter""
 FROM {0}.information_schema.triggers
 ";
 
 		internal override string SequenceSQL => @"select 
-    sequence_schema as SchemaName, 
-    sequence_name as SequenceName,
+    sequence_schema as ""SchemaName"", 
+    sequence_name as ""SequenceName"",
     increment,
-    minimum_value as MinValue,
-    maximum_value as MaxValue,
-    start_value as Start,
-    cycle_option as Cycle
+    minimum_value as ""MinValue"",
+    maximum_value as ""MaxValue"",
+    start_value as ""Start"",
+    cycle_option as ""Cycle""
 from {0}.INFORMATION_SCHEMA.SEQUENCES";
 
-		internal override string ExtensionSQL => "select *, ''::text as SchemaName from pg_available_extensions where installed_version <> ''";
+		internal override string ExtensionSQL => "select *, ''::text as \"SchemaName\" from pg_available_extensions where installed_version <> ''";
 
 		internal override string DatabaseSQL => "select \"datname\" as \"DatabaseName\" from \"pg_database\"";
 

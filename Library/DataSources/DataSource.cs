@@ -249,31 +249,31 @@ namespace PaJaMa.Database.Library.DataSources
 			populateChildren<Column>(connection, obj, obj.Columns, this.ColumnSQL, childColumnsWhere(obj), string.Empty);
 		}
 
-		protected virtual string foreignKeysTableWhere(Table table) => $" and ChildTableName = '{table.TableName}'";
+		protected virtual string foreignKeysTableWhere(Table table) => $" and {GetConvertedObjectName("ChildTableName")} = '{table.TableName}'";
 		public virtual void PopulateForeignKeysForTable(DbConnection connection, Table table)
 		{
 			populateChildren<ForeignKey>(connection, table, table.ForeignKeys, this.ForeignKeySQL, string.Empty, foreignKeysTableWhere(table));
 		}
 
-		protected virtual string keysTableWhere(Table table) => $" and TableName = '{table.TableName}'";
+		protected virtual string keysTableWhere(Table table) => $" and {GetConvertedObjectName("TableName")} = '{table.TableName}'";
 		public virtual void PopulateKeysForTable(DbConnection connection, Table table)
 		{
 			populateChildren<KeyConstraint>(connection, table, table.KeyConstraints, this.KeyConstraintSQL, string.Empty, keysTableWhere(table));
 		}
 
-		protected virtual string constraintsTableWhere(Table table) => $" and TableName = '{table.TableName}'";
+		protected virtual string constraintsTableWhere(Table table) => $" and {GetConvertedObjectName("TableName")} = '{table.TableName}'";
 		public virtual void PopulateConstraintsForTable(DbConnection connection, Table table)
 		{
 			populateChildren<DefaultConstraint>(connection, table, table.DefaultConstraints, this.DefaultConstraintSQL, string.Empty, constraintsTableWhere(table));
 		}
 
-		protected virtual string triggersTableWhere(Table table) => $" and TableName = '{table.TableName}'";
+		protected virtual string triggersTableWhere(Table table) => $" and {GetConvertedObjectName("TableName")} = '{table.TableName}'";
 		public virtual void PopulateTriggersForTable(DbConnection connection, Table table)
 		{
 			populateChildren<Trigger>(connection, table, table.Triggers, this.TriggerSQL, string.Empty, triggersTableWhere(table));
 		}
 
-		protected virtual string indexesTableWhere(Table table) => $" and TableName = '{table.TableName}'";
+		protected virtual string indexesTableWhere(Table table) => $" and {GetConvertedObjectName("TableName")} = '{table.TableName}'";
 		public virtual void PopulateIndexesForTable(DbConnection connection, Table table)
 		{
 			populateChildren<Index>(connection, table, table.Indexes, this.IndexSQL, string.Empty, indexesTableWhere(table));
