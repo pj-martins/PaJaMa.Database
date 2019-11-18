@@ -185,7 +185,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void _findReplace_KeyPressed(object sender, KeyEventArgs e)
 		{
-			
+
 		}
 
 		private void ucQueryOutput_InfoMessage(object sender, SqlInfoMessageEventArgs e)
@@ -615,7 +615,7 @@ namespace PaJaMa.Database.Studio.Query
 
 
 
-			txtQuery.AppendText(string.Format("select {0}\r\n\t{1}\r\nfrom {4}{2}\r\n{3}",
+			txtQuery.AppendText(string.Format("SELECT {0}\r\n\t{1}\r\nFROM {4}{2}\r\n{3}",
 				topN != null ? _dataSource.GetPreTopN(topN.Value) : string.Empty,
 				_dataSource.GetColumnSelectList(columns),
 				objName,
@@ -740,10 +740,12 @@ namespace PaJaMa.Database.Studio.Query
 				}
 				_kaying = false;
 			}
-			else if (e.KeyCode == Keys.F && e.Modifiers == (Keys.Shift|Keys.Alt))
+			else if (e.KeyCode == Keys.F && e.Modifiers == (Keys.Shift | Keys.Alt))
 			{
 				this.formatSQL();
 				e.Handled = true;
+				// remove focus from toolstrip
+				SendKeys.Send("%");
 			}
 			else if ((e.KeyCode == Keys.E && e.Modifiers == Keys.Control) || e.KeyCode == Keys.F5)
 			{
@@ -918,7 +920,7 @@ namespace PaJaMa.Database.Studio.Query
 					{
 						txtQuery.SelectionEnd++;
 					}
-						
+
 					txtQuery.ReplaceSelection(string.Empty);
 				}
 				txtQuery.ReplaceSelection((_intelliBox.SelectedItem as IntellisenseMatch).ShortName);

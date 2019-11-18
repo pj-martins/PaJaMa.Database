@@ -15,6 +15,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
@@ -31,6 +32,15 @@ namespace PaJaMa.Database.Studio.Query
 		private string _initialConnString;
 		private Type _initialDbType;
 		private DataSource _dataSource;
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+		public static extern int GetScrollPos(IntPtr hWnd, int nBar);
+
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
+		public static extern int SetScrollPos(IntPtr hWnd, int nBar, int nPos, bool bRedraw);
+
+		private const int SB_HORZ = 0x0;
+		private const int SB_VERT = 0x1;
 
 		private QueryEventArgs _queryEventArgs;
 
@@ -963,28 +973,11 @@ namespace PaJaMa.Database.Studio.Query
 		private void BtnSearch_Click(object sender, EventArgs e)
 		{
 			pnlSearch.Visible = !pnlSearch.Visible;
-			clearColoredNodes();
-		}
-
-		private List<TreeNode> _coloredNodes;
-		private void clearColoredNodes()
-		{
-			if (_coloredNodes != null)
-			{
-				foreach (var n in _coloredNodes)
-				{
-					n.BackColor = Color.White;
-				}
-				_coloredNodes = null;
-			}
-			btnListResults.Visible = false;
 		}
 
 		private void BtnDoSearch_Click(object sender, EventArgs e)
 		{
-			clearColoredNodes();
 			if (string.IsNullOrEmpty(txtSearchColumn.Text) && string.IsNullOrEmpty(txtSearchTable.Text)) return;
-			_coloredNodes = new List<TreeNode>();
 			List<DatabaseObjectBase> objs = null;
 			BackgroundWorker worker = new BackgroundWorker();
 			worker.DoWork += (object sender2, DoWorkEventArgs e2) =>
@@ -994,15 +987,23 @@ namespace PaJaMa.Database.Studio.Query
 
 			WinControls.WinProgressBox.ShowProgress(worker, "Searching", this, true);
 
+			var foundNodes = new List<TreeNode>();
+
 			if (objs != null)
 			{
-				treeTables.SuspendLayout();
+				var scrollTop = GetScrollPos(treeTables.Handle, SB_VERT);
+				treeTables.BeginUpdate();
 				foreach (var obj in objs)
 				{
 					var nodes = treeTables.Nodes.Find(obj.Database.DatabaseName, false);
 					foreach (var node in nodes)
 					{
-						node.Expand();
+						var expanded = node.IsExpanded;
+						if (!expanded)
+						{
+							node.Expand();
+							node.Collapse();
+						}
 						var childNode = node;
 						var schema = obj.Schema;
 						if (schema == null && obj is Column c)
@@ -1012,24 +1013,32 @@ namespace PaJaMa.Database.Studio.Query
 						if (schema != null && !string.IsNullOrEmpty(schema.SchemaName))
 						{
 							childNode = node.Nodes.OfType<TreeNode>().First(n => n.Text == schema.SchemaName);
-							childNode.Expand();
 						}
 
 						var tblHeaderNode = childNode.Nodes.OfType<TreeNode>().First(n => n.Text == SchemaNodeType.Tables.ToString());
-						tblHeaderNode.Expand();
+						expanded = tblHeaderNode.IsExpanded;
+						if (!expanded)
+						{
+							tblHeaderNode.Expand();
+							tblHeaderNode.Collapse();
+						}
 						var tableName = obj is Table tbl ? tbl.TableName : (obj as Column).Parent.ObjectName;
 						var tableNodes = tblHeaderNode.Nodes.Find(obj.Database.DatabaseName + "_" + tableName, true);
 						foreach (var tableNode in tableNodes)
 						{
 							if (!string.IsNullOrEmpty(txtSearchTable.Text) && tableNode.Text.ToLower().Contains(txtSearchTable.Text.Replace("*", "").ToLower()))
 							{
-								tableNode.BackColor = Color.Yellow;
-								_coloredNodes.Add(tableNode);
+								foundNodes.Add(tableNode);
 							}
 
 							if (obj is Column col)
 							{
-								tableNode.Expand();
+								expanded = tableNode.IsExpanded;
+								if (!expanded)
+								{
+									tableNode.Expand();
+									tableNode.Collapse();
+								}
 								var columnHeaderNode = tableNode.Nodes.OfType<TreeNode>().First(n => n.Text == "Columns");
 								columnHeaderNode.Expand();
 								var columnNodes = columnHeaderNode.Nodes.Find(obj.Database.DatabaseName + "_" + tableName + "_" + col.ColumnName, true);
@@ -1037,28 +1046,39 @@ namespace PaJaMa.Database.Studio.Query
 								{
 									if (columnNode.Text.ToLower().Contains(txtSearchColumn.Text.Replace("*", "").ToLower()))
 									{
-										columnNode.BackColor = Color.Yellow;
-										_coloredNodes.Add(columnNode);
+										foundNodes.Add(columnNode);
 									}
 								}
 							}
 						}
 					}
 				}
-				treeTables.ResumeLayout();
+				SetScrollPos(treeTables.Handle, SB_VERT, scrollTop, true);
+				treeTables.EndUpdate();
 			}
 
-			btnListResults.Visible = _coloredNodes != null && _coloredNodes.Any();
-			if (btnListResults.Visible) btnListResults.Text = "(" + _coloredNodes.Count + ") results";
+			// btnListResults.Visible = _coloredNodes != null && _coloredNodes.Any();
+			// if (btnListResults.Visible) btnListResults.Text = "(" + _coloredNodes.Count + ") results";
+			if (foundNodes.Count > 0)
+			{
+				var frm = new frmSearchResults();
+				frm.FoundNodes = foundNodes;
+				frm.TreeView = treeTables;
+				frm.Show();
+			}
+			else
+			{
+				MessageBox.Show("No results found!");
+			}
 		}
 
 		private void btnListResults_Click(object sender, EventArgs e)
 		{
-			if (_coloredNodes != null && _coloredNodes.Any())
-			{
-				MessageBox.Show(string.Join("\r\n", _coloredNodes.Select(n => (n.Tag as DatabaseObjectBase).Database.DatabaseName + "." +
-					(n.Tag is Column col ? col.Parent.ObjectName + "." + col.ColumnName : (n.Tag as Table).TableName))));
-			}
+			//if (_coloredNodes != null && _coloredNodes.Any())
+			//{
+			//	MessageBox.Show(string.Join("\r\n", _coloredNodes.Select(n => (n.Tag as DatabaseObjectBase).Database.DatabaseName + "." +
+			//		(n.Tag is Column col ? col.Parent.ObjectName + "." + col.ColumnName : (n.Tag as Table).TableName))));
+			//}
 		}
 
 		private void collapseNodes(TreeNode parentNode)
