@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using PaJaMa.Database.Library.Helpers;
 using System;
 using System.Collections.Generic;
@@ -25,15 +26,25 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		}
 
 		[Ignore]
+		[JsonIgnore]
+		public override string ProgressDisplay => $"{this.SchemaName}.{this.TableName}";
+
+		[Ignore]
+		[JsonIgnore]
 		public DatabaseObjectWithColumns Parent { get; set; }
 
+		[JsonIgnore]
 		public ColumnType ColumnType { get; set; }
 
+		public string DataType { get; set; }
+
+		public string TableName { get; set; }
 		public string ColumnName { get; set; }
 
 		[Ignore]
 		public int OrdinalPosition { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public UInt64 OrdinalPosition2
 		{
@@ -43,6 +54,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public bool IsIdentity { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public Int64 IsIdentity2
 		{
@@ -52,6 +64,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public int? CharacterMaximumLength { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public UInt64 CharacterMaximumLength2
 		{
@@ -66,6 +79,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public bool IsNullable { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public Int64 IsNullable2
 		{
@@ -77,6 +91,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public string ColumnDefault { get; set; }
 		public int? NumericPrecision { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public UInt64 NumericPrecision2
 		{
@@ -86,6 +101,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		public int? NumericScale { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public UInt64 NumericScale2
 		{
@@ -97,19 +113,20 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public decimal? Increment { get; set; }
 		public string UDTName { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public string ConstraintName { get; set; }
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
-			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == values["SchemaName"].ToString());
-			if (schema == null) throw new Exception("Schema " + values["SchemaName"].ToString() + " not found for column " + this.ColumnName);
-			ColumnType = Database.DataSource.GetColumnType(values["DataType"].ToString(), this.ColumnDefault);
+			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName ==this.SchemaName);
+			if (schema == null) throw new Exception("Schema " +this.SchemaName + " not found for column " + this.ColumnName);
+			ColumnType = Database.DataSource.GetColumnType(this.DataType, this.ColumnDefault);
 			DatabaseObjectWithColumns objWithColumns = null;
-			objWithColumns = schema.Tables.FirstOrDefault(t => t.TableName == values["TableName"].ToString());
+			objWithColumns = schema.Tables.FirstOrDefault(t => t.TableName == this.TableName);
 			if (objWithColumns == null)
 			{
-				objWithColumns = schema.Views.FirstOrDefault(t => t.ViewName == values["TableName"].ToString());
+				objWithColumns = schema.Views.FirstOrDefault(t => t.ViewName == this.TableName);
 			}
 			this.Parent = objWithColumns ?? throw new Exception("Object " + objWithColumns + " not found for column " + this.ColumnName);
 			objWithColumns.Columns.Add(this);

@@ -34,7 +34,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return (string.IsNullOrEmpty(Level2Object) ? string.Empty : Level2Object + ".") + PropName; }
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
 			this.Database.ExtendedProperties.Add(this);
 		}

@@ -14,16 +14,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 	public class Schema : DatabaseObjectWithExtendedProperties
 	{
 		[Ignore]
-		public List<Table> Tables { get; private set; }
+		public List<Table> Tables { get; set; }
 
 		[Ignore]
-		public List<View> Views { get; private set; }
+		public List<View> Views { get; set; }
 
 		[Ignore]
-		public List<RoutineSynonym> RoutinesSynonyms { get; private set; }
+		public List<RoutineSynonym> RoutinesSynonyms { get; set; }
 
 		[Ignore]
-		public List<Sequence> Sequences { get; private set; }
+		public List<Sequence> Sequences { get; set; }
 
 		public bool IsSystemSchema
 		{
@@ -35,7 +35,6 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return SchemaName; }
 		}
 
-		public string SchemaName { get; set; }
 		public string SchemaOwner { get; set; }
 
 		public string MappedSchemaName
@@ -56,7 +55,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Sequences = new List<Sequence>();
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
 			if (Database.ExtendedProperties != null)
 				this.ExtendedProperties = Database.ExtendedProperties

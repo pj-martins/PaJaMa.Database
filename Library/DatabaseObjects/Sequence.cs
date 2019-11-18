@@ -36,9 +36,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
             return Schema.SchemaName + "." + SequenceName;
         }
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
-			this.Schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
+			this.Schema = Database.Schemas.First(s => s.SchemaName ==this.SchemaName);
 			this.Schema.Sequences.Add(this);
 		}
 	}

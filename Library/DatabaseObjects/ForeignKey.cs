@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,15 +19,29 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		}
 
 		public string ForeignKeyName { get; set; }
+
+		public string ChildTableSchema { get; set; }
+		public string ChildTableName { get; set; }
+		public string ChildColumnName { get; set; }
+
+		[JsonIgnore]
 		public Table ChildTable { get; set; }
+
+		public string ParentTableSchema { get; set; }
+		public string ParentTableName { get; set; }
+		public string ParentColumnName { get; set; }
+
+		[JsonIgnore]
 		public Table ParentTable { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public List<ForeignKeyColumn> Columns { get; set; }
 		public string UpdateRule { get; set; }
 		public string DeleteRule { get; set; }
 		public string WithCheck { get; set; }
 
+		[JsonIgnore]
 		[Ignore]
 		public bool HasBeenDropped { get; set; }
 
@@ -35,32 +50,35 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Columns = new List<ForeignKeyColumn>();
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
-			var foreignKeyName = values["ForeignKeyName"].ToString();
-			var childTableName = values["ChildTableName"].ToString();
-			var parentSchema = Database.Schemas.First(s => s.SchemaName == values["ParentTableSchema"].ToString());
+			var parentSchema = Database.Schemas.First(s => s.SchemaName == this.ParentTableSchema);
 			if (!parentSchema.Tables.Any()) Database.DataSource.PopulateTables(connection, new Schema[] { parentSchema }, true);
-			var childSchema = Database.Schemas.First(s => s.SchemaName == values["ChildTableSchema"].ToString());
-			var childTable = childSchema.Tables.First(t => t.TableName == values["ChildTableName"].ToString());
-			var foreignKey = childTable.ForeignKeys.FirstOrDefault(f => f.ForeignKeyName == foreignKeyName 
-				&& f.ChildTable.TableName == childTableName
-				&& f.ChildTable.Schema.SchemaName == childSchema.SchemaName);
+			var childSchema = Database.Schemas.First(s => s.SchemaName == this.ChildTableSchema);
+			var childTable = childSchema.Tables.First(t => t.TableName == this.ChildTableName);
+			var foreignKey = childTable.ForeignKeys.FirstOrDefault(f => f.ForeignKeyName == ForeignKeyName 
+				&& f.ChildTableName == ChildTableName
+				&& f.ChildTableSchema == childSchema.SchemaName);
 
 			if (foreignKey == null)
 			{
 				foreignKey = this;
-				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == values["ParentTableName"].ToString());
+				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == this.ParentTableName);
 				if (!foreignKey.ParentTable.Columns.Any()) Database.DataSource.PopulateChildColumns(connection, foreignKey.ParentTable);
 				foreignKey.ChildTable = childTable;
 				if (!foreignKey.ChildTable.Columns.Any()) Database.DataSource.PopulateChildColumns(connection, foreignKey.ChildTable);
 				foreignKey.ChildTable.ForeignKeys.Add(foreignKey);
 			}
+			else if (foreignKey.ParentTable == null)
+			{
+				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == this.ParentTableName);
+				foreignKey.ChildTable = childTable;
+			}
 
 			foreignKey.Columns.Add(new ForeignKeyColumn()
 			{
-				ParentColumn = foreignKey.ParentTable.Columns.First(c => c.ColumnName == values["ParentColumnName"].ToString()),
-				ChildColumn = foreignKey.ChildTable.Columns.First(c => c.ColumnName == values["ChildColumnName"].ToString())
+				ParentColumn = foreignKey.ParentTable.Columns.First(c => c.ColumnName == this.ParentColumnName),
+				ChildColumn = foreignKey.ChildTable.Columns.First(c => c.ColumnName == this.ChildColumnName)
 			});
 		}
 	}

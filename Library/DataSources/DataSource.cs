@@ -2,11 +2,13 @@
 using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.Synchronization;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace PaJaMa.Database.Library.DataSources
@@ -130,44 +132,72 @@ namespace PaJaMa.Database.Library.DataSources
 			if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName}...");
 
 			var objs = new List<TDatabaseObject>();
-			query += additionalPreWhere;
-			if (!string.IsNullOrEmpty(forSchema))
+
+			// var existing = (object[])null; // this.RawValues == null ? null : this.RawValues.Where(rv => rv.TypeName == typeof(TDatabaseObject).FullName && rv.DatabaseName == database.DatabaseName);
+			//if (existing != null)
+			//{
+			//	foreach (var ex in existing)
+			//	{
+			//		var obj = Activator.CreateInstance(typeof(TDatabaseObject), database) as TDatabaseObject;
+			//		foreach (var kvp in ex.RawValues)
+			//		{
+			//			var propInf = typeof(TDatabaseObject).GetProperty(kvp.Key, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+			//			if (propInf != null)
+			//			{
+			//				propInf.SetValue(obj, kvp.Value, null);
+			//			}
+			//		}
+			//		objs.Add(obj);
+
+			//		obj.RawValues = ex.RawValues;
+			//		if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName} - {obj.ProgressDisplay}...");
+			//	}
+			//}
+			//else
 			{
-				query = $@"select * from (
+				query += additionalPreWhere;
+				if (!string.IsNullOrEmpty(forSchema))
+				{
+					query = $@"select * from (
 				{query}
 				) z where {GetConvertedObjectName("SchemaName")} = '{forSchema}'";
-			}
-			else if (!includeSystemSchemas && SystemSchemaNames.Count > 0)
-			{
-				query = $@"select * from (
+				}
+				else if (!includeSystemSchemas && SystemSchemaNames.Count > 0)
+				{
+					query = $@"select * from (
 				{query}
 				) z where {GetConvertedObjectName("SchemaName")} is null or {GetConvertedObjectName("SchemaName")} not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})";
-			}
-			query += additionalPostWhere;
-			cmd.CommandText = query;
-			cmd.CommandTimeout = 60000;
-			using (var rdr = cmd.ExecuteReader())
-			{
-				if (rdr.HasRows)
-				{
-					while (rdr.Read())
-					{
-						var obj = rdr.ToObject<TDatabaseObject>(database);
-						objs.Add(obj);
-						var values = new Dictionary<string, object>();
-						for (int i = 0; i < rdr.FieldCount; i++)
-						{
-							var col = rdr.GetName(i);
-							values.Add(col, rdr[col]);
-						}
-						obj.RawValues = values;
-					}
 				}
-				rdr.Close();
+				query += additionalPostWhere;
+				cmd.CommandText = query;
+				cmd.CommandTimeout = 60000;
+				using (var rdr = cmd.ExecuteReader())
+				{
+					if (rdr.HasRows)
+					{
+						while (rdr.Read())
+						{
+							var obj = rdr.ToObject<TDatabaseObject>(database);
+							objs.Add(obj);
+							var values = new Dictionary<string, object>();
+							for (int i = 0; i < rdr.FieldCount; i++)
+							{
+								var col = rdr.GetName(i);
+								values.Add(col, rdr[col]);
+							}
+							// obj.RawValues = values;
+							// RawValues.Add(new RawDatabaseObject() { TypeName = typeof(TDatabaseObject).FullName, DatabaseName = database.DatabaseName, RawValues = values });
+							if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName} - {obj.ProgressDisplay}...");
+						}
+					}
+					rdr.Close();
+				}
+				if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName}...");
 			}
+
 			foreach (var obj in objs)
 			{
-				obj.setObjectProperties(cmd.Connection, obj.RawValues);
+				obj.setObjectProperties(cmd.Connection);
 			}
 			return objs;
 		}
@@ -325,6 +355,10 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public void PopulateChildren(DatabaseObjects.Database database, bool condensed, BackgroundWorker worker)
 		{
+			//if (RawValues == null)
+			//{
+			//	RawValues = new List<RawDatabaseObject>();
+			//}
 			if (database == null) database = CurrentDatabase;
 			database.ExtendedProperties = new List<ExtendedProperty>();
 			database.Schemas = new List<Schema>();
@@ -354,7 +388,7 @@ namespace PaJaMa.Database.Library.DataSources
 						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, worker);
 
 					populateObjects<RoutineSynonym>(database, cmd, string.Format(this.RoutineSynonymSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, worker);
-					populateObjects<View>(database, cmd, string.Format(this.ViewSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, worker);
+					// populateObjects<View>(database, cmd, string.Format(this.ViewSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, worker);
 					if (!condensed)
 					{
 						populateObjects<ServerLogin>(database, cmd, string.Format(this.ServerLoginSQL, database.DatabaseName), string.Empty, true, string.Empty, string.Empty, worker);
@@ -802,6 +836,43 @@ ON UPDATE {6}
 				}
 			}
 			return objs;
+		}
+
+		private void recursivelyPopulateObjects(DatabaseObjectBase[] objs)
+		{
+			foreach (var obj in objs)
+			{
+				obj.Database = this.CurrentDatabase;
+				obj.setObjectProperties(null);
+			}
+
+			foreach (var obj in objs)
+			{
+				var childprops = obj.GetType().GetProperties().Where(p => p.PropertyType.GetGenericArguments().Any(a => a.IsSubclassOf(typeof(DatabaseObjectBase))));
+				foreach (var cp in childprops)
+				{
+					recursivelyPopulateObjects(((IEnumerable)cp.GetValue(obj)).OfType<DatabaseObjectBase>().ToArray());
+				}
+			}
+		}
+
+		public void LoadFromSerialized(DatabaseObjects.Database database)
+		{
+			this.CurrentDatabase = database;
+			this.CurrentDatabase.DataSource = this;
+			recursivelyPopulateObjects(database.GetDatabaseObjects(false).ToArray());
+		}
+	}
+
+	public class RawDatabaseObject
+	{
+		public string TypeName { get; set; }
+		public string DatabaseName { get; set; }
+		public Dictionary<string, object> RawValues { get; set; }
+
+		public RawDatabaseObject()
+		{
+			RawValues = new Dictionary<string, object>();
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,6 +15,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
     {
 		public string ColumnName { get; set; }
 		public bool Descending { get; set; }
+		[JsonIgnore]
 		[Ignore]
 		public Int64 Descending2
 		{
@@ -21,6 +23,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			set { Descending = value == 1; }
 		}
 		public int Ordinal { get; set; }
+		[JsonIgnore]
 		public Int64 Ordinal2
 		{
 			get { return Ordinal; }
@@ -31,14 +34,15 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 		}
 
-		public string SchemaName { get; set; }
+		[JsonIgnore]
 		public Table Table { get; set; }
         public string IndexName { get; set; }
 		public string TableName { get; set; }
         public string IndexType { get; set; }
         public bool IsUnique { get; set; }
 
-        public bool HasBeenDropped { get; set; }
+		[JsonIgnore]
+		public bool HasBeenDropped { get; set; }
 
         public List<IndexColumn> IndexColumns { get; set; }
 
@@ -47,7 +51,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
             get { return IndexName; }
         }
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
 
 			var schema = Database.Schemas.First(s => s.SchemaName == SchemaName);
@@ -64,8 +68,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				index.Table = table;
 				table.Indexes.Add(index);
 			}
-			var indexCol = values.DictionaryToObject<IndexColumn>();
-			index.IndexColumns.Add(indexCol);
+			// TODO: NEW
+			//var indexCol = values.DictionaryToObject<IndexColumn>();
+			//index.IndexColumns.Add(indexCol);
 		}
     }
 
@@ -73,14 +78,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
     {
         public string ColumnName { get; set; }
         public bool Descending { get; set; }
-        [Ignore]
+		[JsonIgnore]
+		[Ignore]
         public Int64 Descending2
         {
             get { return Descending ? 1 : 0; }
             set { Descending = value == 1; }
         }
         public int Ordinal { get; set; }
-        public Int64 Ordinal2
+		[JsonIgnore]
+		public Int64 Ordinal2
         {
             get { return Ordinal; }
             set { Ordinal = Convert.ToInt32(value); }

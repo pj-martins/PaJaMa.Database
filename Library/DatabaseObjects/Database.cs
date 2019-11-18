@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using PaJaMa.Database.Library.DataSources;
 using System;
 using System.Collections.Generic;
@@ -12,15 +13,16 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
 	public class Database
 	{
-		public DataSource DataSource { get; private set; }
+		[JsonIgnore]
+		public DataSource DataSource { get; internal set; }
 		public string DatabaseName { get; private set; }
-		public List<Schema> Schemas { get; internal set; }
-		public List<ServerLogin> ServerLogins { get; internal set; }
-		public List<DatabasePrincipal> Principals { get; internal set; }
-		public List<Permission> Permissions { get; internal set; }
-		public List<Credential> Credentials { get; internal set; }
-		public List<Extension> Extensions { get; internal set; }
-		public List<ExtendedProperty> ExtendedProperties { get; internal set; }
+		public List<Schema> Schemas { get; set; }
+		public List<ServerLogin> ServerLogins { get; set; }
+		public List<DatabasePrincipal> Principals { get; set; }
+		public List<Permission> Permissions { get; set; }
+		public List<Credential> Credentials { get; set; }
+		public List<Extension> Extensions { get; set; }
+		public List<ExtendedProperty> ExtendedProperties { get; set; }
 
 		public Database(DataSource dataSource, string databaseName)
 		{

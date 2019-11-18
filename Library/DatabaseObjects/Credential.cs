@@ -24,7 +24,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
 			Database.Credentials.Add(this);
 		}

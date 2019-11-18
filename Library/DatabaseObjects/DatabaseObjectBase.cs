@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Helpers;
 using System;
@@ -13,30 +14,42 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
 	public abstract class DatabaseObjectBase
 	{
+		[JsonIgnore]
 		public virtual bool Synchronized { get; set; }
 
+		[JsonIgnore]
 		public abstract string ObjectName { get; }
 
-		public Database Database { get; }
+		[JsonIgnore]
+		public Database Database { get; set; }
+
+		[JsonIgnore]
+		[Ignore]
+		public virtual string ProgressDisplay { get { return this.ObjectName; } }
 
 		[IgnoreCase]
 		public string Definition { get; set; }
 
+		[JsonIgnore]
 		public string Description
 		{
 			get { return ToString() + " (" + ObjectType + ")"; }
 		}
 
-		[Ignore]
-		internal Dictionary<string, object> RawValues { get; set; }
+		//[Ignore]
+		//internal Dictionary<string, object> RawValues { get; set; }
 
+		public string SchemaName { get; set; }
+		[JsonIgnore]
 		public Schema Schema { get; set; }
 
+		public DatabaseObjectBase() { }
 		public DatabaseObjectBase(Database database)
 		{
 			this.Database = database;
 		}
 
+		[JsonIgnore]
 		public virtual string ObjectType
 		{
 			get { return this.GetType().Name; }
@@ -47,7 +60,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			return ObjectName;
 		}
 
-		internal abstract void setObjectProperties(DbConnection connection, Dictionary<string, object> values);
+		internal abstract void setObjectProperties(DbConnection connection);
 
 		public virtual string GetObjectNameWithSchema(DataSource dataSource)
 		{
@@ -69,6 +82,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 	public abstract class DatabaseObjectWithExtendedProperties : DatabaseObjectBase
 	{
+		[JsonIgnore]
 		[Ignore]
 		public List<ExtendedProperty> ExtendedProperties { get; set; }
 

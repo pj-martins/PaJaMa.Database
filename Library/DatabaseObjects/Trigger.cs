@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -17,6 +18,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		}
 
 		public string TriggerName { get; set; }
+
+		public string TableName { get; set; }
+		[JsonIgnore]
         public Table Table { get; set; }
 
         public override string ObjectName
@@ -33,11 +37,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
             return Table.Schema.SchemaName.ToString() + "." + TriggerName;
         }
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
+			var schema = Database.Schemas.First(s => s.SchemaName ==this.SchemaName);
 			this.Table = (from t in schema.Tables
-						  where t.TableName == values["TableName"].ToString()
+						  where t.TableName == this.TableName
 						  select t).First();
 
 			this.Table.Triggers.Add(this);

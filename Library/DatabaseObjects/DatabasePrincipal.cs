@@ -51,7 +51,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			Ownings = new List<DatabaseObjectBase>();
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
 			this.ExtendedProperties = ExtendedProperties.Where(ep => ep.Level1Object == this.PrincipalName &&
 				ep.Level1Type == "USER").ToList();

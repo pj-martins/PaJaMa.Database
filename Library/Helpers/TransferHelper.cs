@@ -126,7 +126,7 @@ namespace PaJaMa.Database.Library.Helpers
 												table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount));
 
 											cmd.CommandText += (firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
-												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("'", "''") + "'").ToArray()) + ")";
+												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("\\'", "\\\\'").Replace("'", "''") + "'").ToArray()) + ")";
 											counter++;
 											firstIn = false;
 											if (counter >= batchSize)

@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -11,7 +12,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
 	public class KeyConstraint : DatabaseObjectBase, IObjectWithParent
 	{
+		public string TableName { get; set; }
+		[JsonIgnore]
 		public DatabaseObjectWithColumns Parent { get; set; }
+
 		public string ConstraintName { get; set; }
 
 		public override string ObjectName
@@ -19,42 +23,47 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			get { return ConstraintName; }
 		}
 
+
+		public string ColumnName { get; set; }
+		public bool Descending { get; set; }
+		public int Ordinal { get; set; }
+
+		[JsonIgnore]
 		[Ignore]
 		public List<IndexColumn> Columns { get; set; }
 
 		public string ClusteredNonClustered { get; set; }
 		public bool IsPrimaryKey { get; set; }
 
-        [Ignore]
-        public Int64 IsPrimaryKey2
-        {
-            get { return IsPrimaryKey ? 1 : 0; }
-            set { IsPrimaryKey = value == 1; }
-        }
+		[JsonIgnore]
+		[Ignore]
+		public Int64 IsPrimaryKey2
+		{
+			get { return IsPrimaryKey ? 1 : 0; }
+			set { IsPrimaryKey = value == 1; }
+		}
 
 		public KeyConstraint(Database database) : base(database)
 		{
 			Columns = new List<IndexColumn>();
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
-			string tableName = values["TableName"].ToString();
-			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
+			string tableName = this.TableName;
+			var schema = Database.Schemas.First(s => s.SchemaName == this.SchemaName);
 			if (!schema.Tables.Any()) Database.DataSource.PopulateTables(connection, new Schema[] { schema }, true);
-			var table = schema.Tables.First(t => t.TableName == values["TableName"].ToString());
-			var constraint = table.KeyConstraints.FirstOrDefault(c => c.ConstraintName == this.ConstraintName && c.Parent.ObjectName == tableName
-				&& c.Parent.Schema.SchemaName == schema.SchemaName);
+			var table = schema.Tables.First(t => t.TableName == this.TableName);
+			var constraint = table.KeyConstraints.FirstOrDefault(c => c.ConstraintName == this.ConstraintName && c.TableName == tableName
+				&& c.SchemaName == schema.SchemaName);
 			if (constraint == null)
 			{
 				constraint = this;
-				var tbl = schema.Tables.First(t => t.TableName == values["TableName"].ToString());
+				var tbl = schema.Tables.First(t => t.TableName == this.TableName);
 				constraint.Parent = tbl;
 				tbl.KeyConstraints.Add(constraint);
 			}
-
-			var col = values.DictionaryToObject<IndexColumn>();
-			constraint.Columns.Add(col);
+			constraint.Columns.Add(new IndexColumn() { ColumnName = this.ColumnName, Descending = this.Descending, Ordinal = this.Ordinal });
 		}
 	}
 }

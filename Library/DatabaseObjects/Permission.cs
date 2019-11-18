@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +13,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
 	public class Permission : DatabaseObjectWithExtendedProperties
 	{
-		public string SchemaName { get; set; }
+		public string PrincipalName { get; set; }
 		public string PermissionSchemaName { get; set; }
 		public string PermissionName { get; set; }
 		public List<PermissionPrincipal> PermissionPrincipals { get; set; }
@@ -27,7 +28,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			PermissionPrincipals = new List<PermissionPrincipal>();
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
 			var permission = Database.Permissions.FirstOrDefault(p => p.SchemaName == this.SchemaName
 							&& p.PermissionSchemaName == this.PermissionSchemaName && p.PermissionName == this.PermissionName);
@@ -37,10 +38,11 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				Database.Permissions.Add(permission);
 			}
 
-			var permissionPrincipal = values.DictionaryToObject<PermissionPrincipal>();
-			permissionPrincipal.DatbasePrincipal = Database.Principals.First(p => p.PrincipalName == values["PrincipalName"].ToString());
-			permissionPrincipal.Permission = permission;
-			permission.PermissionPrincipals.Add(permissionPrincipal);
+			// TODO: NEW
+			//var permissionPrincipal = values.DictionaryToObject<PermissionPrincipal>();
+			//permissionPrincipal.DatbasePrincipal = Database.Principals.First(p => p.PrincipalName == this.PrincipalName);
+			//permissionPrincipal.Permission = permission;
+			//permission.PermissionPrincipals.Add(permissionPrincipal);
 		}
 	}
 

@@ -93,6 +93,8 @@
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.connectionStringsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.saveSnapshotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openSnapshotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.tabMain.SuspendLayout();
@@ -789,7 +791,9 @@
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openToolStripMenuItem,
             this.saveToolStripMenuItem,
-            this.connectionStringsToolStripMenuItem});
+            this.connectionStringsToolStripMenuItem,
+            this.saveSnapshotToolStripMenuItem,
+            this.openSnapshotToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.fileToolStripMenuItem.Text = "&File";
@@ -797,23 +801,37 @@
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
 			// 
 			// saveToolStripMenuItem
 			// 
 			this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-			this.saveToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+			this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.saveToolStripMenuItem.Text = "&Save";
 			this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
 			// 
 			// connectionStringsToolStripMenuItem
 			// 
 			this.connectionStringsToolStripMenuItem.Name = "connectionStringsToolStripMenuItem";
-			this.connectionStringsToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+			this.connectionStringsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.connectionStringsToolStripMenuItem.Text = "&Connection Strings";
 			this.connectionStringsToolStripMenuItem.Click += new System.EventHandler(this.connectionStringsToolStripMenuItem_Click);
+			// 
+			// saveSnapshotToolStripMenuItem
+			// 
+			this.saveSnapshotToolStripMenuItem.Name = "saveSnapshotToolStripMenuItem";
+			this.saveSnapshotToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.saveSnapshotToolStripMenuItem.Text = "S&ave Snapshot";
+			this.saveSnapshotToolStripMenuItem.Click += new System.EventHandler(this.SaveSnapshotToolStripMenuItem_Click);
+			// 
+			// openSnapshotToolStripMenuItem
+			// 
+			this.openSnapshotToolStripMenuItem.Name = "openSnapshotToolStripMenuItem";
+			this.openSnapshotToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.openSnapshotToolStripMenuItem.Text = "O&pen Snapshot";
+			this.openSnapshotToolStripMenuItem.Click += new System.EventHandler(this.OpenSnapshotToolStripMenuItem_Click);
 			// 
 			// ucCompare
 			// 
@@ -923,6 +941,8 @@
         private System.Windows.Forms.ComboBox cboSourceDriver;
 		private System.Windows.Forms.CheckBox chkCaseInsensitive;
 		private System.Windows.Forms.ToolStripMenuItem connectionStringsToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem saveSnapshotToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem openSnapshotToolStripMenuItem;
 	}
 }
 

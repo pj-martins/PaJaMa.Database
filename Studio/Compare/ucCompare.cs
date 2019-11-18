@@ -11,6 +11,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -51,7 +52,11 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void btnConnect_Click(object sender, EventArgs e)
 		{
+			connect();
+		}
 
+		private void connect(CompareSnapshot snapshot = null)
+		{ 
 			string fromConnString = cboSource.Text;
 			string toConnString = cboTarget.Text;
 			Type fromDataSourceType = cboSourceDriver.SelectedItem as Type;
@@ -90,7 +95,7 @@ namespace PaJaMa.Database.Studio.Compare
 
 					try
 					{
-						_compareHelper = new CompareHelper(fromDataSource, toDataSource, worker);
+						_compareHelper = new CompareHelper(fromDataSource, toDataSource, snapshot, worker);
 					}
 					catch (Exception ex)
 					{
@@ -186,6 +191,8 @@ namespace PaJaMa.Database.Studio.Compare
 			_compareHelper.IgnoreCase = chkCaseInsensitive.Checked;
 			if (reinit)
 			{
+				//_compareHelper.FromDataSource.RawValues = null;
+				//_compareHelper.ToDataSource.RawValues = null;
 				var worker = new BackgroundWorker();
 				worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 				{
@@ -400,7 +407,7 @@ namespace PaJaMa.Database.Studio.Compare
 			if (success)
 			{
 				MessageBox.Show("Done");
-				refreshPage(true);
+				refreshPage(dropSpaces.Any() || structureSpaces.Any() || objSpaces.Any());
 			}
 		}
 
@@ -1085,6 +1092,59 @@ namespace PaJaMa.Database.Studio.Compare
 			if (new frmConnectionStrings().ShowDialog() == DialogResult.OK)
 			{
 				refreshConnStrings();
+			}
+		}
+
+		private void SaveSnapshotToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				using (var dlg = new SaveFileDialog())
+				{
+					dlg.Filter = "DatabaseStudio compare snapshot (*.dbs)|*.dbs";
+					dlg.Title = "Snapshot";
+					if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+					{
+						var cs = new CompareSnapshot();
+						cs.FromConnectionString = cboSource.Text;
+						cs.ToConnectionString = cboTarget.Text;
+						cs.FromDatabase = _compareHelper.FromDataSource.CurrentDatabase;
+						cs.ToDatabase = _compareHelper.ToDataSource.CurrentDatabase;
+						File.WriteAllText(dlg.FileName, Newtonsoft.Json.JsonConvert.SerializeObject(cs));
+						MessageBox.Show("Snapshot saved.");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+		}
+
+		private void OpenSnapshotToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				using (var dlg = new OpenFileDialog())
+				{
+					dlg.Filter = "DatabaseStudio compare snapshots (*.dbs)|*.dbs";
+					dlg.Title = "Snapshot";
+					if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+					{
+						var snapshot = Newtonsoft.Json.JsonConvert.DeserializeObject<CompareSnapshot>(File.ReadAllText(dlg.FileName));
+						if (btnDisconnect.Visible)
+							btnDisconnect_Click(sender, e);
+
+						cboSource.Text = snapshot.FromConnectionString;
+						cboTarget.Text = snapshot.ToConnectionString;
+						connect(snapshot);
+
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
 			}
 		}
 	}

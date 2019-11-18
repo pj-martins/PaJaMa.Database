@@ -1,4 +1,5 @@
-﻿using PaJaMa.Common;
+﻿using Newtonsoft.Json;
+using PaJaMa.Common;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,6 +15,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 {
 	public class View : DatabaseObjectWithColumns
 	{
+		[JsonIgnore]
 		public override string ObjectName
 		{
 			get { return ViewName; }
@@ -30,14 +32,13 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		{
 		}
 
-		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
+		internal override void setObjectProperties(DbConnection connection)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
-			var viewName = values["ViewName"].ToString();
-			var currView = schema.Views.FirstOrDefault(v => v.ViewName == viewName && v.Schema.SchemaName == schema.SchemaName);
+			var schema = Database.Schemas.First(s => s.SchemaName == this.SchemaName);
+			var currView = schema.Views.FirstOrDefault(v => v.ViewName == this.ViewName && v.Schema.SchemaName == schema.SchemaName);
 			if (currView == null)
 			{
-				currView = values.DictionaryToObject<View>(Database);
+				currView = this;
 				currView.Schema = schema;
 				if (Database.ExtendedProperties != null)
 					currView.ExtendedProperties = Database.ExtendedProperties.Where(ep => ep.Level1Object == currView.ViewName && ep.SchemaName == currView.Schema.SchemaName &&
@@ -45,9 +46,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				schema.Views.Add(currView);
 			}
 
-			var col = values.DictionaryToObject<Column>(Database);
-			if (!string.IsNullOrEmpty(col.ColumnName))
-				currView.Columns.Add(col);
+			// TODO: NEW
+			//var col = values.DictionaryToObject<Column>(Database);
+			//if (!string.IsNullOrEmpty(col.ColumnName))
+			//	currView.Columns.Add(col);
 		}
 	}
 }
