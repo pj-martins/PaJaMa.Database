@@ -346,10 +346,12 @@ namespace PaJaMa.Database.Library.DataSources
 						{
 							while (rdr.Read())
 							{
-								var tbl = rdr.ToObject<Table>(database);
-								var schema = database.Schemas.First(s => s.SchemaName == tbl.SchemaName);
-								if (!schema.Tables.Any(t => t.TableName == tbl.TableName))
+								var rawTbl = rdr.ToObject<Table>(database);
+								var schema = database.Schemas.First(s => s.SchemaName == rawTbl.SchemaName);
+								var tbl = schema.Tables.FirstOrDefault(t => t.TableName == rawTbl.TableName);
+								if (tbl == null)
 								{
+									tbl = rawTbl;
 									if (worker != null) worker.ReportProgress(0, $"Populating Table {tbl.TableName} for {database.DatabaseName}...");
 									tbl.Schema = schema;
 									schema.Tables.Add(tbl);
@@ -389,6 +391,12 @@ namespace PaJaMa.Database.Library.DataSources
 				{
 					fk.ParentTable = database.Schemas.Find(s => s.SchemaName == fk.ParentTableSchema).Tables.Find(t => t.TableName == fk.ParentTableName);
 					fk.ChildTable = database.Schemas.Find(s => s.SchemaName == fk.ChildTableSchema).Tables.Find(t => t.TableName == fk.ChildTableName);
+					// TODO: multiple
+					fk.Columns.Add(new ForeignKeyColumn()
+					{
+						ChildColumn = fk.ChildTable.Columns.First(c => c.ColumnName == fk.ChildColumnName),
+						ParentColumn = fk.ParentTable.Columns.First(c => c.ColumnName == fk.ParentColumnName)
+					});
 					fk.ChildTable.ForeignKeys.Add(fk);
 				}
 			}

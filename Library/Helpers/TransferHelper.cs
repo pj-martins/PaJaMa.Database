@@ -45,6 +45,7 @@ namespace PaJaMa.Database.Library.Helpers
 				{
 					using (var cmdSrc = conn.CreateCommand())
 					{
+						cmdSrc.CommandTimeout = 60000;
 						foreach (var table in datas)
 						{
 							i++;
