@@ -55,5 +55,29 @@ and ku.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA";
 
 
 		internal override string DatabaseSQL => "";
+
+		internal override string CombinedSQL => $@"
+SELECT z.*, TABLE_NAME AS TableName, COLUMN_NAME AS ColumnName, c.TABLE_SCHEMA as SchemaName
+FROM information_schema.columns c
+LEFT JOIN (
+SELECT DISTINCT
+    tc.constraint_name AS ForeignKeyName, tc.table_name AS ChildTableName, kcu.column_name AS ChildColumnName, 
+   c.referenced_table_name AS ParentTableName, referenced_column_name AS ParentColumnName, UPDATE_RULE AS UpdateRule, DELETE_RULE AS DeleteRule,
+	  referenced_table_schema AS ParentTableSchema, tc.TABLE_SCHEMA AS ChildTableSchema,  tc.TABLE_SCHEMA
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+	ON tc.constraint_name = kcu.constraint_name
+	AND tc.table_name = kcu.TABLE_NAME
+JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c ON c.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+	AND c.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
+WHERE constraint_type = 'FOREIGN KEY'
+	AND referenced_table_schema IS NOT NULL
+	AND tc.CONSTRAINT_SCHEMA <> 'tmp'
+) z
+ON z.ChildTableName = c.table_name
+	AND z.ChildColumnName = c.column_name
+	AND z.TABLE_SCHEMA = c.TABLE_SCHEMA
+WHERE c.TABLE_SCHEMA not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})
+";
 	}
 }

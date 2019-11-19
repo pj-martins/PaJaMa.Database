@@ -16,10 +16,14 @@ namespace PaJaMa.Database.Studio.Classes
 		public string MonitorConnectionStrings { get; set; }
 		public string LastCompareSourceConnString { get; set; }
 		public string LastCompareTargetConnString { get; set; }
+		public string LastDataCompareSourceConnString { get; set; }
+		public string LastDataCompareTargetConnString { get; set; }
 		public string LastSearchConnectionString { get; set; }
 		public string LastSearchServerType { get; set; }
 		public string LastCompareSourceDriver { get; set; }
 		public string LastCompareTargetDriver { get; set; }
+		public string LastDataCompareSourceDriver { get; set; }
+		public string LastDataCompareTargetDriver { get; set; }
 		public string LastQueryConnectionString { get; set; }
 		public string LastQueryServerType { get; set; }
 		public string LastMonitorConnectionString { get; set; }

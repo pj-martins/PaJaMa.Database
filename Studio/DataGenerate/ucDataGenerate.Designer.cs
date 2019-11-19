@@ -46,6 +46,12 @@
 			this.btnRefresh = new System.Windows.Forms.Button();
 			this.btnGo = new System.Windows.Forms.Button();
 			this.gridTables = new System.Windows.Forms.DataGridView();
+			this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.CurrentRows = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.AddRows = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.Delete = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+			this.Truncate = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+			this.ForeignKeys = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.mnuMain = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.selectTop1000ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,12 +59,6 @@
 			this.gridColumns = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Content = new System.Windows.Forms.DataGridViewButtonColumn();
-			this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.CurrentRows = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.AddRows = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.Delete = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-			this.Truncate = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-			this.ForeignKeys = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridTables)).BeginInit();
@@ -261,25 +261,74 @@
 			this.gridTables.MouseClick += new System.Windows.Forms.MouseEventHandler(this.gridTables_MouseClick);
 			this.gridTables.MouseDown += new System.Windows.Forms.MouseEventHandler(this.gridTables_MouseDown);
 			// 
+			// dataGridViewTextBoxColumn1
+			// 
+			this.dataGridViewTextBoxColumn1.DataPropertyName = "Table";
+			this.dataGridViewTextBoxColumn1.HeaderText = "Table";
+			this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+			this.dataGridViewTextBoxColumn1.ReadOnly = true;
+			this.dataGridViewTextBoxColumn1.Width = 220;
+			// 
+			// CurrentRows
+			// 
+			this.CurrentRows.DataPropertyName = "CurrentRowCount";
+			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
+			dataGridViewCellStyle1.Format = "N0";
+			dataGridViewCellStyle1.NullValue = null;
+			this.CurrentRows.DefaultCellStyle = dataGridViewCellStyle1;
+			this.CurrentRows.HeaderText = "Current";
+			this.CurrentRows.Name = "CurrentRows";
+			this.CurrentRows.ReadOnly = true;
+			// 
+			// AddRows
+			// 
+			this.AddRows.DataPropertyName = "AddRowCount";
+			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
+			dataGridViewCellStyle2.Format = "N0";
+			dataGridViewCellStyle2.NullValue = null;
+			this.AddRows.DefaultCellStyle = dataGridViewCellStyle2;
+			this.AddRows.HeaderText = "Add Rows";
+			this.AddRows.Name = "AddRows";
+			// 
+			// Delete
+			// 
+			this.Delete.DataPropertyName = "Delete";
+			this.Delete.HeaderText = "Delete";
+			this.Delete.Name = "Delete";
+			// 
+			// Truncate
+			// 
+			this.Truncate.DataPropertyName = "Truncate";
+			this.Truncate.HeaderText = "Truncate";
+			this.Truncate.Name = "Truncate";
+			// 
+			// ForeignKeys
+			// 
+			this.ForeignKeys.DataPropertyName = "RemoveAddKeys";
+			this.ForeignKeys.HeaderText = "Remove & Add Foreign Keys";
+			this.ForeignKeys.Name = "ForeignKeys";
+			this.ForeignKeys.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.ForeignKeys.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			// 
 			// mnuMain
 			// 
 			this.mnuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.selectToolStripMenuItem,
             this.selectTop1000ToolStripMenuItem});
 			this.mnuMain.Name = "mnuTree";
-			this.mnuMain.Size = new System.Drawing.Size(157, 48);
+			this.mnuMain.Size = new System.Drawing.Size(156, 48);
 			// 
 			// selectToolStripMenuItem
 			// 
 			this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-			this.selectToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+			this.selectToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
 			this.selectToolStripMenuItem.Text = "Select";
 			this.selectToolStripMenuItem.Click += new System.EventHandler(this.selectToolStripMenuItem_Click);
 			// 
 			// selectTop1000ToolStripMenuItem
 			// 
 			this.selectTop1000ToolStripMenuItem.Name = "selectTop1000ToolStripMenuItem";
-			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
 			this.selectTop1000ToolStripMenuItem.Text = "Select Top 1000";
 			this.selectTop1000ToolStripMenuItem.Click += new System.EventHandler(this.selectTop1000ToolStripMenuItem_Click);
 			// 
@@ -332,55 +381,6 @@
 			this.Content.Resizable = System.Windows.Forms.DataGridViewTriState.True;
 			this.Content.Width = 200;
 			// 
-			// dataGridViewTextBoxColumn1
-			// 
-			this.dataGridViewTextBoxColumn1.DataPropertyName = "Table";
-			this.dataGridViewTextBoxColumn1.HeaderText = "Table";
-			this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-			this.dataGridViewTextBoxColumn1.ReadOnly = true;
-			this.dataGridViewTextBoxColumn1.Width = 220;
-			// 
-			// CurrentRows
-			// 
-			this.CurrentRows.DataPropertyName = "CurrentRowCount";
-			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
-			dataGridViewCellStyle1.Format = "N0";
-			dataGridViewCellStyle1.NullValue = null;
-			this.CurrentRows.DefaultCellStyle = dataGridViewCellStyle1;
-			this.CurrentRows.HeaderText = "Current";
-			this.CurrentRows.Name = "CurrentRows";
-			this.CurrentRows.ReadOnly = true;
-			// 
-			// AddRows
-			// 
-			this.AddRows.DataPropertyName = "AddRowCount";
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.TopRight;
-			dataGridViewCellStyle2.Format = "N0";
-			dataGridViewCellStyle2.NullValue = null;
-			this.AddRows.DefaultCellStyle = dataGridViewCellStyle2;
-			this.AddRows.HeaderText = "Add Rows";
-			this.AddRows.Name = "AddRows";
-			// 
-			// Delete
-			// 
-			this.Delete.DataPropertyName = "Delete";
-			this.Delete.HeaderText = "Delete";
-			this.Delete.Name = "Delete";
-			// 
-			// Truncate
-			// 
-			this.Truncate.DataPropertyName = "Truncate";
-			this.Truncate.HeaderText = "Truncate";
-			this.Truncate.Name = "Truncate";
-			// 
-			// ForeignKeys
-			// 
-			this.ForeignKeys.DataPropertyName = "RemoveAddKeys";
-			this.ForeignKeys.HeaderText = "Remove & Add Foreign Keys";
-			this.ForeignKeys.Name = "ForeignKeys";
-			this.ForeignKeys.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-			this.ForeignKeys.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-			// 
 			// ucDataGenerate
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -390,6 +390,7 @@
 			this.Controls.Add(this.panel1);
 			this.Name = "ucDataGenerate";
 			this.Size = new System.Drawing.Size(891, 623);
+			this.Load += new System.EventHandler(this.UcDataGenerate_Load);
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
 			this.panel2.ResumeLayout(false);

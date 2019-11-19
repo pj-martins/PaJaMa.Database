@@ -30,7 +30,10 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		public ucDataGenerate()
 		{
 			InitializeComponent();
+		}
 
+		private void UcDataGenerate_Load(object sender, EventArgs e)
+		{
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 			if (settings.ConnectionStrings == null)
 				settings.ConnectionStrings = string.Empty;

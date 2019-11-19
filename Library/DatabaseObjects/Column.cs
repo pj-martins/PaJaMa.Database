@@ -25,6 +25,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		}
 
 		[Ignore]
+		public override string ProgressDisplay => $"{this.RawValues["SchemaName"].ToString()}.{this.ObjectName}";
+
+		[Ignore]
 		public DatabaseObjectWithColumns Parent { get; set; }
 
 		public ColumnType ColumnType { get; set; }

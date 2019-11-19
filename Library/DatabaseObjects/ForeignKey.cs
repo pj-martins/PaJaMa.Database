@@ -18,7 +18,15 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		}
 
 		public string ForeignKeyName { get; set; }
+		[Ignore]
+		public string ChildTableSchema { get; set; }
+		[Ignore]
+		public string ChildTableName { get; set; }
 		public Table ChildTable { get; set; }
+		[Ignore]
+		public string ParentTableSchema { get; set; }
+		[Ignore]
+		public string ParentTableName { get; set; }
 		public Table ParentTable { get; set; }
 
 		[Ignore]
@@ -42,7 +50,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			var parentSchema = Database.Schemas.First(s => s.SchemaName == values["ParentTableSchema"].ToString());
 			if (!parentSchema.Tables.Any()) Database.DataSource.PopulateTables(connection, new Schema[] { parentSchema }, true);
 			var childSchema = Database.Schemas.First(s => s.SchemaName == values["ChildTableSchema"].ToString());
-			var childTable = childSchema.Tables.First(t => t.TableName == values["ChildTableName"].ToString());
+			var childTable = childSchema.Tables.First(t => t.TableName == this.ChildTableName);
 			var foreignKey = childTable.ForeignKeys.FirstOrDefault(f => f.ForeignKeyName == foreignKeyName 
 				&& f.ChildTable.TableName == childTableName
 				&& f.ChildTable.Schema.SchemaName == childSchema.SchemaName);
@@ -50,7 +58,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			if (foreignKey == null)
 			{
 				foreignKey = this;
-				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == values["ParentTableName"].ToString());
+				foreignKey.ParentTable = parentSchema.Tables.First(t => t.TableName == this.ParentTableName);
 				if (!foreignKey.ParentTable.Columns.Any()) Database.DataSource.PopulateChildColumns(connection, foreignKey.ParentTable);
 				foreignKey.ChildTable = childTable;
 				if (!foreignKey.ChildTable.Columns.Any()) Database.DataSource.PopulateChildColumns(connection, foreignKey.ChildTable);

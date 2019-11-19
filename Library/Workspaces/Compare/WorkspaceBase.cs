@@ -42,10 +42,13 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 	{
 		public virtual DatabaseObjectBase SourceObject { get; set; }
 		public WorkspaceWithSourceBase(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject,
-			bool ignoreCase) : base(targetDatabase, targetObject)
+			bool ignoreCase, bool forData) : base(targetDatabase, targetObject)
 		{
 			SourceObject = sourceObject;
-			populateDifferences(ignoreCase);
+			if (!forData)
+			{
+				populateDifferences(ignoreCase);
+			}
 		}
 
 		private void populateDifferences(bool ignoreCase)

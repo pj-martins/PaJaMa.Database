@@ -42,6 +42,8 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public override List<string> SurroundingCharacters => throw new NotImplementedException();
 
+		internal override string CombinedSQL => throw new NotImplementedException();
+
 		public override string GetConvertedObjectName(string objectName)
 		{
 			throw new NotImplementedException();

@@ -28,12 +28,20 @@ namespace PaJaMa.Database.Library.Helpers
 		
 		public bool IgnoreCase { get; set; }
 
-		public CompareHelper(DataSource fromDataSource, DataSource toDataSource, BackgroundWorker worker)
+		public CompareHelper(DataSource fromDataSource, DataSource toDataSource, bool isForData, BackgroundWorker worker)
 		{
 			FromDataSource = fromDataSource;
 			ToDataSource = toDataSource;
-			FromDataSource.PopulateChildren(null, false, worker);
-			ToDataSource.PopulateChildren(null, false, worker);
+			if (isForData)
+			{
+				FromDataSource.PopulateTablesAndColumns(null, worker);
+				ToDataSource.PopulateTablesAndColumns(null, worker);
+			}
+			else
+			{
+				FromDataSource.PopulateChildren(null, false, worker);
+				ToDataSource.PopulateChildren(null, false, worker);
+			}
 		}
 
 		public void Init(BackgroundWorker worker)

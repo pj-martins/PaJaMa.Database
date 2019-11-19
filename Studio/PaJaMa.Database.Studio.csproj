@@ -181,10 +181,10 @@
     <Compile Include="Compare\frmCreates.Designer.cs">
       <DependentUpon>frmCreates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Compare\frmDataDetails.cs">
+    <Compile Include="DataCompare\frmDataDetails.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Compare\frmDataDetails.Designer.cs">
+    <Compile Include="DataCompare\frmDataDetails.Designer.cs">
       <DependentUpon>frmDataDetails.cs</DependentUpon>
     </Compile>
     <Compile Include="Compare\ucCompare.cs">
@@ -198,6 +198,12 @@
     </Compile>
     <Compile Include="Compare\ucDifferences.Designer.cs">
       <DependentUpon>ucDifferences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DataCompare\ucDataCompare.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DataCompare\ucDataCompare.Designer.cs">
+      <DependentUpon>ucDataCompare.cs</DependentUpon>
     </Compile>
     <Compile Include="DataGenerate\Content\ContentControl.cs" />
     <Compile Include="DataGenerate\Content\frmContentBase.cs">
@@ -364,7 +370,7 @@
     <EmbeddedResource Include="Compare\frmCreates.resx">
       <DependentUpon>frmCreates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Compare\frmDataDetails.resx">
+    <EmbeddedResource Include="DataCompare\frmDataDetails.resx">
       <DependentUpon>frmDataDetails.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Compare\ucCompare.resx">
@@ -372,6 +378,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Compare\ucDifferences.resx">
       <DependentUpon>ucDifferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataCompare\ucDataCompare.resx">
+      <DependentUpon>ucDataCompare.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DataGenerate\Content\frmContentBase.resx">
       <DependentUpon>frmContentBase.cs</DependentUpon>

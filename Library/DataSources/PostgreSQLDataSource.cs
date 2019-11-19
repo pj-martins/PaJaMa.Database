@@ -240,6 +240,8 @@ from {0}.INFORMATION_SCHEMA.SEQUENCES";
 			}
 		}
 
+		internal override string CombinedSQL => throw new NotImplementedException();
+
 		public override string GetConvertedObjectName(string objectName)
 		{
 			return string.Format("\"{0}\"", objectName);

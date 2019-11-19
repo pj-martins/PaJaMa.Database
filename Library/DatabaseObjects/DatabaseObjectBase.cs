@@ -15,6 +15,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 	{
 		public virtual bool Synchronized { get; set; }
 
+		[Ignore]
+		public virtual string ProgressDisplay { get { return this.ObjectName; } }
+
 		public abstract string ObjectName { get; }
 
 		public Database Database { get; }
@@ -30,6 +33,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		[Ignore]
 		internal Dictionary<string, object> RawValues { get; set; }
 
+		public string SchemaName { get; set; }
 		public Schema Schema { get; set; }
 
 		public DatabaseObjectBase(Database database)

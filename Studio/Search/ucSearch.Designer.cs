@@ -342,6 +342,7 @@
 			this.Controls.Add(this.panel1);
 			this.Name = "ucSearch";
 			this.Size = new System.Drawing.Size(865, 578);
+			this.Load += new System.EventHandler(this.UcSearch_Load);
 			this.splitContainer1.Panel1.ResumeLayout(false);
 			this.splitContainer1.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();

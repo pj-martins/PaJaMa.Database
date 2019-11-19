@@ -35,6 +35,7 @@ namespace PaJaMa.Database.Library.DataSources
 		internal virtual string PermissionSQL => "";
 		internal virtual string CredentialSQL => "";
 		internal virtual string SchemaViewSQL => "";
+		internal abstract string CombinedSQL { get; }
 		internal abstract string TableSQL { get; }
 		internal abstract string ColumnSQL { get; }
 		internal abstract string ForeignKeySQL { get; }
@@ -161,6 +162,7 @@ namespace PaJaMa.Database.Library.DataSources
 							values.Add(col, rdr[col]);
 						}
 						obj.RawValues = values;
+						if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName} - {obj.ProgressDisplay}...");
 					}
 				}
 				rdr.Close();
@@ -186,7 +188,7 @@ namespace PaJaMa.Database.Library.DataSources
 		}
 
 		public virtual void PopulateTables(DbConnection connection, Schema[] schemas, bool andChildren)
-		{
+		{ 
 			// TODO: assumes all schemas are from same db
 			var conn = connection ?? OpenConnection(schemas.First().Database.DatabaseName);
 			using (var cmd = conn.CreateCommand())
@@ -320,6 +322,75 @@ namespace PaJaMa.Database.Library.DataSources
 					populateObjects<RoutineSynonym>(schema.Database, cmd, string.Format(this.RoutineSynonymSQL, schema.Database.DatabaseName), schema.SchemaName, true, string.Empty, string.Empty, null);
 				}
 				conn.Close();
+			}
+		}
+
+		public void PopulateTablesAndColumns(DatabaseObjects.Database database, BackgroundWorker worker)
+		{
+			if (database == null) database = CurrentDatabase;
+			database.Schemas = new List<Schema>();
+			var fks = new List<ForeignKey>();
+			using (var conn = OpenConnection(database.DatabaseName))
+			{
+				using (var cmd = conn.CreateCommand())
+				{
+					if (string.IsNullOrEmpty(this.SchemaSQL))
+						database.Schemas.Add(new Schema(database) { SchemaName = "" });
+					else
+						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, worker);
+
+					cmd.CommandText = this.CombinedSQL;
+					using (var rdr = cmd.ExecuteReader())
+					{
+						if (rdr.HasRows)
+						{
+							while (rdr.Read())
+							{
+								var tbl = rdr.ToObject<Table>(database);
+								var schema = database.Schemas.First(s => s.SchemaName == tbl.SchemaName);
+								if (!schema.Tables.Any(t => t.TableName == tbl.TableName))
+								{
+									if (worker != null) worker.ReportProgress(0, $"Populating Table {tbl.TableName} for {database.DatabaseName}...");
+									tbl.Schema = schema;
+									schema.Tables.Add(tbl);
+								}
+
+								var col = rdr.ToObject<Column>(database);
+								if (!tbl.Columns.Any(c => c.ColumnName == col.ColumnName))
+								{
+									col.Schema = schema;
+									tbl.Columns.Add(col);
+								}
+
+								if (rdr["ForeignKeyName"] != DBNull.Value)
+								{
+									var fk = rdr.ToObject<ForeignKey>(database);
+									fk.Schema = schema;
+									tbl.ForeignKeys.Add(fk);
+									fks.Add(fk);
+								}
+								
+								//var values = new Dictionary<string, object>();
+								//for (int i = 0; i < rdr.FieldCount; i++)
+								//{
+								//	var col = rdr.GetName(i);
+								//	values.Add(col, rdr[col]);
+								//}
+								//obj.RawValues = values;
+								//if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName} - {obj.ProgressDisplay}...");
+							}
+						}
+						rdr.Close();
+					}
+				}
+
+				// PopulateTables(conn, database.Schemas.ToArray(), false);
+				foreach (var fk in fks)
+				{
+					fk.ParentTable = database.Schemas.Find(s => s.SchemaName == fk.ParentTableSchema).Tables.Find(t => t.TableName == fk.ParentTableName);
+					fk.ChildTable = database.Schemas.Find(s => s.SchemaName == fk.ChildTableSchema).Tables.Find(t => t.TableName == fk.ChildTableName);
+					fk.ChildTable.ForeignKeys.Add(fk);
+				}
 			}
 		}
 

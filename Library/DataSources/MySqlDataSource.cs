@@ -92,6 +92,9 @@ and tc.TABLE_SCHEMA = '{0}'";
 
 		internal override string DatabaseSQL => "SELECT SCHEMA_NAME AS DatabaseName FROM information_schema.schemata";
 
+		internal override string CombinedSQL => throw new NotImplementedException();
+
+
 		private List<ColumnType> _columnTypes;
 		public override List<ColumnType> ColumnTypes
 		{

@@ -27,18 +27,6 @@ namespace PaJaMa.Database.Studio.Monitor
 		public ucMonitor()
 		{
 			InitializeComponent();
-
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (settings.MonitorConnectionStrings == null)
-				settings.MonitorConnectionStrings = string.Empty;
-
-			refreshConnStrings();
-
-			if (!string.IsNullOrEmpty(settings.LastMonitorConnectionString))
-				cboConnectionString.Text = settings.LastMonitorConnectionString;
-
-			gridResults.AutoGenerateColumns = false;
-			gridResults.DataSource = _filtered;
 		}
 
 		private void refreshConnStrings()
@@ -54,6 +42,17 @@ namespace PaJaMa.Database.Studio.Monitor
 
 		private void ucMonitor_Load(object sender, EventArgs e)
 		{
+			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+			if (settings.MonitorConnectionStrings == null)
+				settings.MonitorConnectionStrings = string.Empty;
+
+			refreshConnStrings();
+
+			if (!string.IsNullOrEmpty(settings.LastMonitorConnectionString))
+				cboConnectionString.Text = settings.LastMonitorConnectionString;
+
+			gridResults.AutoGenerateColumns = false;
+			gridResults.DataSource = _filtered;
 		}
 
 		private bool startProfiling()

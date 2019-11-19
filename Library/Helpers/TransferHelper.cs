@@ -9,18 +9,15 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
 namespace PaJaMa.Database.Library.Helpers
 {
 	public class TransferHelper
 	{
 		private BackgroundWorker _worker;
-
 		public TransferHelper(BackgroundWorker worker)
 		{
 			_worker = worker;
 		}
-
 		public bool Transfer(List<TableWorkspace> workspaces, DbTransaction trans, DatabaseObjects.Database fromDatabase)
 		{
 			string tableName = string.Empty;
@@ -28,9 +25,7 @@ namespace PaJaMa.Database.Library.Helpers
 			{
 				cmd.Transaction = trans;
 				cmd.CommandTimeout = 60000;
-
 				var sort = !workspaces.All(ws => ws.RemoveAddKeys);
-
 				int i = 0;
 				var selected = workspaces.Where(t => t.SelectTableForData).ToList();
 				var datas = sort ? getSortedWorkspaces(selected) : selected;
@@ -39,16 +34,13 @@ namespace PaJaMa.Database.Library.Helpers
 				{
 					i++;
 					tableName = table.TargetTable.ToString();
-
 					if (table.RemoveAddIndexes)
 					{
 						_worker.ReportProgress(100 * i / counts, "Removing indexes for " + tableName);
 						table.TargetTable.RemoveIndexes(cmd);
 					}
 				}
-
 				i = 0;
-
 				using (var conn = fromDatabase.OpenConnection())
 				{
 					using (var cmdSrc = conn.CreateCommand())
@@ -56,14 +48,11 @@ namespace PaJaMa.Database.Library.Helpers
 						foreach (var table in datas)
 						{
 							i++;
-
 							_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0}",
 											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)));
-
 							int rowCount = 0;
 							cmdSrc.CommandText = string.Format("select count(*) from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
 							rowCount = Convert.ToInt32(cmdSrc.ExecuteScalar());
-
 							cmdSrc.CommandText = string.Format("select * from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
 							using (var rdr = cmdSrc.ExecuteReader())
 							{
@@ -77,13 +66,10 @@ namespace PaJaMa.Database.Library.Helpers
 										{
 											if (!string.IsNullOrEmpty(col.Formula))
 												continue;
-
 											if (!table.TargetTable.Columns.Any(c => c.ColumnName == col.ColumnName))
 												continue;
-
 											copy.ColumnMappings.Add(col.ObjectName, col.ObjectName);
 										}
-
 										copy.BulkCopyTimeout = 600;
 										copy.BatchSize = table.TransferBatchSize == 0 ? TableWorkspace.DEFAULT_BATCH_SIZE : table.TransferBatchSize;
 										copy.NotifyAfter = 500;
@@ -113,48 +99,56 @@ namespace PaJaMa.Database.Library.Helpers
 										var batchSize = table.TransferBatchSize == 0 ? TableWorkspace.DEFAULT_BATCH_SIZE : table.TransferBatchSize;
 										var insertQry = $@"insert into {table.TargetTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)} 
             ({string.Join(", ", columns.Select(dc => table.TargetObject.Database.DataSource.GetConvertedObjectName(dc)).ToArray())}) values ";
-										cmd.CommandText = insertQry;
+										var sb = new StringBuilder(insertQry);
 										bool firstIn = true;
 										int counter = 0;
 										int rowsCopied = 0;
+										DateTime dtStart = DateTime.Now;
 										while (rdr.Read())
 										{
 											rowsCopied++;
 											if (_worker.CancellationPending)
 												return false;
-											_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0} {1} of {2}",
-												table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount));
-
-											cmd.CommandText += (firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
-												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("'", "''") + "'").ToArray()) + ")";
+											sb.AppendLine((firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
+												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("\\'", "\\\\'").Replace("'", "''") + "'").ToArray()) + ")");
 											counter++;
 											firstIn = false;
+											if (rowsCopied % 100 == 0)
+											{
+												var totalSeconds = (DateTime.Now - dtStart).TotalSeconds;
+												var recordsPerSecond = rowsCopied / (totalSeconds == 0 ? 1 : totalSeconds);
+												var estimatedSeconds = rowCount / recordsPerSecond;
+
+												_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0} {1} of {2} {3}",
+													table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount,
+													$"\r\n{Math.Round(totalSeconds / 60, 2)} of {Math.Round(estimatedSeconds / 60, 2)} mins"));
+											}
 											if (counter >= batchSize)
 											{
+												cmd.CommandText = sb.ToString();
 												cmd.ExecuteNonQuery();
-												cmd.CommandText = insertQry;
+												sb = new StringBuilder(insertQry);
 												counter = 0;
 												firstIn = true;
 											}
 										}
-
 										if (!firstIn)
+										{
+											cmd.CommandText = sb.ToString();
 											cmd.ExecuteNonQuery();
+										}
 									}
 								}
 							}
 						}
 					}
-
 					conn.Close();
 				}
-
 				i = 0;
 				foreach (var table in datas)
 				{
 					i++;
 					tableName = table.TargetTable.TableName;
-
 					if (table.RemoveAddIndexes)
 					{
 						_worker.ReportProgress(100 * i / datas.Count(), "Adding indexes for " + tableName);
@@ -162,11 +156,8 @@ namespace PaJaMa.Database.Library.Helpers
 					}
 				}
 			}
-
 			return true;
 		}
-
-
 		private object getReaderValue(DbDataReader rdr, string columnName)
 		{
 			try
@@ -187,12 +178,10 @@ namespace PaJaMa.Database.Library.Helpers
 					if (rdr.GetName(i) == columnName)
 						return Activator.CreateInstance(rdr.GetFieldType(i));
 				}
-
 				// shouldn't get here
 				return DBNull.Value;
 			}
 		}
-
 		private List<TableWorkspace> getSortedWorkspaces(List<TableWorkspace> workspaces)
 		{
 			List<TableWorkspace> sortedWorkspaces = new List<TableWorkspace>();
@@ -214,7 +203,6 @@ namespace PaJaMa.Database.Library.Helpers
 								circularKeys.Add(fk);
 								break;
 							}
-
 							goodToGo = false;
 							break;
 						}
@@ -228,7 +216,6 @@ namespace PaJaMa.Database.Library.Helpers
 				}
 				isInInfinite = currentCount == currentWorkspaces.Count;
 			}
-
 			return sortedWorkspaces;
 		}
 	}

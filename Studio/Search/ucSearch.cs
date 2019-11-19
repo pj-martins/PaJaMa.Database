@@ -23,9 +23,11 @@ namespace PaJaMa.Database.Studio.Search
 		public ucSearch()
 		{
 			InitializeComponent();
+		}
 
-			if (DesignMode) return;
 
+		private void UcSearch_Load(object sender, EventArgs e)
+		{
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 			if (settings.SearchConnectionStrings == null)
 				settings.SearchConnectionStrings = string.Empty;
@@ -42,7 +44,6 @@ namespace PaJaMa.Database.Studio.Search
 
 			new GridHelper().DecorateGrid(gridTables);
 			new GridHelper().DecorateGrid(gridColumns);
-
 		}
 
 		private void refreshConnStrings()

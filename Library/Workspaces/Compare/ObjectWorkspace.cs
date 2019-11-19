@@ -24,7 +24,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		public string Target { get { return TargetObject == null ? string.Empty : TargetObject.ToString(); } }
 
 		public ObjectWorkspace(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject, bool ignoreCase)
-			: base(sourceObject, targetDatabase, targetObject, ignoreCase)
+			: base(sourceObject, targetDatabase, targetObject, ignoreCase, false)
 		{
 		}
 

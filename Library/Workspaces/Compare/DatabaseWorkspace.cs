@@ -9,7 +9,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 	public class DatabaseWorkspace : WorkspaceWithSourceBase
 	{
 		public DatabaseWorkspace(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject, bool ignoreCase) 
-            : base(sourceObject, targetDatabase, targetObject, ignoreCase)
+            : base(sourceObject, targetDatabase, targetObject, ignoreCase, false)
 		{
 		}
 	}

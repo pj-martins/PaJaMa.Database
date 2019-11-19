@@ -267,6 +267,8 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 "db_denydatawriter"
 		};
 
+		internal override string CombinedSQL => throw new NotImplementedException();
+
 		public override string GetConvertedObjectName(string objectName)
 		{
 			return string.IsNullOrEmpty(objectName) ? string.Empty : string.Format("[{0}]", objectName);
