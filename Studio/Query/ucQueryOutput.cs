@@ -309,6 +309,7 @@ namespace PaJaMa.Database.Studio.Query
 									splitContainer.Panel2Collapsed = true;
 									splitContainer.Panel2MinSize = 0;
 									grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+									// grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
 									grid.Dock = DockStyle.Fill;
 									grid.AllowUserToAddRows = grid.AllowUserToDeleteRows = false;
 									grid.ReadOnly = true;

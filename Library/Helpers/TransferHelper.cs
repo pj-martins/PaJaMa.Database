@@ -26,7 +26,7 @@ namespace PaJaMa.Database.Library.Helpers
 				cmd.Transaction = trans;
 				cmd.CommandTimeout = 60000;
 				var sort = !workspaces.All(ws => ws.RemoveAddKeys);
-				int i = 0;
+				long i = 0;
 				var selected = workspaces.Where(t => t.SelectTableForData).ToList();
 				var datas = sort ? getSortedWorkspaces(selected) : selected;
 				var counts = datas.Count();
@@ -36,7 +36,7 @@ namespace PaJaMa.Database.Library.Helpers
 					tableName = table.TargetTable.ToString();
 					if (table.RemoveAddIndexes)
 					{
-						_worker.ReportProgress(100 * i / counts, "Removing indexes for " + tableName);
+						_worker.ReportProgress((int)(100 * i / counts), "Removing indexes for " + tableName);
 						table.TargetTable.RemoveIndexes(cmd);
 					}
 				}
@@ -49,11 +49,11 @@ namespace PaJaMa.Database.Library.Helpers
 						foreach (var table in datas)
 						{
 							i++;
-							_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0}",
-											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)));
-							int rowCount = 0;
+							_worker.ReportProgress((int)(100 * i / counts), string.Format("Copying {1} of {2}: {0}",
+											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), i, counts));
+							long rowCount = 0;
 							cmdSrc.CommandText = string.Format("select count(*) from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
-							rowCount = Convert.ToInt32(cmdSrc.ExecuteScalar());
+							rowCount = Convert.ToInt64(cmdSrc.ExecuteScalar());
 							cmdSrc.CommandText = string.Format("select * from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
 							using (var rdr = cmdSrc.ExecuteReader())
 							{
@@ -81,8 +81,8 @@ namespace PaJaMa.Database.Library.Helpers
 												e.Abort = true;
 												return;
 											}
-											_worker.ReportProgress(100 * i / counts, string.Format("Copying: [{0}].[{1}] {2} of {3}",
-												table.SourceTable.Schema.SchemaName, table.SourceTable.TableName, e.RowsCopied, rowCount));
+											_worker.ReportProgress((int)(100 * i / counts), string.Format("Copying {4} of {5}: [{0}].[{1}] {2} of {3}",
+												table.SourceTable.Schema.SchemaName, table.SourceTable.TableName, e.RowsCopied, rowCount, i, counts));
 										};
 										copy.DestinationTableName = string.Format("[{0}].[{1}]", table.TargetTable.Schema.SchemaName, table.TargetTable.TableName);
 										copy.WriteToServer(rdr);
@@ -102,14 +102,14 @@ namespace PaJaMa.Database.Library.Helpers
             ({string.Join(", ", columns.Select(dc => table.TargetObject.Database.DataSource.GetConvertedObjectName(dc)).ToArray())}) values ";
 										var sb = new StringBuilder(insertQry);
 										bool firstIn = true;
-										int counter = 0;
-										int rowsCopied = 0;
+										long counter = 0;
+										long rowsCopied = 0;
 										DateTime dtStart = DateTime.Now;
 										while (rdr.Read())
 										{
 											rowsCopied++;
 											if (_worker.CancellationPending)
-												return false;
+												break;
 											sb.AppendLine((firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
 												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("\\'", "\\\\'").Replace("'", "''") + "'").ToArray()) + ")");
 											counter++;
@@ -120,9 +120,9 @@ namespace PaJaMa.Database.Library.Helpers
 												var recordsPerSecond = rowsCopied / (totalSeconds == 0 ? 1 : totalSeconds);
 												var estimatedSeconds = rowCount / recordsPerSecond;
 
-												_worker.ReportProgress(100 * i / counts, string.Format("Copying: {0} {1} of {2} {3}",
+												_worker.ReportProgress((int)(100 * i / counts), string.Format("Copying {4} of {5}: {0} {1} of {2} {3}",
 													table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), rowsCopied, rowCount,
-													$"\r\n{Math.Round(totalSeconds / 60, 2)} of {Math.Round(estimatedSeconds / 60, 2)} mins"));
+													$"\r\n{Math.Round(totalSeconds / 60, 2)} of {Math.Round(estimatedSeconds / 60, 2)} mins", i, counts));
 											}
 											if (counter >= batchSize)
 											{
@@ -133,7 +133,7 @@ namespace PaJaMa.Database.Library.Helpers
 												firstIn = true;
 											}
 										}
-										if (!firstIn)
+										if (!_worker.CancellationPending && !firstIn)
 										{
 											cmd.CommandText = sb.ToString();
 											cmd.ExecuteNonQuery();
@@ -141,10 +141,13 @@ namespace PaJaMa.Database.Library.Helpers
 									}
 								}
 							}
+
+							if (_worker.CancellationPending) break;
 						}
 					}
 					conn.Close();
 				}
+				if (_worker.CancellationPending) return false;
 				i = 0;
 				foreach (var table in datas)
 				{
@@ -152,7 +155,7 @@ namespace PaJaMa.Database.Library.Helpers
 					tableName = table.TargetTable.TableName;
 					if (table.RemoveAddIndexes)
 					{
-						_worker.ReportProgress(100 * i / datas.Count(), "Adding indexes for " + tableName);
+						_worker.ReportProgress((int)(100 * i / datas.Count()), "Adding indexes for " + tableName);
 						table.TargetTable.AddIndexes(cmd);
 					}
 				}

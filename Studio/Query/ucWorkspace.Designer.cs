@@ -38,7 +38,6 @@
 			this.btnDisconnect = new System.Windows.Forms.Button();
 			this.pnlControls = new System.Windows.Forms.Panel();
 			this.btnSearch = new System.Windows.Forms.Button();
-			this.lblConnString = new System.Windows.Forms.Label();
 			this.treeTables = new System.Windows.Forms.TreeView();
 			this.mnuTree = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,6 +52,7 @@
 			this.newTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.scriptInsertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.collapseAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
 			this.pnlSearch = new System.Windows.Forms.Panel();
 			this.txtSearchDatabase = new System.Windows.Forms.TextBox();
@@ -63,8 +63,8 @@
 			this.txtSearchTable = new System.Windows.Forms.TextBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.btnDoSearch = new System.Windows.Forms.Button();
+			this.txtReadonlyConnString = new System.Windows.Forms.TextBox();
 			this.tabOutputs = new PaJaMa.WinControls.TabControl.TabControl();
-			this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlConnect.SuspendLayout();
 			this.pnlControls.SuspendLayout();
 			this.mnuTree.SuspendLayout();
@@ -151,8 +151,8 @@
 			// 
 			// pnlControls
 			// 
+			this.pnlControls.Controls.Add(this.txtReadonlyConnString);
 			this.pnlControls.Controls.Add(this.btnSearch);
-			this.pnlControls.Controls.Add(this.lblConnString);
 			this.pnlControls.Controls.Add(this.btnDisconnect);
 			this.pnlControls.Dock = System.Windows.Forms.DockStyle.Top;
 			this.pnlControls.Location = new System.Drawing.Point(0, 0);
@@ -170,15 +170,6 @@
 			this.btnSearch.Text = "Search";
 			this.btnSearch.UseVisualStyleBackColor = true;
 			this.btnSearch.Click += new System.EventHandler(this.BtnSearch_Click);
-			// 
-			// lblConnString
-			// 
-			this.lblConnString.AutoSize = true;
-			this.lblConnString.Location = new System.Drawing.Point(231, 13);
-			this.lblConnString.Name = "lblConnString";
-			this.lblConnString.Size = new System.Drawing.Size(35, 13);
-			this.lblConnString.TabIndex = 10;
-			this.lblConnString.Text = "label2";
 			// 
 			// treeTables
 			// 
@@ -210,92 +201,99 @@
             this.collapseAllToolStripMenuItem,
             this.searchToolStripMenuItem});
 			this.mnuTree.Name = "mnuTree";
-			this.mnuTree.Size = new System.Drawing.Size(181, 312);
+			this.mnuTree.Size = new System.Drawing.Size(164, 290);
 			this.mnuTree.Opening += new System.ComponentModel.CancelEventHandler(this.mnuTree_Opening);
 			// 
 			// selectToolStripMenuItem
 			// 
 			this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-			this.selectToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.selectToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.selectToolStripMenuItem.Text = "Select";
 			this.selectToolStripMenuItem.Click += new System.EventHandler(this.selectToolStripMenuItem_Click);
 			// 
 			// selectTop1000ToolStripMenuItem
 			// 
 			this.selectTop1000ToolStripMenuItem.Name = "selectTop1000ToolStripMenuItem";
-			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.selectTop1000ToolStripMenuItem.Text = "Select Top 1000";
 			this.selectTop1000ToolStripMenuItem.Click += new System.EventHandler(this.selectTop1000ToolStripMenuItem_Click);
 			// 
 			// scriptCreateToolStripMenuItem
 			// 
 			this.scriptCreateToolStripMenuItem.Name = "scriptCreateToolStripMenuItem";
-			this.scriptCreateToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.scriptCreateToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.scriptCreateToolStripMenuItem.Text = "Script &Create";
 			this.scriptCreateToolStripMenuItem.Click += new System.EventHandler(this.scriptCreateToolStripMenuItem_Click);
 			// 
 			// renameToolStripMenuItem
 			// 
 			this.renameToolStripMenuItem.Name = "renameToolStripMenuItem";
-			this.renameToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.renameToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.renameToolStripMenuItem.Text = "Re&name";
 			this.renameToolStripMenuItem.Click += new System.EventHandler(this.RenameToolStripMenuItem_Click);
 			// 
 			// buildQueryToolStripMenuItem
 			// 
 			this.buildQueryToolStripMenuItem.Name = "buildQueryToolStripMenuItem";
-			this.buildQueryToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.buildQueryToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.buildQueryToolStripMenuItem.Text = "&Build Query";
 			this.buildQueryToolStripMenuItem.Click += new System.EventHandler(this.buildQueryToolStripMenuItem_Click);
 			// 
 			// refreshToolStripMenuItem
 			// 
 			this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
-			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.refreshToolStripMenuItem.Text = "&Refresh";
 			this.refreshToolStripMenuItem.Click += new System.EventHandler(this.refreshToolStripMenuItem_Click);
 			// 
 			// newForeignKeyToolStripMenuItem
 			// 
 			this.newForeignKeyToolStripMenuItem.Name = "newForeignKeyToolStripMenuItem";
-			this.newForeignKeyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.newForeignKeyToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.newForeignKeyToolStripMenuItem.Text = "New &Foreign Key";
 			this.newForeignKeyToolStripMenuItem.Click += new System.EventHandler(this.newForeignKeyToolStripMenuItem_Click);
 			// 
 			// newColumnToolStripMenuItem
 			// 
 			this.newColumnToolStripMenuItem.Name = "newColumnToolStripMenuItem";
-			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.newColumnToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.newColumnToolStripMenuItem.Text = "New C&olumn";
 			this.newColumnToolStripMenuItem.Click += new System.EventHandler(this.newColumnToolStripMenuItem_Click);
 			// 
 			// deleteToolStripMenuItem
 			// 
 			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.deleteToolStripMenuItem.Text = "&Delete";
 			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
 			// 
 			// newTableToolStripMenuItem
 			// 
 			this.newTableToolStripMenuItem.Name = "newTableToolStripMenuItem";
-			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.newTableToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.newTableToolStripMenuItem.Text = "New &Table";
 			this.newTableToolStripMenuItem.Click += new System.EventHandler(this.newTableToolStripMenuItem_Click);
 			// 
 			// scriptInsertToolStripMenuItem
 			// 
 			this.scriptInsertToolStripMenuItem.Name = "scriptInsertToolStripMenuItem";
-			this.scriptInsertToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.scriptInsertToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.scriptInsertToolStripMenuItem.Text = "Script &Insert";
 			this.scriptInsertToolStripMenuItem.Click += new System.EventHandler(this.ScriptInsertToolStripMenuItem_Click);
 			// 
 			// collapseAllToolStripMenuItem
 			// 
 			this.collapseAllToolStripMenuItem.Name = "collapseAllToolStripMenuItem";
-			this.collapseAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.collapseAllToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
 			this.collapseAllToolStripMenuItem.Text = "Collapse &All";
 			this.collapseAllToolStripMenuItem.Click += new System.EventHandler(this.CollapseAllToolStripMenuItem_Click);
+			// 
+			// searchToolStripMenuItem
+			// 
+			this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
+			this.searchToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.searchToolStripMenuItem.Text = "&Search";
+			this.searchToolStripMenuItem.Click += new System.EventHandler(this.SearchToolStripMenuItem_Click);
 			// 
 			// splitMain
 			// 
@@ -410,6 +408,16 @@
 			this.btnDoSearch.UseVisualStyleBackColor = true;
 			this.btnDoSearch.Click += new System.EventHandler(this.BtnDoSearch_Click);
 			// 
+			// txtReadonlyConnString
+			// 
+			this.txtReadonlyConnString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtReadonlyConnString.Location = new System.Drawing.Point(231, 10);
+			this.txtReadonlyConnString.Name = "txtReadonlyConnString";
+			this.txtReadonlyConnString.ReadOnly = true;
+			this.txtReadonlyConnString.Size = new System.Drawing.Size(754, 20);
+			this.txtReadonlyConnString.TabIndex = 12;
+			// 
 			// tabOutputs
 			// 
 			this.tabOutputs.AllowAdd = true;
@@ -423,13 +431,6 @@
 			this.tabOutputs.Visible = false;
 			this.tabOutputs.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabClosing);
 			this.tabOutputs.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabOutputs_TabAdding);
-			// 
-			// searchToolStripMenuItem
-			// 
-			this.searchToolStripMenuItem.Name = "searchToolStripMenuItem";
-			this.searchToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.searchToolStripMenuItem.Text = "&Search";
-			this.searchToolStripMenuItem.Click += new System.EventHandler(this.SearchToolStripMenuItem_Click);
 			// 
 			// ucWorkspace
 			// 
@@ -468,7 +469,6 @@
 		private System.Windows.Forms.SplitContainer splitMain;
 		private System.Windows.Forms.ContextMenuStrip mnuTree;
 		private System.Windows.Forms.ToolStripMenuItem selectTop1000ToolStripMenuItem;
-		private System.Windows.Forms.Label lblConnString;
 		private System.Windows.Forms.ToolStripMenuItem selectToolStripMenuItem;
 		private PaJaMa.WinControls.TabControl.TabControl tabOutputs;
 		private System.Windows.Forms.ComboBox cboServer;
@@ -494,6 +494,7 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.ToolStripMenuItem collapseAllToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem searchToolStripMenuItem;
+		private System.Windows.Forms.TextBox txtReadonlyConnString;
 	}
 }
 

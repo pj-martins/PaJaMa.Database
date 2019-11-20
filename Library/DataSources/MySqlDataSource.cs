@@ -14,7 +14,7 @@ namespace PaJaMa.Database.Library.DataSources
 		{
 		}
 
-        internal override List<string> SystemSchemaNames => new List<string>() { "information_schema" };
+        internal override List<string> SystemSchemaNames => new List<string>() { "information_schema", "tmp", "sys" };
 
         public override string DefaultSchemaName => "";
 		public override List<string> SurroundingCharacters => new List<string>() { "`" };

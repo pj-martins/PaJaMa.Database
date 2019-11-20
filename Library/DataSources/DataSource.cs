@@ -367,6 +367,8 @@ namespace PaJaMa.Database.Library.DataSources
 								if (rdr["ForeignKeyName"] != DBNull.Value)
 								{
 									var fk = rdr.ToObject<ForeignKey>(database);
+									// TODO: WHY???
+									if (fk.ParentTableSchema == "tmp" || fk.ChildTableSchema == "tmp") continue;
 									fk.Schema = schema;
 									tbl.ForeignKeys.Add(fk);
 									fks.Add(fk);

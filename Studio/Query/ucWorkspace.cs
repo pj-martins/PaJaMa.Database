@@ -202,7 +202,7 @@ namespace PaJaMa.Database.Studio.Query
 			Settings.LastQueryUseDummyDA = chkUseDummyDA.Checked;
 			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
 
-			lblConnString.Text = txtConnectionString.Text;
+			txtReadonlyConnString.Text = txtConnectionString.Text;
 			pnlConnect.Visible = false;
 			treeTables.Nodes.Clear();
 

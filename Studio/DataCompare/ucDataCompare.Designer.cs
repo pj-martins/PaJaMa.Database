@@ -289,7 +289,7 @@
 			// 
 			this.chkCaseInsensitive.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.chkCaseInsensitive.AutoSize = true;
-			this.chkCaseInsensitive.Location = new System.Drawing.Point(175, 5);
+			this.chkCaseInsensitive.Location = new System.Drawing.Point(563, 5);
 			this.chkCaseInsensitive.Margin = new System.Windows.Forms.Padding(1);
 			this.chkCaseInsensitive.Name = "chkCaseInsensitive";
 			this.chkCaseInsensitive.Size = new System.Drawing.Size(103, 17);
@@ -300,7 +300,7 @@
 			// btnDataDifferences
 			// 
 			this.btnDataDifferences.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnDataDifferences.Location = new System.Drawing.Point(282, 3);
+			this.btnDataDifferences.Location = new System.Drawing.Point(670, 3);
 			this.btnDataDifferences.Name = "btnDataDifferences";
 			this.btnDataDifferences.Size = new System.Drawing.Size(138, 23);
 			this.btnDataDifferences.TabIndex = 7;
