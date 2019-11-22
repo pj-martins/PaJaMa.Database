@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -155,6 +156,16 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				var workSpace = tabMain.SelectedTab.Controls[0] as ucWorkspace;
 				workSpace.LoadQuery();
+			}
+		}
+
+		private void OpenHistoryToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var queryHistoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+				"DatabaseStudio", "QueryHistory");
+			if (Directory.Exists(queryHistoryPath))
+			{
+				Process.Start(queryHistoryPath);
 			}
 		}
 	}

@@ -319,6 +319,7 @@ namespace PaJaMa.Database.Studio.Query
 									grid.CellFormatting += grid_CellFormatting;
 									grid.DataError += Grid_DataError;
 									grid.RowPostPaint += Grid_RowPostPaint;
+									grid.ContextMenuStrip = mnuGrid;
 
 									var splitDetails = new SplitContainer();
 									splitDetails.Dock = DockStyle.Fill;
@@ -1098,5 +1099,29 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.TargetEnd = txtQuery.TextLength;
 			}
 		}
+
+		private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			copyGridContent(false);
+		}
+
+		private void CopyWithheadersToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			copyGridContent(true);
+		}
+
+		private void copyGridContent(bool withHeader)
+		{
+			var grid = mnuGrid.SourceControl as DataGridView;
+			grid.ClipboardCopyMode = withHeader
+				? DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText
+				: DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+
+			Clipboard.SetDataObject(grid.GetClipboardContent());
+
+			grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+		}
+
+
 	}
 }

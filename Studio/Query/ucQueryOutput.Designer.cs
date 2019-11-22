@@ -46,6 +46,9 @@
 			this.progMain = new System.Windows.Forms.ProgressBar();
 			this.btnGo = new System.Windows.Forms.Button();
 			this.timDuration = new System.Windows.Forms.Timer(this.components);
+			this.mnuGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.copyAllWithheadersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).BeginInit();
 			this.splitQuery.Panel1.SuspendLayout();
 			this.splitQuery.Panel2.SuspendLayout();
@@ -54,6 +57,7 @@
 			this.tabControl1.SuspendLayout();
 			this.tabMessages.SuspendLayout();
 			this.pnlButtons.SuspendLayout();
+			this.mnuGrid.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// splitQuery
@@ -257,6 +261,28 @@
 			this.timDuration.Interval = 1000;
 			this.timDuration.Tick += new System.EventHandler(this.timDuration_Tick);
 			// 
+			// mnuGrid
+			// 
+			this.mnuGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyAllToolStripMenuItem,
+            this.copyAllWithheadersToolStripMenuItem});
+			this.mnuGrid.Name = "mnuGrid";
+			this.mnuGrid.Size = new System.Drawing.Size(181, 70);
+			// 
+			// copyAllToolStripMenuItem
+			// 
+			this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
+			this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+			this.copyAllToolStripMenuItem.Text = "&Copy";
+			this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
+			// 
+			// copyAllWithheadersToolStripMenuItem
+			// 
+			this.copyAllWithheadersToolStripMenuItem.Name = "copyAllWithheadersToolStripMenuItem";
+			this.copyAllWithheadersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.copyAllWithheadersToolStripMenuItem.Text = "Copy with &headers";
+			this.copyAllWithheadersToolStripMenuItem.Click += new System.EventHandler(this.CopyWithheadersToolStripMenuItem_Click);
+			// 
 			// ucQueryOutput
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -275,6 +301,7 @@
 			this.tabMessages.PerformLayout();
 			this.pnlButtons.ResumeLayout(false);
 			this.pnlButtons.PerformLayout();
+			this.mnuGrid.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -298,5 +325,8 @@
 		private System.Windows.Forms.TabPage tabMessages;
 		private System.Windows.Forms.TextBox txtMessages;
 		private System.Windows.Forms.CheckBox chkDetail;
+		private System.Windows.Forms.ContextMenuStrip mnuGrid;
+		private System.Windows.Forms.ToolStripMenuItem copyAllToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem copyAllWithheadersToolStripMenuItem;
 	}
 }

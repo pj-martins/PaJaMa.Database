@@ -111,7 +111,7 @@ namespace PaJaMa.Database.Library.Helpers
 											if (_worker.CancellationPending)
 												break;
 											sb.AppendLine((firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
-												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("\\'", "\\\\'").Replace("'", "''") + "'").ToArray()) + ")");
+												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("\\", "\\\\").Replace("'", "''") + "'").ToArray()) + ")");
 											counter++;
 											firstIn = false;
 											if (rowsCopied % 100 == 0)

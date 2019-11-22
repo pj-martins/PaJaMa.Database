@@ -32,9 +32,10 @@
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.tabMain = new PaJaMa.WinControls.TabControl.TabControl();
 			this.saveQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.tabMain = new PaJaMa.WinControls.TabControl.TabControl();
+			this.openHistoryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -46,7 +47,8 @@
             this.loadToolStripMenuItem,
             this.copyToolStripMenuItem,
             this.saveQueryToolStripMenuItem,
-            this.openQueryToolStripMenuItem});
+            this.openQueryToolStripMenuItem,
+            this.openHistoryToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
 			this.menuStrip1.Size = new System.Drawing.Size(707, 24);
@@ -74,19 +76,6 @@
 			this.copyToolStripMenuItem.Text = "&Copy Workspace";
 			this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
 			// 
-			// tabMain
-			// 
-			this.tabMain.AllowAdd = true;
-			this.tabMain.AllowRemove = true;
-			this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.tabMain.Location = new System.Drawing.Point(0, 24);
-			this.tabMain.Name = "tabMain";
-			this.tabMain.SelectedTab = null;
-			this.tabMain.Size = new System.Drawing.Size(707, 520);
-			this.tabMain.TabIndex = 2;
-			this.tabMain.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabMain_TabClosing);
-			this.tabMain.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabMain_TabAdding);
-			// 
 			// saveQueryToolStripMenuItem
 			// 
 			this.saveQueryToolStripMenuItem.Name = "saveQueryToolStripMenuItem";
@@ -100,6 +89,26 @@
 			this.openQueryToolStripMenuItem.Size = new System.Drawing.Size(83, 20);
 			this.openQueryToolStripMenuItem.Text = "&Open Query";
 			this.openQueryToolStripMenuItem.Click += new System.EventHandler(this.OpenQueryToolStripMenuItem_Click);
+			// 
+			// tabMain
+			// 
+			this.tabMain.AllowAdd = true;
+			this.tabMain.AllowRemove = true;
+			this.tabMain.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tabMain.Location = new System.Drawing.Point(0, 24);
+			this.tabMain.Name = "tabMain";
+			this.tabMain.SelectedTab = null;
+			this.tabMain.Size = new System.Drawing.Size(707, 520);
+			this.tabMain.TabIndex = 2;
+			this.tabMain.TabClosing += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabMain_TabClosing);
+			this.tabMain.TabAdding += new PaJaMa.WinControls.TabControl.TabEventHandler(this.tabMain_TabAdding);
+			// 
+			// openHistoryToolStripMenuItem
+			// 
+			this.openHistoryToolStripMenuItem.Name = "openHistoryToolStripMenuItem";
+			this.openHistoryToolStripMenuItem.Size = new System.Drawing.Size(89, 20);
+			this.openHistoryToolStripMenuItem.Text = "O&pen History";
+			this.openHistoryToolStripMenuItem.Click += new System.EventHandler(this.OpenHistoryToolStripMenuItem_Click);
 			// 
 			// ucQuery
 			// 
@@ -126,5 +135,6 @@
 		private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveQueryToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openQueryToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem openHistoryToolStripMenuItem;
 	}
 }
