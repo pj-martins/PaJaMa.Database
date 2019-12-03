@@ -52,9 +52,11 @@ namespace PaJaMa.Database.Library.Helpers
 							_worker.ReportProgress((int)(100 * i / counts), string.Format("Copying {1} of {2}: {0}",
 											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), i, counts));
 							long rowCount = 0;
-							cmdSrc.CommandText = string.Format("select count(*) from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
+							cmdSrc.CommandText = string.Format("select count(*) from {0} {1}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource),
+								table.WhereClause);
 							rowCount = Convert.ToInt64(cmdSrc.ExecuteScalar());
-							cmdSrc.CommandText = string.Format("select * from {0}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource));
+							cmdSrc.CommandText = string.Format("select * from {0} {1}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource),
+								table.WhereClause);
 							using (var rdr = cmdSrc.ExecuteReader())
 							{
 								if (trans.Connection is SqlConnection)

@@ -71,6 +71,7 @@
 			this.RemoveAddIndexes = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.TransferBatchSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.DataDetails = new System.Windows.Forms.DataGridViewButtonColumn();
+			this.WhereClause = new System.Windows.Forms.DataGridViewButtonColumn();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.mnuMain.SuspendLayout();
@@ -435,7 +436,8 @@
             this.ForeignKeys,
             this.RemoveAddIndexes,
             this.TransferBatchSize,
-            this.DataDetails});
+            this.DataDetails,
+            this.WhereClause});
 			this.gridTables.ContextMenuStrip = this.mnuMain;
 			this.gridTables.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.gridTables.Location = new System.Drawing.Point(0, 95);
@@ -443,6 +445,7 @@
 			this.gridTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			this.gridTables.Size = new System.Drawing.Size(1065, 514);
 			this.gridTables.TabIndex = 15;
+			this.gridTables.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridTables_CellContentClick);
 			// 
 			// dataGridViewTextBoxColumn1
 			// 
@@ -515,6 +518,12 @@
 			this.DataDetails.Text = "Data";
 			this.DataDetails.UseColumnTextForButtonValue = true;
 			// 
+			// WhereClause
+			// 
+			this.WhereClause.DataPropertyName = "WhereClause";
+			this.WhereClause.HeaderText = "Where Clause";
+			this.WhereClause.Name = "WhereClause";
+			// 
 			// ucDataCompare
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -583,6 +592,7 @@
 		private System.Windows.Forms.DataGridViewCheckBoxColumn RemoveAddIndexes;
 		private System.Windows.Forms.DataGridViewTextBoxColumn TransferBatchSize;
 		private System.Windows.Forms.DataGridViewButtonColumn DataDetails;
+		private System.Windows.Forms.DataGridViewButtonColumn WhereClause;
 	}
 }
 

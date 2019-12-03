@@ -107,6 +107,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		public int TransferBatchSize { get; set; }
 
 		public DataTableWithSchema ComparedData { get; set; }
+		public string WhereClause { get; set; }
 
 		public TableWorkspace(CompareHelper compareHelper, Table sourceTable, DatabaseObjects.Database targetDatabase, Table targetTable,
 			bool ignoreCase, bool forData) : base(sourceTable, targetDatabase, targetTable, ignoreCase, forData)

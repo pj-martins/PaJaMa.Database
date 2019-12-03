@@ -296,14 +296,6 @@ namespace PaJaMa.Database.Studio.DataCompare
 			refreshPage(true);
 		}
 
-		private void gridTables_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-		{
-			if (gridTables.Columns[e.ColumnIndex] == TransferBatchSize)
-				return;
-
-			TransferBatchSize.Visible = gridTables.DataSource != null && (gridTables.DataSource as BindingList<TableWorkspace>).Any(tw => tw.SelectTableForData);
-		}
-
 		private void btnRemoveSourceConnString_Click(object sender, EventArgs e)
 		{
 			removeConnString(cboSource.Text, true);
@@ -357,34 +349,23 @@ namespace PaJaMa.Database.Studio.DataCompare
 					frm.SelectedWorkspace = workspace;
 					frm.Show();
 				}
+				else if (grid.Columns[e.ColumnIndex] == WhereClause)
+				{
+					var workspace = grid.Rows[e.RowIndex].DataBoundItem as TableWorkspace;
+
+					if (workspace.TargetTable == null)
+					{
+						MessageBox.Show("No target specified.");
+						return;
+					}
+
+					var result = InputBox.Show("Enter where clause (with \"where statement\")", "Where Clause", workspace.WhereClause);
+					if (result.Result == DialogResult.OK && !string.IsNullOrEmpty(result.Text))
+					{
+						workspace.WhereClause = result.Text;
+					}
+				}
 			}
-		}
-
-		private void gridTables_MouseClick(object sender, MouseEventArgs e)
-		{
-			//if (e.Button == System.Windows.Forms.MouseButtons.Right)
-			//	_tablesMenu.Show(gridTables, new Point(e.X, e.Y));
-		}
-
-		private void gridObjects_MouseClick(object sender, MouseEventArgs e)
-		{
-			//if (e.Button == System.Windows.Forms.MouseButtons.Right)
-			//	_objectsMenu.Show(gridObjects, new Point(e.X, e.Y));
-		}
-
-		private void gridTables_MouseDown(object sender, MouseEventArgs e)
-		{
-
-		}
-
-		private void gridTables_DataError(object sender, DataGridViewDataErrorEventArgs e)
-		{
-
-		}
-
-		private void gridDataColumns_DataError(object sender, DataGridViewDataErrorEventArgs e)
-		{
-
 		}
 
 		private void _frmDifferences_Synchronized(object sender, EventArgs e)
@@ -598,14 +579,6 @@ namespace PaJaMa.Database.Studio.DataCompare
 				var row = gridTables.Rows.OfType<DataGridViewRow>().First(r => r.DataBoundItem.Equals(diff.TableWorkspace));
 				row.Cells[DataDetails.Name].Value = string.Format("{0}/{1}/{2}", diff.Differences, diff.SourceOnly, diff.TargetOnly);
 			}
-		}
-
-		private void gridTables_EditingControlShowing(object sender, DataGridViewEditingControlShowingEventArgs e)
-		{
-			if (gridTables.CurrentCell.OwningColumn != TransferBatchSize) return;
-
-			var tws = gridTables.Rows[gridTables.CurrentCell.RowIndex].DataBoundItem as TableWorkspace;
-			e.Control.Visible = tws.SelectTableForData;
 		}
 
 		private void mnuMain_Opening(object sender, CancelEventArgs e)

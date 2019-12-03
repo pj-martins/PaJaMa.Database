@@ -128,7 +128,11 @@ namespace PaJaMa.Database.Library.DataSources
 		{
 			if (string.IsNullOrEmpty(query)) return new List<TDatabaseObject>();
 
-			if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName}...");
+			if (worker != null)
+			{
+				if (worker.CancellationPending) return null;
+				worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName}...");
+			}
 
 			var objs = new List<TDatabaseObject>();
 			query += additionalPreWhere;
@@ -162,7 +166,15 @@ namespace PaJaMa.Database.Library.DataSources
 							values.Add(col, rdr[col]);
 						}
 						obj.RawValues = values;
-						if (worker != null) worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName} - {obj.ProgressDisplay}...");
+						if (worker != null)
+						{
+							if (worker.CancellationPending)
+							{
+								rdr.Close();
+								return null;
+							}
+							worker.ReportProgress(0, $"Populating {typeof(TDatabaseObject).Name.CamelCaseToSpaced()}s for {database.DatabaseName} - {obj.ProgressDisplay}...");
+						}
 					}
 				}
 				rdr.Close();

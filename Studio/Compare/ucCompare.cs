@@ -119,7 +119,8 @@ namespace PaJaMa.Database.Studio.Compare
 					}
 				};
 
-			WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
+			if (WinControls.WinProgressBox.ShowProgress(worker, allowCancel: true, progressBarStyle: ProgressBarStyle.Marquee) != DialogResult.OK) return;
+
 			if (exception != null)
 				MessageBox.Show(exception.Message);
 			else
