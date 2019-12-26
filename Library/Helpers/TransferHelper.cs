@@ -52,11 +52,12 @@ namespace PaJaMa.Database.Library.Helpers
 							_worker.ReportProgress((int)(100 * i / counts), string.Format("Copying {1} of {2}: {0}",
 											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), i, counts));
 							long rowCount = 0;
+							var commonCols = table.SourceTable.Columns.Select(c => c.ColumnName).Intersect(table.TargetTable.Columns.Select(c => c.ColumnName));
 							cmdSrc.CommandText = string.Format("select count(*) from {0} {1}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource),
 								table.WhereClause);
 							rowCount = Convert.ToInt64(cmdSrc.ExecuteScalar());
-							cmdSrc.CommandText = string.Format("select * from {0} {1}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource),
-								table.WhereClause);
+							cmdSrc.CommandText = string.Format("select {2} from {0} {1}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource),
+								table.WhereClause, string.Join(", ", commonCols.Select(c => table.TargetObject.Database.DataSource.GetConvertedObjectName(c))));
 							using (var rdr = cmdSrc.ExecuteReader())
 							{
 								if (trans.Connection is SqlConnection)
@@ -111,9 +112,17 @@ namespace PaJaMa.Database.Library.Helpers
 										{
 											rowsCopied++;
 											if (_worker.CancellationPending)
+											{
+												cmd.Cancel();
 												break;
+											}
 											sb.AppendLine((firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
-												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString().Replace("\\", "\\\\").Replace("'", "''") + "'").ToArray()) + ")");
+												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString()
+													.Replace("\\", "\\\\")
+													.Replace("'", "''")
+													.Replace("ʹ", "ʹʹ")
+													.Replace("′", "′′")
+													+ "'").ToArray()) + ")");
 											counter++;
 											firstIn = false;
 											if (rowsCopied % 100 == 0)

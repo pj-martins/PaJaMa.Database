@@ -359,10 +359,12 @@ namespace PaJaMa.Database.Studio.DataCompare
 						return;
 					}
 
-					var result = InputBox.Show("Enter where clause (with \"where statement\")", "Where Clause", workspace.WhereClause);
-					if (result.Result == DialogResult.OK && !string.IsNullOrEmpty(result.Text))
+					using (var dlg = new frmDataWhere())
 					{
-						workspace.WhereClause = result.Text;
+						if (dlg.ShowDialog() == DialogResult.OK)
+						{
+							workspace.WhereClause = dlg.txtQuery.Text;
+						}
 					}
 				}
 			}

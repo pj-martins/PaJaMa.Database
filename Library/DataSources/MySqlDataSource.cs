@@ -2,6 +2,7 @@
 using PaJaMa.Database.Library.DatabaseObjects;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -147,7 +148,7 @@ and tc.TABLE_SCHEMA = '{0}'";
             return topN <= 0 ? string.Empty : string.Format("LIMIT {0}", topN);
         }
 
-        internal override string GetForeignKeyDropScript(ForeignKey foreignKey)
+		internal override string GetForeignKeyDropScript(ForeignKey foreignKey)
         {
             return "ALTER TABLE {0} DROP FOREIGN KEY {1};";
         }

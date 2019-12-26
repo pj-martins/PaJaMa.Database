@@ -199,6 +199,12 @@
     <Compile Include="Compare\ucDifferences.Designer.cs">
       <DependentUpon>ucDifferences.cs</DependentUpon>
     </Compile>
+    <Compile Include="DataCompare\frmDataWhere.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DataCompare\frmDataWhere.Designer.cs">
+      <DependentUpon>frmDataWhere.cs</DependentUpon>
+    </Compile>
     <Compile Include="DataCompare\ucDataCompare.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -378,6 +384,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Compare\ucDifferences.resx">
       <DependentUpon>ucDifferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DataCompare\frmDataWhere.resx">
+      <DependentUpon>frmDataWhere.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DataCompare\ucDataCompare.resx">
       <DependentUpon>ucDataCompare.cs</DependentUpon>
