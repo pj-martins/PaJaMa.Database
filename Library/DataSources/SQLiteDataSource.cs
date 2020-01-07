@@ -47,7 +47,6 @@ where type = 'table'
 
 		internal override string IndexSQL => throw new NotImplementedException();
 
-		internal override bool MatchConstraintsByColumns => true;
 		internal override bool BypassKeyConstraints => true;
 
 		protected override Type connectionType => typeof(SQLiteConnection);

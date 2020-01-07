@@ -36,7 +36,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void FrmSearchResults_Load(object sender, EventArgs e)
 		{
-			FormSettings.LoadSettings(this);
+			WinControls.FormSettings.LoadSettings(this);
 
 			lstResults.Items.Clear();
 			foreach (var n in FoundNodes)
@@ -57,7 +57,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void FrmSearchResults_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			FormSettings.SaveSettings(this);
+			WinControls.FormSettings.SaveSettings(this);
 		}
 	}
 }

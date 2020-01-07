@@ -143,7 +143,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			{
 				foreach (var tk in targetTable.ForeignKeys)
 				{
-					if (DataSourcesAreDifferent && (DatabaseObject.Database.DataSource.MatchConstraintsByColumns || targetTable.Database.DataSource.MatchConstraintsByColumns))
+					if (!DatabaseObject.Database.DataSource.NamedConstraints || !targetTable.Database.DataSource.NamedConstraints)
 					{
 						if (!DatabaseObject.ForeignKeys.Any(k =>
 							string.Compare(k.ChildTable.ObjectName, tk.ChildTable.ObjectName, ignoreCase) == 0
@@ -170,7 +170,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					var tk = targetTable.ForeignKeys.FirstOrDefault(x => string.Compare(x.ObjectName, fk.ObjectName, ignoreCase) == 0);
 					if (tk == null)
 					{
-						if (DataSourcesAreDifferent && (TargetDatabase.DataSource.MatchConstraintsByColumns || DatabaseObject.Database.DataSource.MatchConstraintsByColumns))
+						if (!TargetDatabase.DataSource.NamedConstraints || !DatabaseObject.Database.DataSource.NamedConstraints)
 						{
 							tk = targetTable.ForeignKeys.FirstOrDefault(x =>
 								string.Compare(x.ParentTable.TableName, fk.ParentTable.TableName, ignoreCase) == 0
@@ -481,7 +481,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					Difference diff = null;
 					bool drop = false;
 					DefaultConstraint fromConstraint = null;
-					if (DataSourcesAreDifferent && (TargetDatabase.DataSource.MatchConstraintsByColumns || DatabaseObject.Database.DataSource.MatchConstraintsByColumns))
+					if (!TargetDatabase.DataSource.NamedConstraints || !DatabaseObject.Database.DataSource.NamedConstraints)
 					{
 						fromConstraint = DatabaseObject.DefaultConstraints.FirstOrDefault(c => string.Compare(c.Table.TableName, DatabaseObject.TableName, ignoreCase) == 0 &&
 							string.Compare(c.Column.ColumnName, toConstraint.Column.ColumnName, ignoreCase) == 0);
@@ -528,7 +528,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			foreach (var fromConstraint in DatabaseObject.DefaultConstraints)
 			{
 				var to = skips.FirstOrDefault(s => s.ConstraintName == fromConstraint.ConstraintName);
-				if (to == null && (DataSourcesAreDifferent && (TargetDatabase.DataSource.MatchConstraintsByColumns || DatabaseObject.Database.DataSource.MatchConstraintsByColumns)))
+				if (to == null && (!TargetDatabase.DataSource.NamedConstraints || !DatabaseObject.Database.DataSource.NamedConstraints))
 					to = skips.FirstOrDefault(s => s.Column.ColumnName == fromConstraint.Column.ColumnName);
 				if (to != null)
 					continue;

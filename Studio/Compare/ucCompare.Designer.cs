@@ -93,6 +93,7 @@
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.connectionStringsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.chkNamedConstraints = new System.Windows.Forms.CheckBox();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.tabMain.SuspendLayout();
@@ -314,6 +315,7 @@
 			// 
 			// panel2
 			// 
+			this.panel2.Controls.Add(this.chkNamedConstraints);
 			this.panel2.Controls.Add(this.chkCaseInsensitive);
 			this.panel2.Controls.Add(this.btnDataDifferences);
 			this.panel2.Controls.Add(this.btnSelectAll);
@@ -569,27 +571,27 @@
             this.selectTop1000ToolStripMenuItem,
             this.setBatchSizeToolStripMenuItem});
 			this.mnuMain.Name = "mnuTree";
-			this.mnuMain.Size = new System.Drawing.Size(156, 70);
+			this.mnuMain.Size = new System.Drawing.Size(155, 70);
 			this.mnuMain.Opening += new System.ComponentModel.CancelEventHandler(this.mnuMain_Opening);
 			// 
 			// selectToolStripMenuItem
 			// 
 			this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-			this.selectToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.selectToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
 			this.selectToolStripMenuItem.Text = "Select";
 			this.selectToolStripMenuItem.Click += new System.EventHandler(this.selectToolStripMenuItem_Click);
 			// 
 			// selectTop1000ToolStripMenuItem
 			// 
 			this.selectTop1000ToolStripMenuItem.Name = "selectTop1000ToolStripMenuItem";
-			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.selectTop1000ToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
 			this.selectTop1000ToolStripMenuItem.Text = "Select Top 1000";
 			this.selectTop1000ToolStripMenuItem.Click += new System.EventHandler(this.selectTop1000ToolStripMenuItem_Click);
 			// 
 			// setBatchSizeToolStripMenuItem
 			// 
 			this.setBatchSizeToolStripMenuItem.Name = "setBatchSizeToolStripMenuItem";
-			this.setBatchSizeToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+			this.setBatchSizeToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
 			this.setBatchSizeToolStripMenuItem.Text = "Set Batch Size";
 			this.setBatchSizeToolStripMenuItem.Visible = false;
 			this.setBatchSizeToolStripMenuItem.Click += new System.EventHandler(this.setBatchSizeToolStripMenuItem_Click);
@@ -815,6 +817,18 @@
 			this.connectionStringsToolStripMenuItem.Text = "&Connection Strings";
 			this.connectionStringsToolStripMenuItem.Click += new System.EventHandler(this.connectionStringsToolStripMenuItem_Click);
 			// 
+			// chkNamedConstraints
+			// 
+			this.chkNamedConstraints.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.chkNamedConstraints.AutoSize = true;
+			this.chkNamedConstraints.Location = new System.Drawing.Point(21, 5);
+			this.chkNamedConstraints.Margin = new System.Windows.Forms.Padding(1);
+			this.chkNamedConstraints.Name = "chkNamedConstraints";
+			this.chkNamedConstraints.Size = new System.Drawing.Size(115, 17);
+			this.chkNamedConstraints.TabIndex = 9;
+			this.chkNamedConstraints.Text = "Named Constraints";
+			this.chkNamedConstraints.UseVisualStyleBackColor = true;
+			// 
 			// ucCompare
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -923,6 +937,7 @@
         private System.Windows.Forms.ComboBox cboSourceDriver;
 		private System.Windows.Forms.CheckBox chkCaseInsensitive;
 		private System.Windows.Forms.ToolStripMenuItem connectionStringsToolStripMenuItem;
+		private System.Windows.Forms.CheckBox chkNamedConstraints;
 	}
 }
 

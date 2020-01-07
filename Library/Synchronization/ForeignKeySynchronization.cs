@@ -49,6 +49,15 @@ namespace PaJaMa.Database.Library.Synchronization
 			return new List<SynchronizationItem>();
 		}
 
+		protected override Difference getDifference(DifferenceType differenceType, DatabaseObjectBase fromObject, DatabaseObjectBase toObject = null, string propertyName = null, string sourceValue = null, string targetValue = null)
+		{
+			if (propertyName != null && propertyName == "ForeignKeyName" && differenceType == DifferenceType.Alter && !fromObject.Database.DataSource.NamedConstraints)
+			{
+				return null;
+			}
+			return base.getDifference(differenceType, fromObject, toObject, propertyName, sourceValue, targetValue);
+		}
+
 		private Difference getColumnDifference(DatabaseObjectBase target)
 		{
 			var targetFk = target as ForeignKey;

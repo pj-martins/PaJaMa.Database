@@ -22,14 +22,14 @@ namespace PaJaMa.Database.Studio
 		
 		private void frmMain_Load(object sender, EventArgs e)
 		{
-			FormSettings.LoadSettings(this);
+			WinControls.FormSettings.LoadSettings(this);
 		}
 
 		private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (this.WindowState == FormWindowState.Minimized) return;
 
-			FormSettings.SaveSettings(this);
+			WinControls.FormSettings.SaveSettings(this);
 		}
 
 		private void uc_QueryDatabase(object sender, QueryEventArgs e)

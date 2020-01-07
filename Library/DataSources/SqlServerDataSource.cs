@@ -10,11 +10,13 @@ namespace PaJaMa.Database.Library.DataSources
 	{
 		public SqlServerDataSource(string connectionString) : base(connectionString)
 		{
+			this.NamedConstraints = true;
 		}
 
 		public override string DefaultSchemaName => "dbo";
-		internal override bool NamedConstraints => true;
 		public override List<string> SurroundingCharacters => new List<string>() { "[", "]" };
+
+		internal override bool DefaultNamedConstraints => true;
 
 		#region SQLS
 		internal override string SchemaSQL => @"select SCHEMA_NAME as SchemaName, SCHEMA_OWNER as SchemaOwner from {0}.INFORMATION_SCHEMA.SCHEMATA";
@@ -297,14 +299,14 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 		internal override string GetForeignKeyCreateScript(ForeignKey foreignKey)
 		{
 			var createString = string.Format(@"
-ALTER TABLE {0} WITH {7}CHECK ADD CONSTRAINT {1} FOREIGN KEY({2})
+ALTER TABLE {0} WITH {7}CHECK ADD {1}FOREIGN KEY({2})
 REFERENCES {3} ({4})
 ON DELETE {5}
 ON UPDATE {6}
 
 ",
 	foreignKey.ChildTable.GetObjectNameWithSchema(this),
-	foreignKey.GetQueryObjectName(this),
+	this.NamedConstraints ? "CONSTRAINT " + foreignKey.GetQueryObjectName(this) + " " : "",
 	string.Join(",", foreignKey.Columns.Select(c => c.ChildColumn.GetQueryObjectName(this)).ToArray()),
 	foreignKey.ParentTable.GetObjectNameWithSchema(this),
 	string.Join(",", foreignKey.Columns.Select(c => c.ParentColumn.GetQueryObjectName(this)).ToArray()),
@@ -312,11 +314,11 @@ ON UPDATE {6}
 	foreignKey.UpdateRule,
 	foreignKey.WithCheck
 	);
-			createString += string.Format(@"
-ALTER TABLE {0}
-CHECK CONSTRAINT {1}
-", foreignKey.ChildTable.GetObjectNameWithSchema(this),
-foreignKey.GetQueryObjectName(this));
+//			createString += string.Format(@"
+//ALTER TABLE {0}
+//CHECK CONSTRAINT {1}
+//", foreignKey.ChildTable.GetObjectNameWithSchema(this),
+//foreignKey.GetQueryObjectName(this));
 			return createString;
 		}
 

@@ -183,7 +183,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return Activator.CreateInstance(type, targetDatabase, forObject) as DatabaseObjectSynchronizationBase;
 		}
 
-		protected Difference getDifference(DifferenceType differenceType, DatabaseObjectBase fromObject, DatabaseObjectBase toObject = null, string propertyName = null, string sourceValue = null, string targetValue = null)
+		protected virtual Difference getDifference(DifferenceType differenceType, DatabaseObjectBase fromObject, DatabaseObjectBase toObject = null, string propertyName = null, string sourceValue = null, string targetValue = null)
 		{
 			var diff = new Difference(differenceType,
 				string.IsNullOrEmpty(propertyName) ? differenceType.ToString() : propertyName,

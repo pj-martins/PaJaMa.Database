@@ -19,7 +19,6 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public override string DefaultSchemaName => "public";
 		internal override bool ForeignKeyDropsWithColumns => true;
-		internal override bool MatchConstraintsByColumns => true;
 		internal override bool BypassKeyConstraints => true;
 
 		internal override List<string> SystemSchemaNames => new List<string>() { "pg_catalog", "information_schema" };

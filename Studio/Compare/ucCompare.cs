@@ -70,6 +70,7 @@ namespace PaJaMa.Database.Studio.Compare
 					try
 					{
 						fromDataSource = Activator.CreateInstance(fromDataSourceType, new object[] { fromConnString }) as DataSource;
+						fromDataSource.NamedConstraints = chkNamedConstraints.Checked;
 					}
 					catch (Exception ex)
 					{
@@ -81,6 +82,7 @@ namespace PaJaMa.Database.Studio.Compare
 					try
 					{
 						toDataSource = Activator.CreateInstance(toDataSourceType, new object[] { toConnString }) as DataSource;
+						toDataSource.NamedConstraints = chkNamedConstraints.Checked;
 					}
 					catch (Exception ex)
 					{
@@ -176,7 +178,7 @@ namespace PaJaMa.Database.Studio.Compare
 				btnDisconnect.Visible = true;
 				cboSource.SelectionLength = 0;
 				cboTarget.SelectionLength = 0;
-				cboTarget.Enabled = cboSource.Enabled = false;
+				cboTarget.Enabled = cboSource.Enabled = chkNamedConstraints.Enabled = false;
 				cboSourceDatabase.Visible = cboTargetDatabase.Visible = true;
 				btnSourceQuery.Enabled = btnTargetQuery.Enabled = true;
 				btnGo.Enabled = btnRefresh.Enabled = btnViewMissingDependencies.Enabled = btnSelectAll.Enabled = true;
@@ -381,7 +383,7 @@ namespace PaJaMa.Database.Studio.Compare
 			gridObjects.DataSource = null;
 			btnDisconnect.Visible = false;
 			btnConnect.Visible = true;
-			cboSource.Enabled = cboTarget.Enabled = true;
+			cboSource.Enabled = cboTarget.Enabled = chkNamedConstraints.Enabled = true;
 			btnRemoveSourceConnString.Visible = btnRemoveTargetConnString.Visible = true;
 			cboSourceDatabase.Visible = cboTargetDatabase.Visible = false;
 			btnSourceQuery.Enabled = btnTargetQuery.Enabled = false;

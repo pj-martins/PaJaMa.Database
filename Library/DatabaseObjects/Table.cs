@@ -127,9 +127,12 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				if (fk.HasBeenDropped)
 					continue;
 
+				bool currNamed = this.Database.DataSource.NamedConstraints;
+				this.Database.DataSource.NamedConstraints = this.Database.DataSource.DefaultNamedConstraints;
 				cmd.CommandText = new ForeignKeySynchronization(Database, fk).GetRawDropText();
 				cmd.ExecuteNonQuery();
 				fk.HasBeenDropped = true;
+				this.Database.DataSource.NamedConstraints = currNamed;
 			}
 		}
 
@@ -140,6 +143,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				if (!fk.HasBeenDropped)
 					continue;
 
+				bool currNamed = this.Database.DataSource.NamedConstraints;
+				this.Database.DataSource.NamedConstraints = this.Database.DataSource.DefaultNamedConstraints;
 				var items = new ForeignKeySynchronization(Database, fk).GetCreateItems();
 				foreach (var item in items)
 				{
@@ -151,6 +156,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 					}
 				}
 				fk.HasBeenDropped = false;
+				this.Database.DataSource.NamedConstraints = currNamed;
 			}
 		}
 

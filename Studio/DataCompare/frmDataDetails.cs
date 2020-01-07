@@ -31,7 +31,7 @@ namespace PaJaMa.Database.Studio.DataCompare
 		{
 			new GridHelper().DecorateGrid(gridMain);
 
-			PaJaMa.Common.FormSettings.LoadSettings(this);
+			PaJaMa.WinControls.FormSettings.LoadSettings(this);
 			this.Text = SelectedWorkspace.SourceTable.TableName + ": " + SelectedWorkspace.SourceTable.Schema.Database.DataSource.DataSourceName + " - " +
 					SelectedWorkspace.SourceTable.Schema.Database.DatabaseName + " <> " +
 					SelectedWorkspace.TargetTable.Schema.Database.DataSource.DataSourceName + " - " +
@@ -189,7 +189,7 @@ namespace PaJaMa.Database.Studio.DataCompare
 
 		private void frmDataDetails_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			PaJaMa.Common.FormSettings.SaveSettings(this);
+			PaJaMa.WinControls.FormSettings.SaveSettings(this);
 		}
 
 		private void btnSync_Click(object sender, EventArgs e)

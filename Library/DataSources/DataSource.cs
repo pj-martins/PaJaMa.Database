@@ -48,10 +48,11 @@ namespace PaJaMa.Database.Library.DataSources
 		internal virtual List<string> SystemSchemaNames => new List<string>();
 		internal abstract string DatabaseSQL { get; }
 
-		internal virtual bool MatchConstraintsByColumns => false;
 		internal virtual bool ForeignKeyDropsWithColumns => false;
 		internal virtual bool BypassKeyConstraints => false;
-		internal virtual bool NamedConstraints => false;
+
+		internal virtual bool DefaultNamedConstraints => false;
+		public bool NamedConstraints { get; set; }
 
 		public DataSource(string connectionString)
 		{
@@ -687,6 +688,7 @@ ON UPDATE {6}
 				;
 		}
 
+		[Obsolete("Override getDiff in object")]
 		internal virtual bool IgnoreDifference(Difference difference, DataSource fromDataSource, DataSource toDataSource, DatabaseObjectBase fromObject, DatabaseObjectBase toObject)
 		{
 			if (fromObject is Column)
