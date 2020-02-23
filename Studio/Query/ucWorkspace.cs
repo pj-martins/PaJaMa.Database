@@ -1064,7 +1064,7 @@ namespace PaJaMa.Database.Studio.Query
 				var frm = new frmSearchResults();
 				frm.FoundNodes = foundNodes;
 				frm.TreeView = treeTables;
-				frm.Show();
+				frm.Show(this.ParentForm);
 			}
 			else
 			{
