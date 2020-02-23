@@ -791,6 +791,7 @@ ON UPDATE {6}
 			keywords.Add("UNION");
 			keywords.Add("ALL");
 			keywords.Add("LIKE");
+			keywords.Add("REPLACE");
 			return keywords;
 		}
 
