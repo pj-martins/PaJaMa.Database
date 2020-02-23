@@ -32,7 +32,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 
 		internal override void setObjectProperties(DbConnection connection, Dictionary<string, object> values)
 		{
-			var schema = Database.Schemas.First(s => s.SchemaName == values["SchemaName"].ToString());
+			var schema = Database.Schemas.FirstOrDefault(s => s.SchemaName == values["SchemaName"].ToString());
+			if (schema == null) return;
 			var viewName = values["ViewName"].ToString();
 			var currView = schema.Views.FirstOrDefault(v => v.ViewName == viewName && v.Schema.SchemaName == schema.SchemaName);
 			if (currView == null)

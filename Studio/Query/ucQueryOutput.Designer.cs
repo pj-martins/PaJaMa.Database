@@ -31,6 +31,7 @@
 			this.components = new System.ComponentModel.Container();
 			this.splitQuery = new System.Windows.Forms.SplitContainer();
 			this.txtQuery = new ScintillaNET.Scintilla();
+			this.mnuQuery = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.pnlResults = new System.Windows.Forms.Panel();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabResults = new System.Windows.Forms.TabPage();
@@ -49,10 +50,13 @@
 			this.mnuGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyAllWithheadersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.wrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.unwrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).BeginInit();
 			this.splitQuery.Panel1.SuspendLayout();
 			this.splitQuery.Panel2.SuspendLayout();
 			this.splitQuery.SuspendLayout();
+			this.mnuQuery.SuspendLayout();
 			this.pnlResults.SuspendLayout();
 			this.tabControl1.SuspendLayout();
 			this.tabMessages.SuspendLayout();
@@ -82,6 +86,7 @@
 			// 
 			// txtQuery
 			// 
+			this.txtQuery.ContextMenuStrip = this.mnuQuery;
 			this.txtQuery.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.txtQuery.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtQuery.Lexer = ScintillaNET.Lexer.Sql;
@@ -94,6 +99,14 @@
 			this.txtQuery.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtQuery_KeyPress);
 			this.txtQuery.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtQuery_KeyUp);
 			this.txtQuery.MouseUp += new System.Windows.Forms.MouseEventHandler(this.TxtQuery_MouseUp);
+			// 
+			// mnuQuery
+			// 
+			this.mnuQuery.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.wrapTextToolStripMenuItem,
+            this.unwrapTextToolStripMenuItem});
+			this.mnuQuery.Name = "mnuQuery";
+			this.mnuQuery.Size = new System.Drawing.Size(181, 70);
 			// 
 			// pnlResults
 			// 
@@ -267,21 +280,35 @@
             this.copyAllToolStripMenuItem,
             this.copyAllWithheadersToolStripMenuItem});
 			this.mnuGrid.Name = "mnuGrid";
-			this.mnuGrid.Size = new System.Drawing.Size(181, 70);
+			this.mnuGrid.Size = new System.Drawing.Size(173, 48);
 			// 
 			// copyAllToolStripMenuItem
 			// 
 			this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
-			this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+			this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
 			this.copyAllToolStripMenuItem.Text = "&Copy";
 			this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
 			// 
 			// copyAllWithheadersToolStripMenuItem
 			// 
 			this.copyAllWithheadersToolStripMenuItem.Name = "copyAllWithheadersToolStripMenuItem";
-			this.copyAllWithheadersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.copyAllWithheadersToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
 			this.copyAllWithheadersToolStripMenuItem.Text = "Copy with &headers";
 			this.copyAllWithheadersToolStripMenuItem.Click += new System.EventHandler(this.CopyWithheadersToolStripMenuItem_Click);
+			// 
+			// wrapTextToolStripMenuItem
+			// 
+			this.wrapTextToolStripMenuItem.Name = "wrapTextToolStripMenuItem";
+			this.wrapTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.wrapTextToolStripMenuItem.Text = "&Wrap Text";
+			this.wrapTextToolStripMenuItem.Click += new System.EventHandler(this.WrapTextToolStripMenuItem_Click);
+			// 
+			// unwrapTextToolStripMenuItem
+			// 
+			this.unwrapTextToolStripMenuItem.Name = "unwrapTextToolStripMenuItem";
+			this.unwrapTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.unwrapTextToolStripMenuItem.Text = "&Unwrap Text";
+			this.unwrapTextToolStripMenuItem.Click += new System.EventHandler(this.UnwrapTextToolStripMenuItem_Click);
 			// 
 			// ucQueryOutput
 			// 
@@ -295,6 +322,7 @@
 			this.splitQuery.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).EndInit();
 			this.splitQuery.ResumeLayout(false);
+			this.mnuQuery.ResumeLayout(false);
 			this.pnlResults.ResumeLayout(false);
 			this.tabControl1.ResumeLayout(false);
 			this.tabMessages.ResumeLayout(false);
@@ -328,5 +356,8 @@
 		private System.Windows.Forms.ContextMenuStrip mnuGrid;
 		private System.Windows.Forms.ToolStripMenuItem copyAllToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem copyAllWithheadersToolStripMenuItem;
+		private System.Windows.Forms.ContextMenuStrip mnuQuery;
+		private System.Windows.Forms.ToolStripMenuItem wrapTextToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem unwrapTextToolStripMenuItem;
 	}
 }

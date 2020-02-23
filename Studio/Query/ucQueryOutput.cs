@@ -814,7 +814,11 @@ namespace PaJaMa.Database.Studio.Query
 				MyGoTo.ShowGoToDialog();
 				e.SuppressKeyPress = true;
 			}
-
+			else if (e.Control && e.KeyCode == Keys.W)
+			{
+				txtQuery.WrapMode = txtQuery.WrapMode == WrapMode.None ? WrapMode.Word : WrapMode.None;
+				e.SuppressKeyPress = true;
+			}
 			//else if (e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
 			//	(sender as TextBox).SelectAll();
 		}
@@ -1122,6 +1126,14 @@ namespace PaJaMa.Database.Studio.Query
 			grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
 		}
 
+		private void WrapTextToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			txtQuery.WrapMode = WrapMode.Word;
+		}
 
+		private void UnwrapTextToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			txtQuery.WrapMode = WrapMode.None;
+		}
 	}
 }

@@ -26,6 +26,7 @@ namespace PaJaMa.Database.Studio.Compare
 		private CompareHelper _compareHelper;
 
 		private List<TabPage> _differencedTabs = new List<TabPage>();
+		private List<TableWorkspace> _differentWorkspaces = new List<TableWorkspace>();
 
 		private bool _lockDbChange = false;
 		private WorkspaceBase _activeWorkspace;
@@ -248,7 +249,19 @@ namespace PaJaMa.Database.Studio.Compare
 				}
 			}
 
-			gridTables.DataSource = new BindingList<TableWorkspace>(lst.Workspaces.OrderBy(w => w.SourceTable.ToString()).ToList());
+			_differentWorkspaces = lst.Workspaces.OrderBy(w => w.SourceTable.ToString()).ToList();
+			populateTables();
+		}
+
+		private void populateTables()
+		{
+			if (_differentWorkspaces == null) return;
+			var tables = _differentWorkspaces.ToList();
+			if (chkDifferencesOnly.Checked)
+			{
+				tables = tables.Where(t => t.TargetDatabase == null || t.SynchronizationItems.Any(d => d.Scripts.Any(s => s.Value.Length > 0))).ToList();
+			}
+			gridTables.DataSource = new BindingList<TableWorkspace>(tables);
 		}
 
 		private void refreshObjects(List<DropWorkspace> dropWorkspaces)
@@ -1048,6 +1061,13 @@ namespace PaJaMa.Database.Studio.Compare
 			{
 				refreshConnStrings();
 			}
+		}
+
+		private void ChkDifferencesOnly_CheckedChanged(object sender, EventArgs e)
+		{
+			this.populateTables();
+			_differencedTabs.Remove(tabMain.SelectedTab);
+			this.identifyDifferences();
 		}
 	}
 }

@@ -46,6 +46,7 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.cboSource = new System.Windows.Forms.ComboBox();
 			this.panel2 = new System.Windows.Forms.Panel();
+			this.chkNamedConstraints = new System.Windows.Forms.CheckBox();
 			this.chkCaseInsensitive = new System.Windows.Forms.CheckBox();
 			this.btnDataDifferences = new System.Windows.Forms.Button();
 			this.btnSelectAll = new System.Windows.Forms.Button();
@@ -72,7 +73,6 @@
 			this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.selectTop1000ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.setBatchSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.diffTables = new PaJaMa.Database.Studio.Compare.ucDifferences();
 			this.tabObjects = new System.Windows.Forms.TabPage();
 			this.splitObjects = new System.Windows.Forms.SplitContainer();
 			this.gridObjects = new System.Windows.Forms.DataGridView();
@@ -80,20 +80,21 @@
 			this.ObjectType = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ProgTargetObject = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewCheckBoxColumn2 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-			this.diffObjects = new PaJaMa.Database.Studio.Compare.ucDifferences();
 			this.tabDrop = new System.Windows.Forms.TabPage();
 			this.splitDrops = new System.Windows.Forms.SplitContainer();
 			this.gridDropObjects = new System.Windows.Forms.DataGridView();
 			this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.ObjectType2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewCheckBoxColumn1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-			this.diffDrops = new PaJaMa.Database.Studio.Compare.ucDifferences();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.connectionStringsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.chkNamedConstraints = new System.Windows.Forms.CheckBox();
+			this.chkDifferencesOnly = new System.Windows.Forms.CheckBox();
+			this.diffTables = new PaJaMa.Database.Studio.Compare.ucDifferences();
+			this.diffObjects = new PaJaMa.Database.Studio.Compare.ucDifferences();
+			this.diffDrops = new PaJaMa.Database.Studio.Compare.ucDifferences();
 			this.panel1.SuspendLayout();
 			this.panel2.SuspendLayout();
 			this.tabMain.SuspendLayout();
@@ -139,7 +140,7 @@
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
 			this.panel1.Location = new System.Drawing.Point(0, 24);
 			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(1065, 71);
+			this.panel1.Size = new System.Drawing.Size(1292, 71);
 			this.panel1.TabIndex = 8;
 			// 
 			// cboTargetDriver
@@ -147,7 +148,7 @@
 			this.cboTargetDriver.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cboTargetDriver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboTargetDriver.FormattingEnabled = true;
-			this.cboTargetDriver.Location = new System.Drawing.Point(567, 39);
+			this.cboTargetDriver.Location = new System.Drawing.Point(794, 39);
 			this.cboTargetDriver.Name = "cboTargetDriver";
 			this.cboTargetDriver.Size = new System.Drawing.Size(126, 21);
 			this.cboTargetDriver.TabIndex = 19;
@@ -158,7 +159,7 @@
 			this.cboSourceDriver.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cboSourceDriver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboSourceDriver.FormattingEnabled = true;
-			this.cboSourceDriver.Location = new System.Drawing.Point(567, 12);
+			this.cboSourceDriver.Location = new System.Drawing.Point(794, 12);
 			this.cboSourceDriver.Name = "cboSourceDriver";
 			this.cboSourceDriver.Size = new System.Drawing.Size(126, 21);
 			this.cboSourceDriver.TabIndex = 18;
@@ -168,7 +169,7 @@
 			// 
 			this.btnTargetQuery.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnTargetQuery.Enabled = false;
-			this.btnTargetQuery.Location = new System.Drawing.Point(768, 37);
+			this.btnTargetQuery.Location = new System.Drawing.Point(995, 37);
 			this.btnTargetQuery.Name = "btnTargetQuery";
 			this.btnTargetQuery.Size = new System.Drawing.Size(66, 23);
 			this.btnTargetQuery.TabIndex = 17;
@@ -180,7 +181,7 @@
 			// 
 			this.btnSourceQuery.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnSourceQuery.Enabled = false;
-			this.btnSourceQuery.Location = new System.Drawing.Point(768, 12);
+			this.btnSourceQuery.Location = new System.Drawing.Point(995, 12);
 			this.btnSourceQuery.Name = "btnSourceQuery";
 			this.btnSourceQuery.Size = new System.Drawing.Size(66, 23);
 			this.btnSourceQuery.TabIndex = 16;
@@ -192,7 +193,7 @@
 			// 
 			this.btnSwitch.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSwitch.Location = new System.Drawing.Point(699, 15);
+			this.btnSwitch.Location = new System.Drawing.Point(926, 15);
 			this.btnSwitch.Name = "btnSwitch";
 			this.btnSwitch.Size = new System.Drawing.Size(63, 45);
 			this.btnSwitch.TabIndex = 15;
@@ -204,7 +205,7 @@
 			// 
 			this.btnRemoveTargetConnString.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnRemoveTargetConnString.Enabled = false;
-			this.btnRemoveTargetConnString.Location = new System.Drawing.Point(840, 37);
+			this.btnRemoveTargetConnString.Location = new System.Drawing.Point(1067, 37);
 			this.btnRemoveTargetConnString.Name = "btnRemoveTargetConnString";
 			this.btnRemoveTargetConnString.Size = new System.Drawing.Size(121, 23);
 			this.btnRemoveTargetConnString.TabIndex = 14;
@@ -216,7 +217,7 @@
 			// 
 			this.btnRemoveSourceConnString.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnRemoveSourceConnString.Enabled = false;
-			this.btnRemoveSourceConnString.Location = new System.Drawing.Point(840, 12);
+			this.btnRemoveSourceConnString.Location = new System.Drawing.Point(1067, 12);
 			this.btnRemoveSourceConnString.Name = "btnRemoveSourceConnString";
 			this.btnRemoveSourceConnString.Size = new System.Drawing.Size(121, 23);
 			this.btnRemoveSourceConnString.TabIndex = 3;
@@ -229,7 +230,7 @@
 			this.cboTargetDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cboTargetDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboTargetDatabase.FormattingEnabled = true;
-			this.cboTargetDatabase.Location = new System.Drawing.Point(840, 39);
+			this.cboTargetDatabase.Location = new System.Drawing.Point(1067, 39);
 			this.cboTargetDatabase.Name = "cboTargetDatabase";
 			this.cboTargetDatabase.Size = new System.Drawing.Size(121, 21);
 			this.cboTargetDatabase.TabIndex = 13;
@@ -241,7 +242,7 @@
 			this.cboSourceDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cboSourceDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboSourceDatabase.FormattingEnabled = true;
-			this.cboSourceDatabase.Location = new System.Drawing.Point(840, 12);
+			this.cboSourceDatabase.Location = new System.Drawing.Point(1067, 12);
 			this.cboSourceDatabase.Name = "cboSourceDatabase";
 			this.cboSourceDatabase.Size = new System.Drawing.Size(121, 21);
 			this.cboSourceDatabase.TabIndex = 12;
@@ -252,7 +253,7 @@
 			// 
 			this.btnDisconnect.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnDisconnect.Location = new System.Drawing.Point(967, 15);
+			this.btnDisconnect.Location = new System.Drawing.Point(1194, 15);
 			this.btnDisconnect.Name = "btnDisconnect";
 			this.btnDisconnect.Size = new System.Drawing.Size(86, 45);
 			this.btnDisconnect.TabIndex = 11;
@@ -265,7 +266,7 @@
 			// 
 			this.btnConnect.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnConnect.Location = new System.Drawing.Point(967, 15);
+			this.btnConnect.Location = new System.Drawing.Point(1194, 15);
 			this.btnConnect.Name = "btnConnect";
 			this.btnConnect.Size = new System.Drawing.Size(86, 45);
 			this.btnConnect.TabIndex = 10;
@@ -289,7 +290,7 @@
 			this.cboTarget.FormattingEnabled = true;
 			this.cboTarget.Location = new System.Drawing.Point(142, 39);
 			this.cboTarget.Name = "cboTarget";
-			this.cboTarget.Size = new System.Drawing.Size(419, 21);
+			this.cboTarget.Size = new System.Drawing.Size(646, 21);
 			this.cboTarget.TabIndex = 8;
 			this.cboTarget.SelectedIndexChanged += new System.EventHandler(this.cboConnString_SelectedIndexChanged);
 			// 
@@ -309,12 +310,13 @@
 			this.cboSource.FormattingEnabled = true;
 			this.cboSource.Location = new System.Drawing.Point(142, 12);
 			this.cboSource.Name = "cboSource";
-			this.cboSource.Size = new System.Drawing.Size(419, 21);
+			this.cboSource.Size = new System.Drawing.Size(646, 21);
 			this.cboSource.TabIndex = 6;
 			this.cboSource.SelectedIndexChanged += new System.EventHandler(this.cboConnString_SelectedIndexChanged);
 			// 
 			// panel2
 			// 
+			this.panel2.Controls.Add(this.chkDifferencesOnly);
 			this.panel2.Controls.Add(this.chkNamedConstraints);
 			this.panel2.Controls.Add(this.chkCaseInsensitive);
 			this.panel2.Controls.Add(this.btnDataDifferences);
@@ -324,16 +326,28 @@
 			this.panel2.Controls.Add(this.btnRefresh);
 			this.panel2.Controls.Add(this.btnGo);
 			this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.panel2.Location = new System.Drawing.Point(0, 609);
+			this.panel2.Location = new System.Drawing.Point(0, 622);
 			this.panel2.Name = "panel2";
-			this.panel2.Size = new System.Drawing.Size(1065, 30);
+			this.panel2.Size = new System.Drawing.Size(1292, 30);
 			this.panel2.TabIndex = 11;
+			// 
+			// chkNamedConstraints
+			// 
+			this.chkNamedConstraints.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.chkNamedConstraints.AutoSize = true;
+			this.chkNamedConstraints.Location = new System.Drawing.Point(248, 5);
+			this.chkNamedConstraints.Margin = new System.Windows.Forms.Padding(1);
+			this.chkNamedConstraints.Name = "chkNamedConstraints";
+			this.chkNamedConstraints.Size = new System.Drawing.Size(115, 17);
+			this.chkNamedConstraints.TabIndex = 9;
+			this.chkNamedConstraints.Text = "Named Constraints";
+			this.chkNamedConstraints.UseVisualStyleBackColor = true;
 			// 
 			// chkCaseInsensitive
 			// 
 			this.chkCaseInsensitive.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.chkCaseInsensitive.AutoSize = true;
-			this.chkCaseInsensitive.Location = new System.Drawing.Point(175, 5);
+			this.chkCaseInsensitive.Location = new System.Drawing.Point(402, 5);
 			this.chkCaseInsensitive.Margin = new System.Windows.Forms.Padding(1);
 			this.chkCaseInsensitive.Name = "chkCaseInsensitive";
 			this.chkCaseInsensitive.Size = new System.Drawing.Size(103, 17);
@@ -344,7 +358,7 @@
 			// btnDataDifferences
 			// 
 			this.btnDataDifferences.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnDataDifferences.Location = new System.Drawing.Point(282, 3);
+			this.btnDataDifferences.Location = new System.Drawing.Point(509, 3);
 			this.btnDataDifferences.Name = "btnDataDifferences";
 			this.btnDataDifferences.Size = new System.Drawing.Size(138, 23);
 			this.btnDataDifferences.TabIndex = 7;
@@ -356,7 +370,7 @@
 			// 
 			this.btnSelectAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnSelectAll.Enabled = false;
-			this.btnSelectAll.Location = new System.Drawing.Point(814, 3);
+			this.btnSelectAll.Location = new System.Drawing.Point(1041, 3);
 			this.btnSelectAll.Name = "btnSelectAll";
 			this.btnSelectAll.Size = new System.Drawing.Size(86, 23);
 			this.btnSelectAll.TabIndex = 6;
@@ -368,7 +382,7 @@
 			// 
 			this.btnViewCreates.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnViewCreates.Enabled = false;
-			this.btnViewCreates.Location = new System.Drawing.Point(426, 3);
+			this.btnViewCreates.Location = new System.Drawing.Point(653, 3);
 			this.btnViewCreates.Name = "btnViewCreates";
 			this.btnViewCreates.Size = new System.Drawing.Size(188, 23);
 			this.btnViewCreates.TabIndex = 5;
@@ -380,7 +394,7 @@
 			// 
 			this.btnViewMissingDependencies.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnViewMissingDependencies.Enabled = false;
-			this.btnViewMissingDependencies.Location = new System.Drawing.Point(620, 3);
+			this.btnViewMissingDependencies.Location = new System.Drawing.Point(847, 3);
 			this.btnViewMissingDependencies.Name = "btnViewMissingDependencies";
 			this.btnViewMissingDependencies.Size = new System.Drawing.Size(188, 23);
 			this.btnViewMissingDependencies.TabIndex = 4;
@@ -392,7 +406,7 @@
 			// 
 			this.btnRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnRefresh.Enabled = false;
-			this.btnRefresh.Location = new System.Drawing.Point(906, 3);
+			this.btnRefresh.Location = new System.Drawing.Point(1133, 3);
 			this.btnRefresh.Name = "btnRefresh";
 			this.btnRefresh.Size = new System.Drawing.Size(75, 23);
 			this.btnRefresh.TabIndex = 3;
@@ -404,7 +418,7 @@
 			// 
 			this.btnGo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnGo.Enabled = false;
-			this.btnGo.Location = new System.Drawing.Point(987, 3);
+			this.btnGo.Location = new System.Drawing.Point(1214, 3);
 			this.btnGo.Name = "btnGo";
 			this.btnGo.Size = new System.Drawing.Size(75, 23);
 			this.btnGo.TabIndex = 2;
@@ -421,7 +435,7 @@
 			this.tabMain.Location = new System.Drawing.Point(0, 95);
 			this.tabMain.Name = "tabMain";
 			this.tabMain.SelectedIndex = 0;
-			this.tabMain.Size = new System.Drawing.Size(1065, 514);
+			this.tabMain.Size = new System.Drawing.Size(1292, 527);
 			this.tabMain.TabIndex = 13;
 			this.tabMain.SelectedIndexChanged += new System.EventHandler(this.tabMain_SelectedIndexChanged);
 			// 
@@ -431,7 +445,7 @@
 			this.tabTables.Location = new System.Drawing.Point(4, 22);
 			this.tabTables.Name = "tabTables";
 			this.tabTables.Padding = new System.Windows.Forms.Padding(3);
-			this.tabTables.Size = new System.Drawing.Size(1057, 488);
+			this.tabTables.Size = new System.Drawing.Size(1284, 501);
 			this.tabTables.TabIndex = 0;
 			this.tabTables.Text = "Tables";
 			this.tabTables.UseVisualStyleBackColor = true;
@@ -449,8 +463,8 @@
 			// splitTables.Panel2
 			// 
 			this.splitTables.Panel2.Controls.Add(this.diffTables);
-			this.splitTables.Size = new System.Drawing.Size(1051, 482);
-			this.splitTables.SplitterDistance = 299;
+			this.splitTables.Size = new System.Drawing.Size(1278, 495);
+			this.splitTables.SplitterDistance = 363;
 			this.splitTables.TabIndex = 12;
 			// 
 			// gridTables
@@ -475,7 +489,7 @@
 			this.gridTables.Location = new System.Drawing.Point(0, 0);
 			this.gridTables.Name = "gridTables";
 			this.gridTables.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.gridTables.Size = new System.Drawing.Size(299, 482);
+			this.gridTables.Size = new System.Drawing.Size(363, 495);
 			this.gridTables.TabIndex = 9;
 			this.gridTables.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridTables_CellContentClick);
 			this.gridTables.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridTables_CellValueChanged);
@@ -596,24 +610,13 @@
 			this.setBatchSizeToolStripMenuItem.Visible = false;
 			this.setBatchSizeToolStripMenuItem.Click += new System.EventHandler(this.setBatchSizeToolStripMenuItem_Click);
 			// 
-			// diffTables
-			// 
-			this.diffTables.CompareHelper = null;
-			this.diffTables.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.diffTables.Location = new System.Drawing.Point(0, 0);
-			this.diffTables.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
-			this.diffTables.Name = "diffTables";
-			this.diffTables.Size = new System.Drawing.Size(748, 482);
-			this.diffTables.TabIndex = 0;
-			this.diffTables.Workspace = null;
-			// 
 			// tabObjects
 			// 
 			this.tabObjects.Controls.Add(this.splitObjects);
 			this.tabObjects.Location = new System.Drawing.Point(4, 22);
 			this.tabObjects.Name = "tabObjects";
 			this.tabObjects.Padding = new System.Windows.Forms.Padding(3);
-			this.tabObjects.Size = new System.Drawing.Size(1057, 488);
+			this.tabObjects.Size = new System.Drawing.Size(1284, 501);
 			this.tabObjects.TabIndex = 1;
 			this.tabObjects.Text = "Objects";
 			this.tabObjects.UseVisualStyleBackColor = true;
@@ -631,8 +634,8 @@
 			// splitObjects.Panel2
 			// 
 			this.splitObjects.Panel2.Controls.Add(this.diffObjects);
-			this.splitObjects.Size = new System.Drawing.Size(1051, 482);
-			this.splitObjects.SplitterDistance = 743;
+			this.splitObjects.Size = new System.Drawing.Size(1278, 495);
+			this.splitObjects.SplitterDistance = 903;
 			this.splitObjects.TabIndex = 12;
 			// 
 			// gridObjects
@@ -649,7 +652,7 @@
 			this.gridObjects.Location = new System.Drawing.Point(0, 0);
 			this.gridObjects.Name = "gridObjects";
 			this.gridObjects.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.gridObjects.Size = new System.Drawing.Size(743, 482);
+			this.gridObjects.Size = new System.Drawing.Size(903, 495);
 			this.gridObjects.TabIndex = 11;
 			this.gridObjects.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.gridObjects_CellContentClick);
 			this.gridObjects.CurrentCellDirtyStateChanged += new System.EventHandler(this.grid_CurrentCellDirtyStateChanged);
@@ -686,24 +689,13 @@
 			this.dataGridViewCheckBoxColumn2.HeaderText = "Select";
 			this.dataGridViewCheckBoxColumn2.Name = "dataGridViewCheckBoxColumn2";
 			// 
-			// diffObjects
-			// 
-			this.diffObjects.CompareHelper = null;
-			this.diffObjects.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.diffObjects.Location = new System.Drawing.Point(0, 0);
-			this.diffObjects.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
-			this.diffObjects.Name = "diffObjects";
-			this.diffObjects.Size = new System.Drawing.Size(304, 482);
-			this.diffObjects.TabIndex = 0;
-			this.diffObjects.Workspace = null;
-			// 
 			// tabDrop
 			// 
 			this.tabDrop.Controls.Add(this.splitDrops);
 			this.tabDrop.Location = new System.Drawing.Point(4, 22);
 			this.tabDrop.Name = "tabDrop";
 			this.tabDrop.Padding = new System.Windows.Forms.Padding(3);
-			this.tabDrop.Size = new System.Drawing.Size(1057, 488);
+			this.tabDrop.Size = new System.Drawing.Size(1284, 501);
 			this.tabDrop.TabIndex = 2;
 			this.tabDrop.Text = "Drop";
 			this.tabDrop.UseVisualStyleBackColor = true;
@@ -721,8 +713,8 @@
 			// splitDrops.Panel2
 			// 
 			this.splitDrops.Panel2.Controls.Add(this.diffDrops);
-			this.splitDrops.Size = new System.Drawing.Size(1051, 482);
-			this.splitDrops.SplitterDistance = 749;
+			this.splitDrops.Size = new System.Drawing.Size(1278, 495);
+			this.splitDrops.SplitterDistance = 910;
 			this.splitDrops.TabIndex = 3;
 			// 
 			// gridDropObjects
@@ -738,7 +730,7 @@
 			this.gridDropObjects.Location = new System.Drawing.Point(0, 0);
 			this.gridDropObjects.Name = "gridDropObjects";
 			this.gridDropObjects.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.gridDropObjects.Size = new System.Drawing.Size(749, 482);
+			this.gridDropObjects.Size = new System.Drawing.Size(910, 495);
 			this.gridDropObjects.TabIndex = 2;
 			this.gridDropObjects.CurrentCellDirtyStateChanged += new System.EventHandler(this.grid_CurrentCellDirtyStateChanged);
 			this.gridDropObjects.SelectionChanged += new System.EventHandler(this.gridDropObjects_SelectionChanged);
@@ -763,17 +755,6 @@
 			this.dataGridViewCheckBoxColumn1.HeaderText = "Select";
 			this.dataGridViewCheckBoxColumn1.Name = "dataGridViewCheckBoxColumn1";
 			// 
-			// diffDrops
-			// 
-			this.diffDrops.CompareHelper = null;
-			this.diffDrops.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.diffDrops.Location = new System.Drawing.Point(0, 0);
-			this.diffDrops.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
-			this.diffDrops.Name = "diffDrops";
-			this.diffDrops.Size = new System.Drawing.Size(298, 482);
-			this.diffDrops.TabIndex = 1;
-			this.diffDrops.Workspace = null;
-			// 
 			// menuStrip1
 			// 
 			this.menuStrip1.BackColor = System.Drawing.Color.Transparent;
@@ -782,7 +763,7 @@
             this.fileToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
-			this.menuStrip1.Size = new System.Drawing.Size(1065, 24);
+			this.menuStrip1.Size = new System.Drawing.Size(1292, 24);
 			this.menuStrip1.TabIndex = 14;
 			this.menuStrip1.Text = "menuStrip1";
 			// 
@@ -817,17 +798,51 @@
 			this.connectionStringsToolStripMenuItem.Text = "&Connection Strings";
 			this.connectionStringsToolStripMenuItem.Click += new System.EventHandler(this.connectionStringsToolStripMenuItem_Click);
 			// 
-			// chkNamedConstraints
+			// chkDifferencesOnly
 			// 
-			this.chkNamedConstraints.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.chkNamedConstraints.AutoSize = true;
-			this.chkNamedConstraints.Location = new System.Drawing.Point(21, 5);
-			this.chkNamedConstraints.Margin = new System.Windows.Forms.Padding(1);
-			this.chkNamedConstraints.Name = "chkNamedConstraints";
-			this.chkNamedConstraints.Size = new System.Drawing.Size(115, 17);
-			this.chkNamedConstraints.TabIndex = 9;
-			this.chkNamedConstraints.Text = "Named Constraints";
-			this.chkNamedConstraints.UseVisualStyleBackColor = true;
+			this.chkDifferencesOnly.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.chkDifferencesOnly.AutoSize = true;
+			this.chkDifferencesOnly.Location = new System.Drawing.Point(122, 5);
+			this.chkDifferencesOnly.Margin = new System.Windows.Forms.Padding(1);
+			this.chkDifferencesOnly.Name = "chkDifferencesOnly";
+			this.chkDifferencesOnly.Size = new System.Drawing.Size(104, 17);
+			this.chkDifferencesOnly.TabIndex = 10;
+			this.chkDifferencesOnly.Text = "Differences Only";
+			this.chkDifferencesOnly.UseVisualStyleBackColor = true;
+			this.chkDifferencesOnly.CheckedChanged += new System.EventHandler(this.ChkDifferencesOnly_CheckedChanged);
+			// 
+			// diffTables
+			// 
+			this.diffTables.CompareHelper = null;
+			this.diffTables.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.diffTables.Location = new System.Drawing.Point(0, 0);
+			this.diffTables.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+			this.diffTables.Name = "diffTables";
+			this.diffTables.Size = new System.Drawing.Size(911, 495);
+			this.diffTables.TabIndex = 0;
+			this.diffTables.Workspace = null;
+			// 
+			// diffObjects
+			// 
+			this.diffObjects.CompareHelper = null;
+			this.diffObjects.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.diffObjects.Location = new System.Drawing.Point(0, 0);
+			this.diffObjects.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+			this.diffObjects.Name = "diffObjects";
+			this.diffObjects.Size = new System.Drawing.Size(371, 495);
+			this.diffObjects.TabIndex = 0;
+			this.diffObjects.Workspace = null;
+			// 
+			// diffDrops
+			// 
+			this.diffDrops.CompareHelper = null;
+			this.diffDrops.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.diffDrops.Location = new System.Drawing.Point(0, 0);
+			this.diffDrops.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+			this.diffDrops.Name = "diffDrops";
+			this.diffDrops.Size = new System.Drawing.Size(364, 495);
+			this.diffDrops.TabIndex = 1;
+			this.diffDrops.Workspace = null;
 			// 
 			// ucCompare
 			// 
@@ -838,7 +853,7 @@
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.menuStrip1);
 			this.Name = "ucCompare";
-			this.Size = new System.Drawing.Size(1065, 639);
+			this.Size = new System.Drawing.Size(1292, 652);
 			this.Load += new System.EventHandler(this.ucCompare_Load);
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
@@ -938,6 +953,7 @@
 		private System.Windows.Forms.CheckBox chkCaseInsensitive;
 		private System.Windows.Forms.ToolStripMenuItem connectionStringsToolStripMenuItem;
 		private System.Windows.Forms.CheckBox chkNamedConstraints;
+		private System.Windows.Forms.CheckBox chkDifferencesOnly;
 	}
 }
 

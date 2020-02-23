@@ -54,7 +54,8 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			var parentSchema = Database.Schemas.First(s => s.SchemaName == values["ParentTableSchema"].ToString());
 			if (!parentSchema.Tables.Any()) Database.DataSource.PopulateTables(connection, new Schema[] { parentSchema }, true);
 			var childSchema = Database.Schemas.First(s => s.SchemaName == values["ChildTableSchema"].ToString());
-			var childTable = childSchema.Tables.First(t => t.TableName == this.ChildTableName);
+			var childTable = childSchema.Tables.FirstOrDefault(t => t.TableName == this.ChildTableName);
+			if (childTable == null) return;
 			var foreignKey = childTable.ForeignKeys.FirstOrDefault(f => f.ForeignKeyName == foreignKeyName
 				&& f.ChildTable.TableName == childTableName
 				&& f.ChildTable.Schema.SchemaName == childSchema.SchemaName);
