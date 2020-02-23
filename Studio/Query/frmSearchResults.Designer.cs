@@ -49,7 +49,6 @@
 			this.Controls.Add(this.lstResults);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
 			this.Name = "frmSearchResults";
-			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Search Results";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FrmSearchResults_FormClosing);
