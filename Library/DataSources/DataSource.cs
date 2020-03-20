@@ -352,7 +352,7 @@ namespace PaJaMa.Database.Library.DataSources
 					else
 						populateObjects<Schema>(database, cmd, string.Format(this.SchemaSQL, database.DatabaseName), string.Empty, false, string.Empty, string.Empty, worker);
 
-					cmd.CommandText = this.CombinedSQL;
+					cmd.CommandText = string.Format(this.CombinedSQL, database.DatabaseName);
 					using (var rdr = cmd.ExecuteReader())
 					{
 						if (rdr.HasRows)
