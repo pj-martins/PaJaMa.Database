@@ -819,7 +819,7 @@ ON UPDATE {6}
 			var sbScript = new StringBuilder();
 			var colsLine = string.Join(", ", table.Columns.Select(c => GetConvertedObjectName(c.ColumnName)));
 			var tableLine = GetConvertedObjectName(table.Database.DatabaseName) + "." +
-					(table.Schema != null && !string.IsNullOrEmpty(table.Schema.SchemaName) ? "." + table.Schema.SchemaName : "") + GetConvertedObjectName(table.TableName);
+					(table.Schema != null && !string.IsNullOrEmpty(table.Schema.SchemaName) ? $"{GetConvertedObjectName(table.Schema.SchemaName)}." : "") + GetConvertedObjectName(table.TableName);
 			sbScript.AppendLine($"INSERT INTO {tableLine} ({colsLine})");
 			using (var cmd = connection.CreateCommand())
 			{
