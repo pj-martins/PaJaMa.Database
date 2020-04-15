@@ -59,35 +59,35 @@
 			// 
 			this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
 			this.saveToolStripMenuItem.Size = new System.Drawing.Size(104, 20);
-			this.saveToolStripMenuItem.Text = "&Save Workspace";
+			this.saveToolStripMenuItem.Text = "Save Workspace";
 			this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
 			// 
 			// loadToolStripMenuItem
 			// 
 			this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
 			this.loadToolStripMenuItem.Size = new System.Drawing.Size(106, 20);
-			this.loadToolStripMenuItem.Text = "&Load Workspace";
+			this.loadToolStripMenuItem.Text = "Load Workspace";
 			this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
 			// 
 			// copyToolStripMenuItem
 			// 
 			this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
 			this.copyToolStripMenuItem.Size = new System.Drawing.Size(108, 20);
-			this.copyToolStripMenuItem.Text = "&Copy Workspace";
+			this.copyToolStripMenuItem.Text = "Copy Workspace";
 			this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
 			// 
 			// saveQueryToolStripMenuItem
 			// 
 			this.saveQueryToolStripMenuItem.Name = "saveQueryToolStripMenuItem";
 			this.saveQueryToolStripMenuItem.Size = new System.Drawing.Size(78, 20);
-			this.saveQueryToolStripMenuItem.Text = "Save &Query";
+			this.saveQueryToolStripMenuItem.Text = "Save Query";
 			this.saveQueryToolStripMenuItem.Click += new System.EventHandler(this.SaveQueryToolStripMenuItem_Click);
 			// 
 			// openQueryToolStripMenuItem
 			// 
 			this.openQueryToolStripMenuItem.Name = "openQueryToolStripMenuItem";
 			this.openQueryToolStripMenuItem.Size = new System.Drawing.Size(83, 20);
-			this.openQueryToolStripMenuItem.Text = "&Open Query";
+			this.openQueryToolStripMenuItem.Text = "Open Query";
 			this.openQueryToolStripMenuItem.Click += new System.EventHandler(this.OpenQueryToolStripMenuItem_Click);
 			// 
 			// tabMain
@@ -107,7 +107,7 @@
 			// 
 			this.openHistoryToolStripMenuItem.Name = "openHistoryToolStripMenuItem";
 			this.openHistoryToolStripMenuItem.Size = new System.Drawing.Size(89, 20);
-			this.openHistoryToolStripMenuItem.Text = "O&pen History";
+			this.openHistoryToolStripMenuItem.Text = "Open History";
 			this.openHistoryToolStripMenuItem.Click += new System.EventHandler(this.OpenHistoryToolStripMenuItem_Click);
 			// 
 			// ucQuery

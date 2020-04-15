@@ -29,9 +29,12 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ucQueryOutput));
 			this.splitQuery = new System.Windows.Forms.SplitContainer();
-			this.txtQuery = new ScintillaNET.Scintilla();
+			this.txtQuery = new FastColoredTextBoxNS.FastColoredTextBox();
 			this.mnuQuery = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.wrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.unwrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlResults = new System.Windows.Forms.Panel();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabResults = new System.Windows.Forms.TabPage();
@@ -50,12 +53,11 @@
 			this.mnuGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyAllWithheadersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.wrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.unwrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).BeginInit();
 			this.splitQuery.Panel1.SuspendLayout();
 			this.splitQuery.Panel2.SuspendLayout();
 			this.splitQuery.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.txtQuery)).BeginInit();
 			this.mnuQuery.SuspendLayout();
 			this.pnlResults.SuspendLayout();
 			this.tabControl1.SuspendLayout();
@@ -86,15 +88,38 @@
 			// 
 			// txtQuery
 			// 
+			this.txtQuery.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+			this.txtQuery.AutoIndentCharsPatterns = "^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;=]+);\n^\\s*(case|default)\\s*[^:]*(" +
+    "?<range>:)\\s*(?<range>[^;]+);";
+			this.txtQuery.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+			this.txtQuery.BackBrush = null;
+			this.txtQuery.CharHeight = 14;
+			this.txtQuery.CharWidth = 8;
 			this.txtQuery.ContextMenuStrip = this.mnuQuery;
+			this.txtQuery.Cursor = System.Windows.Forms.Cursors.IBeam;
+			this.txtQuery.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
 			this.txtQuery.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.txtQuery.Font = new System.Drawing.Font("Courier New", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtQuery.Lexer = ScintillaNET.Lexer.Sql;
+			this.txtQuery.IsReplaceMode = false;
+			this.txtQuery.Language = FastColoredTextBoxNS.Language.SQL;
 			this.txtQuery.Location = new System.Drawing.Point(0, 0);
 			this.txtQuery.Name = "txtQuery";
+			this.txtQuery.Paddings = new System.Windows.Forms.Padding(0);
+			this.txtQuery.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
 			this.txtQuery.Size = new System.Drawing.Size(1023, 216);
 			this.txtQuery.TabIndex = 6;
-			this.txtQuery.TextChanged += new System.EventHandler(this.TxtQuery_TextChanged);
+			this.txtQuery.Zoom = 100;
+			this.txtQuery.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.TxtQuery_TextChanged);
 			this.txtQuery.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtQuery_KeyDown);
 			this.txtQuery.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtQuery_KeyPress);
 			this.txtQuery.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TxtQuery_KeyUp);
@@ -106,7 +131,21 @@
             this.wrapTextToolStripMenuItem,
             this.unwrapTextToolStripMenuItem});
 			this.mnuQuery.Name = "mnuQuery";
-			this.mnuQuery.Size = new System.Drawing.Size(181, 70);
+			this.mnuQuery.Size = new System.Drawing.Size(140, 48);
+			// 
+			// wrapTextToolStripMenuItem
+			// 
+			this.wrapTextToolStripMenuItem.Name = "wrapTextToolStripMenuItem";
+			this.wrapTextToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+			this.wrapTextToolStripMenuItem.Text = "&Wrap Text";
+			this.wrapTextToolStripMenuItem.Click += new System.EventHandler(this.WrapTextToolStripMenuItem_Click);
+			// 
+			// unwrapTextToolStripMenuItem
+			// 
+			this.unwrapTextToolStripMenuItem.Name = "unwrapTextToolStripMenuItem";
+			this.unwrapTextToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+			this.unwrapTextToolStripMenuItem.Text = "&Unwrap Text";
+			this.unwrapTextToolStripMenuItem.Click += new System.EventHandler(this.UnwrapTextToolStripMenuItem_Click);
 			// 
 			// pnlResults
 			// 
@@ -296,20 +335,6 @@
 			this.copyAllWithheadersToolStripMenuItem.Text = "Copy with &headers";
 			this.copyAllWithheadersToolStripMenuItem.Click += new System.EventHandler(this.CopyWithheadersToolStripMenuItem_Click);
 			// 
-			// wrapTextToolStripMenuItem
-			// 
-			this.wrapTextToolStripMenuItem.Name = "wrapTextToolStripMenuItem";
-			this.wrapTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.wrapTextToolStripMenuItem.Text = "&Wrap Text";
-			this.wrapTextToolStripMenuItem.Click += new System.EventHandler(this.WrapTextToolStripMenuItem_Click);
-			// 
-			// unwrapTextToolStripMenuItem
-			// 
-			this.unwrapTextToolStripMenuItem.Name = "unwrapTextToolStripMenuItem";
-			this.unwrapTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.unwrapTextToolStripMenuItem.Text = "&Unwrap Text";
-			this.unwrapTextToolStripMenuItem.Click += new System.EventHandler(this.UnwrapTextToolStripMenuItem_Click);
-			// 
 			// ucQueryOutput
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -322,6 +347,7 @@
 			this.splitQuery.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).EndInit();
 			this.splitQuery.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.txtQuery)).EndInit();
 			this.mnuQuery.ResumeLayout(false);
 			this.pnlResults.ResumeLayout(false);
 			this.tabControl1.ResumeLayout(false);
@@ -345,7 +371,7 @@
 		private System.Windows.Forms.ProgressBar progMain;
 		private System.Windows.Forms.Button btnGo;
 		private System.Windows.Forms.Timer timDuration;
-		private ScintillaNET.Scintilla txtQuery;
+		private FastColoredTextBoxNS.FastColoredTextBox txtQuery;
 		private System.Windows.Forms.Label lblDatabase;
 		internal System.Windows.Forms.ComboBox cboDatabases;
 		private System.Windows.Forms.TabControl tabControl1;

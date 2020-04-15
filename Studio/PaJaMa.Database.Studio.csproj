@@ -26,6 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -122,11 +123,32 @@
     <Reference Include="Npgsql, Version=4.1.1.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
       <HintPath>..\packages\Npgsql.4.1.1\lib\net461\Npgsql.dll</HintPath>
     </Reference>
-    <Reference Include="ScintillaNET, Version=3.6.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\jacobslusser.ScintillaNET.3.6.3\lib\net40\ScintillaNET.dll</HintPath>
+    <Reference Include="Syncfusion.Edit.Windows, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Edit.Windows.18.1.0.44\lib\net46\Syncfusion.Edit.Windows.dll</HintPath>
     </Reference>
-    <Reference Include="ScintillaNET_FindReplaceDialog, Version=1.0.3.3, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\ScintillaNET_FindReplaceDialog.1.0.3.3\lib\net40-client\ScintillaNET_FindReplaceDialog.dll</HintPath>
+    <Reference Include="Syncfusion.Grid.Base, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Grid.Base.18.1.0.44\lib\net46\Syncfusion.Grid.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Grid.Windows, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Grid.Windows.18.1.0.44\lib\net46\Syncfusion.Grid.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Licensing, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=632609b4d040f6b4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Licensing.18.1.0.44\lib\net46\Syncfusion.Licensing.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Shared.Base, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Shared.Base.18.1.0.44\lib\net46\Syncfusion.Shared.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Shared.Windows, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Shared.Windows.18.1.0.44\lib\net46\Syncfusion.Shared.Windows.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.SpellChecker.Base, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.SpellChecker.Base.18.1.0.44\lib\net46\Syncfusion.SpellChecker.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Tools.Base, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Tools.Base.18.1.0.44\lib\net46\Syncfusion.Tools.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="Syncfusion.Tools.Windows, Version=18.1460.0.44, Culture=neutral, PublicKeyToken=3d67ed1f87d44c89, processorArchitecture=MSIL">
+      <HintPath>..\packages\Syncfusion.Tools.Windows.18.1.0.44\lib\net46\Syncfusion.Tools.Windows.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -137,6 +159,7 @@
     <Reference Include="System.Data.SQLite, Version=1.0.105.2, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Data.SQLite.Core.1.0.105.2\lib\net451\System.Data.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="System.Design" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
     </Reference>
@@ -261,6 +284,73 @@
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
     <Compile Include="Classes\IntellisenseHelper.cs" />
+    <Compile Include="Query\FastColoredTextBox\AutocompleteItem.cs" />
+    <Compile Include="Query\FastColoredTextBox\AutocompleteMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\Bookmarks.cs" />
+    <Compile Include="Query\FastColoredTextBox\Char.cs" />
+    <Compile Include="Query\FastColoredTextBox\CommandManager.cs" />
+    <Compile Include="Query\FastColoredTextBox\Commands.cs" />
+    <Compile Include="Query\FastColoredTextBox\DocumentMap.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\EncodingDetector.cs" />
+    <Compile Include="Query\FastColoredTextBox\ExportToHTML.cs" />
+    <Compile Include="Query\FastColoredTextBox\ExportToRTF.cs" />
+    <Compile Include="Query\FastColoredTextBox\FastColoredTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\FileTextSource.cs" />
+    <Compile Include="Query\FastColoredTextBox\FindForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\FindForm.Designer.cs">
+      <DependentUpon>FindForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\GoToForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\GoToForm.Designer.cs">
+      <DependentUpon>GoToForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\Hints.cs" />
+    <Compile Include="Query\FastColoredTextBox\Hotkeys.cs" />
+    <Compile Include="Query\FastColoredTextBox\HotkeysEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\HotkeysEditorForm.Designer.cs">
+      <DependentUpon>HotkeysEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\LimitedStack.cs" />
+    <Compile Include="Query\FastColoredTextBox\Line.cs" />
+    <Compile Include="Query\FastColoredTextBox\LineNumberFormatting.cs" />
+    <Compile Include="Query\FastColoredTextBox\LinesAccessor.cs" />
+    <Compile Include="Query\FastColoredTextBox\MacrosManager.cs" />
+    <Compile Include="Query\FastColoredTextBox\Place.cs" />
+    <Compile Include="Query\FastColoredTextBox\PlatformType.cs" />
+    <Compile Include="Query\FastColoredTextBox\Range.cs" />
+    <Compile Include="Query\FastColoredTextBox\ReplaceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\ReplaceForm.Designer.cs">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\Ruler.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\Ruler.Designer.cs">
+      <DependentUpon>Ruler.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\Style.cs" />
+    <Compile Include="Query\FastColoredTextBox\SyntaxDescriptor.cs" />
+    <Compile Include="Query\FastColoredTextBox\SyntaxHighlighter.cs" />
+    <Compile Include="Query\FastColoredTextBox\TextSource.cs" />
+    <Compile Include="Query\FastColoredTextBox\TypeDescriptor.cs" />
+    <Compile Include="Query\FastColoredTextBox\UnfocusablePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Query\FastColoredTextBox\VisualMarker.cs" />
     <Compile Include="Query\frmSearchResults.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -415,6 +505,21 @@
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Query\FastColoredTextBox\FastColoredTextBox.resx">
+      <DependentUpon>FastColoredTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\FastColoredTextBox\FindForm.resx">
+      <DependentUpon>FindForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\FastColoredTextBox\GoToForm.resx">
+      <DependentUpon>GoToForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\FastColoredTextBox\HotkeysEditorForm.resx">
+      <DependentUpon>HotkeysEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\FastColoredTextBox\ReplaceForm.resx">
+      <DependentUpon>ReplaceForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Query\frmSearchResults.resx">
       <DependentUpon>frmSearchResults.cs</DependentUpon>
     </EmbeddedResource>
@@ -456,6 +561,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Query\ucQueryOutput.resx">
       <DependentUpon>ucQueryOutput.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Query\ucQuery.resx">
       <DependentUpon>ucQuery.cs</DependentUpon>
@@ -486,6 +592,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Query\FastColoredTextBox\FCTB_key.snk" />
+    <None Include="Query\FastColoredTextBox\SyntaxHighlighter.cs.old" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -493,12 +601,6 @@
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="Database.ico" />
-    <Content Include="Resources\Clock.ico" />
-    <Content Include="Resources\Clock.png" />
-    <Content Include="Resources\DownButton.png" />
-    <Content Include="Resources\Highlighter.png" />
-    <Content Include="Resources\UpButton.png" />
-    <Content Include="Resources\XToCloseButton.png" />
     <Content Include="todo.txt" />
   </ItemGroup>
   <ItemGroup>

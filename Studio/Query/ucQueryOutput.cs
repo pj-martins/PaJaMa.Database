@@ -2,8 +2,6 @@
 using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Workspaces;
 using PaJaMa.Database.Studio.Classes;
-using ScintillaNET;
-using ScintillaNET_FindReplaceDialog;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -38,7 +36,7 @@ namespace PaJaMa.Database.Studio.Query
 		private IntellisenseHelper _intellisenseHelper;
 		private Dictionary<int, Dictionary<int, string>> _errorDict;
 
-		private FindReplace _findReplace;
+		// private FindReplace _findReplace;
 
 		public DbConnection CurrentConnection;
 		public ucWorkspace Workspace { get; set; }
@@ -131,47 +129,47 @@ namespace PaJaMa.Database.Studio.Query
 				_lock = true;
 				cboDatabases.Text = CurrentConnection.Database;
 				txtQuery.Text = queryOutput.Query;
-				txtQuery.EmptyUndoBuffer();
+				txtQuery.ClearUndo();
 
-				txtQuery.Margins[0].Type = MarginType.Number;
+				//txtQuery.Margins[0].Type = MarginType.Number;
 
-				// remove conflicting hotkeys from scintilla
-				txtQuery.ClearCmdKey(Keys.Control | Keys.F);
-				txtQuery.ClearCmdKey(Keys.Control | Keys.R);
-				txtQuery.ClearCmdKey(Keys.Control | Keys.H);
-				txtQuery.ClearCmdKey(Keys.Control | Keys.L);
-				txtQuery.ClearCmdKey(Keys.Control | Keys.U);
+				//// remove conflicting hotkeys from scintilla
+				//txtQuery.ClearCmdKey(Keys.Control | Keys.F);
+				//txtQuery.ClearCmdKey(Keys.Control | Keys.R);
+				//txtQuery.ClearCmdKey(Keys.Control | Keys.H);
+				//txtQuery.ClearCmdKey(Keys.Control | Keys.L);
+				//txtQuery.ClearCmdKey(Keys.Control | Keys.U);
 
-				// Configure the default style
-				txtQuery.StyleResetDefault();
-				txtQuery.Styles[Style.Default].Font = "Consolas";
-				txtQuery.Styles[Style.Default].Size = 10;
-				txtQuery.StyleClearAll();
+				//// Configure the default style
+				//txtQuery.StyleResetDefault();
+				//txtQuery.Styles[Style.Default].Font = "Consolas";
+				//txtQuery.Styles[Style.Default].Size = 10;
+				//txtQuery.StyleClearAll();
 
-				// Configure the CPP (C#) lexer styles
-				txtQuery.Styles[Style.Sql.Default].ForeColor = Color.Silver;
-				txtQuery.Styles[Style.Sql.Comment].ForeColor = Color.FromArgb(0, 128, 0); // Green
-				txtQuery.Styles[Style.Sql.CommentLine].ForeColor = Color.FromArgb(0, 128, 0); // Green
-				txtQuery.Styles[Style.Sql.CommentLineDoc].ForeColor = Color.FromArgb(128, 128, 128); // Gray
-				txtQuery.Styles[Style.Sql.Number].ForeColor = Color.Olive;
-				txtQuery.Styles[Style.Sql.Word].ForeColor = Color.Blue;
-				txtQuery.Styles[Style.Sql.Word2].ForeColor = Color.Blue;
-				txtQuery.Styles[Style.Sql.String].ForeColor = Color.FromArgb(163, 21, 21); // Red
-				txtQuery.Styles[Style.Sql.Character].ForeColor = Color.FromArgb(163, 21, 21); // Red
-				txtQuery.Styles[Style.Sql.Operator].ForeColor = Color.Purple;
+				//// Configure the CPP (C#) lexer styles
+				//txtQuery.Styles[Style.Sql.Default].ForeColor = Color.Silver;
+				//txtQuery.Styles[Style.Sql.Comment].ForeColor = Color.FromArgb(0, 128, 0); // Green
+				//txtQuery.Styles[Style.Sql.CommentLine].ForeColor = Color.FromArgb(0, 128, 0); // Green
+				//txtQuery.Styles[Style.Sql.CommentLineDoc].ForeColor = Color.FromArgb(128, 128, 128); // Gray
+				//txtQuery.Styles[Style.Sql.Number].ForeColor = Color.Olive;
+				//txtQuery.Styles[Style.Sql.Word].ForeColor = Color.Blue;
+				//txtQuery.Styles[Style.Sql.Word2].ForeColor = Color.Blue;
+				//txtQuery.Styles[Style.Sql.String].ForeColor = Color.FromArgb(163, 21, 21); // Red
+				//txtQuery.Styles[Style.Sql.Character].ForeColor = Color.FromArgb(163, 21, 21); // Red
+				//txtQuery.Styles[Style.Sql.Operator].ForeColor = Color.Purple;
 
-				var keywords = new List<string>();
-				keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
-				keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
-				txtQuery.SetKeywords(0, string.Join(" ", keywords.ToArray()));
+				//var keywords = new List<string>();
+				//keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
+				//keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
+				//txtQuery.SetKeywords(0, string.Join(" ", keywords.ToArray()));
 
-				keywords = new List<string>();
-				keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToUpper()));
-				keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToLower()));
-				txtQuery.SetKeywords(1, string.Join(" ", keywords.ToArray()));
+				//keywords = new List<string>();
+				//keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToUpper()));
+				//keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToLower()));
+				//txtQuery.SetKeywords(1, string.Join(" ", keywords.ToArray()));
 
-				_findReplace = new FindReplace(txtQuery);
-				_findReplace.KeyPressed += _findReplace_KeyPressed;
+				// _findReplace = new FindReplace(txtQuery);
+				// _findReplace.KeyPressed += _findReplace_KeyPressed;
 
 				_lock = false;
 				return true;
@@ -684,43 +682,43 @@ namespace PaJaMa.Database.Studio.Query
 
 		public void CommentSelected()
 		{
-			txtQuery.BeginUndoAction();
-			int lineStart = txtQuery.SelectionStart;
-			while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
-				lineStart--;
-			int selectionEnd = txtQuery.SelectionEnd;
-			for (int i = lineStart; i <= selectionEnd; i++)
-			{
-				if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
-				{
-					txtQuery.InsertText(i, "-- ");
-				}
-			}
-			txtQuery.EndUndoAction();
+			//txtQuery.BeginAutoUndo();
+			//int lineStart = txtQuery.SelectionStart;
+			//while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
+			//	lineStart--;
+			//int selectionEnd = txtQuery.SelectionEnd;
+			//for (int i = lineStart; i <= selectionEnd; i++)
+			//{
+			//	if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
+			//	{
+			//		txtQuery.InsertText(i, "-- ");
+			//	}
+			//}
+			//txtQuery.EndAutoUndo();
 		}
 
 		public void UnCommentSelected()
 		{
-			txtQuery.BeginUndoAction();
-			int lineStart = txtQuery.SelectionStart;
-			while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
-				lineStart--;
-			int selectionEnd = txtQuery.SelectionEnd;
-			for (int i = lineStart; i <= selectionEnd; i++)
-			{
-				if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
-				{
-					if (txtQuery.Text.Substring(i, 2) == "--")
-					{
-						txtQuery.DeleteRange(i, 2);
-					}
-					if (txtQuery.Text.Substring(i, 1) == " ")
-					{
-						txtQuery.DeleteRange(i, 1);
-					}
-				}
-			}
-			txtQuery.EndUndoAction();
+			//txtQuery.BeginAutoUndo();
+			//int lineStart = txtQuery.SelectionStart;
+			//while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
+			//	lineStart--;
+			//int selectionEnd = txtQuery.SelectionEnd;
+			//for (int i = lineStart; i <= selectionEnd; i++)
+			//{
+			//	if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
+			//	{
+			//		if (txtQuery.Text.Substring(i, 2) == "--")
+			//		{
+			//			txtQuery.DeleteRange(i, 2);
+			//		}
+			//		if (txtQuery.Text.Substring(i, 1) == " ")
+			//		{
+			//			txtQuery.DeleteRange(i, 1);
+			//		}
+			//	}
+			//}
+			//txtQuery.EndAutoUndo();
 		}
 
 		private void txtQuery_KeyDown(object sender, KeyEventArgs e)
@@ -783,42 +781,42 @@ namespace PaJaMa.Database.Studio.Query
 				_flagIntellisense = true;
 			}
 
-			if (e.Control && e.KeyCode == Keys.F)
-			{
-				_findReplace.ShowFind();
-				e.SuppressKeyPress = true;
-			}
-			else if (e.Shift && e.KeyCode == Keys.F3)
-			{
-				_findReplace.Window.FindPrevious();
-				e.SuppressKeyPress = true;
-			}
-			else if (e.KeyCode == Keys.F3)
-			{
-				_findReplace.Window.FindNext();
-				e.SuppressKeyPress = true;
-			}
-			else if (e.Control && e.KeyCode == Keys.H)
-			{
-				_findReplace.ShowReplace();
-				e.SuppressKeyPress = true;
-			}
-			else if (e.Control && e.KeyCode == Keys.I)
-			{
-				_findReplace.ShowIncrementalSearch();
-				e.SuppressKeyPress = true;
-			}
-			else if (e.Control && e.KeyCode == Keys.G)
-			{
-				GoTo MyGoTo = new GoTo((Scintilla)sender);
-				MyGoTo.ShowGoToDialog();
-				e.SuppressKeyPress = true;
-			}
-			else if (e.Control && e.KeyCode == Keys.W)
-			{
-				txtQuery.WrapMode = txtQuery.WrapMode == WrapMode.None ? WrapMode.Word : WrapMode.None;
-				e.SuppressKeyPress = true;
-			}
+			//if (e.Control && e.KeyCode == Keys.F)
+			//{
+			//	_findReplace.ShowFind();
+			//	e.SuppressKeyPress = true;
+			//}
+			//else if (e.Shift && e.KeyCode == Keys.F3)
+			//{
+			//	_findReplace.Window.FindPrevious();
+			//	e.SuppressKeyPress = true;
+			//}
+			//else if (e.KeyCode == Keys.F3)
+			//{
+			//	_findReplace.Window.FindNext();
+			//	e.SuppressKeyPress = true;
+			//}
+			//else if (e.Control && e.KeyCode == Keys.H)
+			//{
+			//	_findReplace.ShowReplace();
+			//	e.SuppressKeyPress = true;
+			//}
+			//else if (e.Control && e.KeyCode == Keys.I)
+			//{
+			//	_findReplace.ShowIncrementalSearch();
+			//	e.SuppressKeyPress = true;
+			//}
+			//else if (e.Control && e.KeyCode == Keys.G)
+			//{
+			//	//GoTo MyGoTo = new GoTo((Scintilla)sender);
+			//	//MyGoTo.ShowGoToDialog();
+			//	e.SuppressKeyPress = true;
+			//}
+			//else if (e.Control && e.KeyCode == Keys.W)
+			//{
+			//	txtQuery.WordWrap = !txtQuery.WordWrap;
+			//	e.SuppressKeyPress = true;
+			//}
 			//else if (e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
 			//	(sender as TextBox).SelectAll();
 		}
@@ -913,26 +911,26 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void selectIntellisenseItem()
 		{
-			if (_intelliBox.SelectedItem != null)
-			{
-				var regex = Regex.Match(txtQuery.Text.Substring(0, txtQuery.SelectionStart), IntellisenseHelper.PATTERN);
-				if (regex.Success)
-				{
-					var replace = regex.Groups[2].Value.Split('.').Last();
-					txtQuery.SelectionStart = Math.Max(0, txtQuery.SelectionStart - replace.Length);
-					txtQuery.SelectionEnd = txtQuery.SelectionStart + replace.Length;
-					if (txtQuery.Text.Length > txtQuery.SelectionEnd &&
-						_dataSource.SurroundingCharacters.Contains(txtQuery.Text.Substring(txtQuery.SelectionEnd, 1)))
-					{
-						txtQuery.SelectionEnd++;
-					}
+			//if (_intelliBox.SelectedItem != null)
+			//{
+			//	var regex = Regex.Match(txtQuery.Text.Substring(0, txtQuery.SelectionStart), IntellisenseHelper.PATTERN);
+			//	if (regex.Success)
+			//	{
+			//		var replace = regex.Groups[2].Value.Split('.').Last();
+			//		txtQuery.SelectionStart = Math.Max(0, txtQuery.SelectionStart - replace.Length);
+			//		txtQuery.SelectionEnd = txtQuery.SelectionStart + replace.Length;
+			//		if (txtQuery.Text.Length > txtQuery.SelectionEnd &&
+			//			_dataSource.SurroundingCharacters.Contains(txtQuery.Text.Substring(txtQuery.SelectionEnd, 1)))
+			//		{
+			//			txtQuery.SelectionEnd++;
+			//		}
 
-					txtQuery.ReplaceSelection(string.Empty);
-				}
-				txtQuery.ReplaceSelection((_intelliBox.SelectedItem as IntellisenseMatch).ShortName);
-			}
-			_intelliBox.Hide();
-			txtQuery.Focus();
+			//		txtQuery.ReplaceSelection(string.Empty);
+			//	}
+			//	txtQuery.ReplaceSelection((_intelliBox.SelectedItem as IntellisenseMatch).ShortName);
+			//}
+			//_intelliBox.Hide();
+			//txtQuery.Focus();
 		}
 
 		private void showIntellisense()
@@ -1003,31 +1001,31 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void TxtQuery_KeyUp(object sender, KeyEventArgs e)
 		{
-			if (_flagIntellisense)
-			{
-				showIntellisense();
-			}
-			if (e.KeyCode == Keys.Enter)
-			{
-				if (txtQuery.SelectionStart > 0 && txtQuery.SelectedText.Length == 0)
-				{
-					int lineStart = txtQuery.SelectionStart - 1;
-					while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
-					{
-						lineStart--;
-					}
-					var indentMatch = Regex.Match(txtQuery.Text.Substring(lineStart, (txtQuery.SelectionStart - lineStart)),
-						"^([ \t]+)");
-					if (indentMatch.Success)
-					{
-						txtQuery.InsertText(txtQuery.SelectionStart, indentMatch.Groups[1].Value);
-						txtQuery.SelectionStart += indentMatch.Groups[1].Value.Length;
-					}
-				}
+			//if (_flagIntellisense)
+			//{
+			//	showIntellisense();
+			//}
+			//if (e.KeyCode == Keys.Enter)
+			//{
+			//	if (txtQuery.SelectionStart > 0 && txtQuery.SelectedText.Length == 0)
+			//	{
+			//		int lineStart = txtQuery.SelectionStart - 1;
+			//		while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
+			//		{
+			//			lineStart--;
+			//		}
+			//		var indentMatch = Regex.Match(txtQuery.Text.Substring(lineStart, (txtQuery.SelectionStart - lineStart)),
+			//			"^([ \t]+)");
+			//		if (indentMatch.Success)
+			//		{
+			//			txtQuery.InsertText(txtQuery.SelectionStart, indentMatch.Groups[1].Value);
+			//			txtQuery.SelectionStart += indentMatch.Groups[1].Value.Length;
+			//		}
+			//	}
 
-			}
+			//}
 
-			_flagIntellisense = false;
+			//_flagIntellisense = false;
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -1062,7 +1060,7 @@ namespace PaJaMa.Database.Studio.Query
 			// Calculate the width required to display the last line number
 			// and include some padding for good measure.
 			const int padding = 2;
-			txtQuery.Margins[0].Width = txtQuery.TextWidth(Style.LineNumber, new string('9', maxLineNumberCharLength + 1)) + padding;
+			// txtQuery.Margins[0].Width = txtQuery.TextWidth(Style.LineNumber, new string('9', maxLineNumberCharLength + 1)) + padding;
 			this.maxLineNumberCharLength = maxLineNumberCharLength;
 		}
 
@@ -1070,38 +1068,38 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			// Indicators 0-7 could be in use by a lexer
 			// so we'll use indicator 8 to highlight words.
-			const int NUM = 8;
+			// const int NUM = 8;
 
 			// Remove all uses of our indicator
-			txtQuery.IndicatorCurrent = NUM;
-			txtQuery.IndicatorClearRange(0, txtQuery.TextLength);
+			//txtQuery.IndicatorCurrent = NUM;
+			//txtQuery.IndicatorClearRange(0, txtQuery.TextLength);
 
-			var text = txtQuery.SelectedText;
-			if (string.IsNullOrEmpty(text)) return;
+			//var text = txtQuery.SelectedText;
+			//if (string.IsNullOrEmpty(text)) return;
 
-			// Update indicator appearance
-			txtQuery.Indicators[NUM].Style = IndicatorStyle.StraightBox;
-			txtQuery.Indicators[NUM].Under = true;
-			txtQuery.Indicators[NUM].ForeColor = Color.Green;
-			txtQuery.Indicators[NUM].OutlineAlpha = 50;
-			txtQuery.Indicators[NUM].Alpha = 30;
+			//// Update indicator appearance
+			//txtQuery.Indicators[NUM].Style = IndicatorStyle.StraightBox;
+			//txtQuery.Indicators[NUM].Under = true;
+			//txtQuery.Indicators[NUM].ForeColor = Color.Green;
+			//txtQuery.Indicators[NUM].OutlineAlpha = 50;
+			//txtQuery.Indicators[NUM].Alpha = 30;
 
-			// Search the document
-			txtQuery.TargetStart = 0;
-			txtQuery.TargetEnd = txtQuery.TextLength;
-			txtQuery.SearchFlags = SearchFlags.None;
-			while (txtQuery.SearchInTarget(text) != -1)
-			{
-				if (txtQuery.TargetStart != txtQuery.SelectionStart)
-				{
-					// Mark the search results with the current indicator
-					txtQuery.IndicatorFillRange(txtQuery.TargetStart, txtQuery.TargetEnd - txtQuery.TargetStart);
-				}
+			//// Search the document
+			//txtQuery.TargetStart = 0;
+			//txtQuery.TargetEnd = txtQuery.TextLength;
+			//txtQuery.SearchFlags = SearchFlags.None;
+			//while (txtQuery.SearchInTarget(text) != -1)
+			//{
+			//	if (txtQuery.TargetStart != txtQuery.SelectionStart)
+			//	{
+			//		// Mark the search results with the current indicator
+			//		txtQuery.IndicatorFillRange(txtQuery.TargetStart, txtQuery.TargetEnd - txtQuery.TargetStart);
+			//	}
 
-				// Search the remainder of the document
-				txtQuery.TargetStart = txtQuery.TargetEnd;
-				txtQuery.TargetEnd = txtQuery.TextLength;
-			}
+			//	// Search the remainder of the document
+			//	txtQuery.TargetStart = txtQuery.TargetEnd;
+			//	txtQuery.TargetEnd = txtQuery.TextLength;
+			// }
 		}
 
 		private void CopyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1128,12 +1126,12 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void WrapTextToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			txtQuery.WrapMode = WrapMode.Word;
+			txtQuery.WordWrap = true;
 		}
 
 		private void UnwrapTextToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			txtQuery.WrapMode = WrapMode.None;
+			txtQuery.WordWrap = false;
 		}
 	}
 }
