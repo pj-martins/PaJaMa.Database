@@ -1,4 +1,5 @@
-﻿using PaJaMa.Database.Library.DatabaseObjects;
+﻿using FastColoredTextBoxNS;
+using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Workspaces;
 using PaJaMa.Database.Studio.Classes;
@@ -20,8 +21,8 @@ namespace PaJaMa.Database.Studio.Query
 {
 	public partial class ucQueryOutput : UserControl
 	{
-		[DllImport("user32.dll")]
-		public static extern bool GetCaretPos(out System.Drawing.Point lpPoint);
+		//[DllImport("user32.dll")]
+		//public static extern bool GetCaretPos(out System.Drawing.Point lpPoint);
 
 		private List<SplitContainer> _splitContainers = new List<SplitContainer>();
 		private bool _lock = false;
@@ -35,6 +36,7 @@ namespace PaJaMa.Database.Studio.Query
 		private ListBox _intelliBox;
 		private IntellisenseHelper _intellisenseHelper;
 		private Dictionary<int, Dictionary<int, string>> _errorDict;
+		// private AutocompleteMenu _autocompleteMenu;
 
 		// private FindReplace _findReplace;
 
@@ -51,6 +53,10 @@ namespace PaJaMa.Database.Studio.Query
 			_intelliBox.Visible = false;
 			_intelliBox.Parent = this;
 			_intelliBox.KeyDown += _intelliBox_KeyDown;
+			//_autocompleteMenu = new AutocompleteMenu(txtQuery);
+			//_autocompleteMenu.MinFragmentLength = 0;
+			//_autocompleteMenu.AllowTabKey = true;
+			//_autocompleteMenu.Selected += delegate (object s, SelectedEventArgs e) { _autocompleteMenu.Items.SetAutocompleteItems(new List<AutocompleteItem>()); };
 		}
 
 		private void btnGo_Click(object sender, EventArgs e)
@@ -158,10 +164,14 @@ namespace PaJaMa.Database.Studio.Query
 				//txtQuery.Styles[Style.Sql.Character].ForeColor = Color.FromArgb(163, 21, 21); // Red
 				//txtQuery.Styles[Style.Sql.Operator].ForeColor = Color.Purple;
 
+
+
 				//var keywords = new List<string>();
 				//keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
 				//keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
 				//txtQuery.SetKeywords(0, string.Join(" ", keywords.ToArray()));
+
+				// txtQuery.Autocom
 
 				//keywords = new List<string>();
 				//keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToUpper()));
@@ -765,6 +775,9 @@ namespace PaJaMa.Database.Studio.Query
 			else if (e.KeyCode == Keys.Space && e.Modifiers == Keys.Control)
 			{
 				_flagIntellisense = true;
+				//_autocompleteMenu.Items.SetAutocompleteItems(_intellisenseHelper.GetIntellisenseMatches(txtQuery.Text, txtQuery.SelectionStart, CurrentConnection)
+				//	.Select(m => new AutocompleteItem(m.ShortName, -1, m.Description)).ToArray());
+			//	e.Handled = true;
 			}
 			else if (e.KeyCode == Keys.Down && _intelliBox.Visible)
 			{
@@ -911,26 +924,26 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void selectIntellisenseItem()
 		{
-			//if (_intelliBox.SelectedItem != null)
-			//{
-			//	var regex = Regex.Match(txtQuery.Text.Substring(0, txtQuery.SelectionStart), IntellisenseHelper.PATTERN);
-			//	if (regex.Success)
-			//	{
-			//		var replace = regex.Groups[2].Value.Split('.').Last();
-			//		txtQuery.SelectionStart = Math.Max(0, txtQuery.SelectionStart - replace.Length);
-			//		txtQuery.SelectionEnd = txtQuery.SelectionStart + replace.Length;
-			//		if (txtQuery.Text.Length > txtQuery.SelectionEnd &&
-			//			_dataSource.SurroundingCharacters.Contains(txtQuery.Text.Substring(txtQuery.SelectionEnd, 1)))
-			//		{
-			//			txtQuery.SelectionEnd++;
-			//		}
+			if (_intelliBox.SelectedItem != null)
+			{
+				var regex = Regex.Match(txtQuery.Text.Substring(0, txtQuery.SelectionStart), IntellisenseHelper.PATTERN);
+				if (regex.Success)
+				{
+					var replace = regex.Groups[2].Value.Split('.').Last();
+					txtQuery.SelectionStart = Math.Max(0, txtQuery.SelectionStart - replace.Length);
+					txtQuery.SelectionLength = replace.Length;
+					if (txtQuery.Text.Length > txtQuery.SelectionStart + txtQuery.SelectionLength &&
+						_dataSource.SurroundingCharacters.Contains(txtQuery.Text.Substring(txtQuery.SelectionStart + txtQuery.SelectionLength, 1)))
+					{
+						txtQuery.SelectionLength++;
+					}
 
-			//		txtQuery.ReplaceSelection(string.Empty);
-			//	}
-			//	txtQuery.ReplaceSelection((_intelliBox.SelectedItem as IntellisenseMatch).ShortName);
-			//}
-			//_intelliBox.Hide();
-			//txtQuery.Focus();
+					txtQuery.SelectedText = string.Empty;
+				}
+				txtQuery.SelectedText = (_intelliBox.SelectedItem as IntellisenseMatch).ShortName;
+			}
+			_intelliBox.Hide();
+			txtQuery.Focus();
 		}
 
 		private void showIntellisense()
@@ -966,8 +979,11 @@ namespace PaJaMa.Database.Studio.Query
 				}
 				if (_intelliBox.Items.Count > 0)
 					_intelliBox.SelectedIndex = 0;
-				Point p = new Point();
-				GetCaretPos(out p);
+				// Point p = new Point();
+				// GetCaretPos(out p);
+				Range fragment = txtQuery.Selection.GetFragment(@"[\w\.]");
+				Point p = txtQuery.PlaceToPoint(fragment.End);
+
 				var measure = txtQuery.CreateGraphics().MeasureString(maxString, txtQuery.Font);
 				_intelliBox.SetBounds(p.X, p.Y + 20, 500, Math.Min(300, Math.Max(32, (int)(measure.Height * _intelliBox.Items.Count))));
 				_intelliBox.Show();
@@ -975,6 +991,7 @@ namespace PaJaMa.Database.Studio.Query
 			}
 			catch (Exception e)
 			{
+				MessageBox.Show("FAILED" + e.Message);
 				// TODO:
 			}
 		}
@@ -1001,10 +1018,10 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void TxtQuery_KeyUp(object sender, KeyEventArgs e)
 		{
-			//if (_flagIntellisense)
-			//{
-			//	showIntellisense();
-			//}
+			if (_flagIntellisense)
+			{
+				showIntellisense();
+			}
 			//if (e.KeyCode == Keys.Enter)
 			//{
 			//	if (txtQuery.SelectionStart > 0 && txtQuery.SelectedText.Length == 0)
@@ -1025,7 +1042,7 @@ namespace PaJaMa.Database.Studio.Query
 
 			//}
 
-			//_flagIntellisense = false;
+			_flagIntellisense = false;
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)

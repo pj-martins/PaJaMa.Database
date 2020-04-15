@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.Linq;
 
 namespace FastColoredTextBoxNS
 {
@@ -59,9 +60,14 @@ namespace FastColoredTextBoxNS
         /// </summary>
         public virtual CompareResult Compare(string fragmentText)
         {
-            if (Text.StartsWith(fragmentText, StringComparison.InvariantCultureIgnoreCase) &&
+            if (Text.ToLower().Contains(fragmentText.ToLower()) &&
                    Text != fragmentText)
                 return CompareResult.VisibleAndSelected;
+
+            if (fragmentText.Contains("."))
+            {
+                return Compare(fragmentText.Split('.').Last());
+            }
 
             return CompareResult.Hidden;
         }
