@@ -3,6 +3,7 @@ using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Workspaces;
 using PaJaMa.Database.Studio.Classes;
+using PaJaMa.WinControls;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -137,50 +138,6 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.Text = queryOutput.Query;
 				txtQuery.ClearUndo();
 
-				//txtQuery.Margins[0].Type = MarginType.Number;
-
-				//// remove conflicting hotkeys from scintilla
-				//txtQuery.ClearCmdKey(Keys.Control | Keys.F);
-				//txtQuery.ClearCmdKey(Keys.Control | Keys.R);
-				//txtQuery.ClearCmdKey(Keys.Control | Keys.H);
-				//txtQuery.ClearCmdKey(Keys.Control | Keys.L);
-				//txtQuery.ClearCmdKey(Keys.Control | Keys.U);
-
-				//// Configure the default style
-				//txtQuery.StyleResetDefault();
-				//txtQuery.Styles[Style.Default].Font = "Consolas";
-				//txtQuery.Styles[Style.Default].Size = 10;
-				//txtQuery.StyleClearAll();
-
-				//// Configure the CPP (C#) lexer styles
-				//txtQuery.Styles[Style.Sql.Default].ForeColor = Color.Silver;
-				//txtQuery.Styles[Style.Sql.Comment].ForeColor = Color.FromArgb(0, 128, 0); // Green
-				//txtQuery.Styles[Style.Sql.CommentLine].ForeColor = Color.FromArgb(0, 128, 0); // Green
-				//txtQuery.Styles[Style.Sql.CommentLineDoc].ForeColor = Color.FromArgb(128, 128, 128); // Gray
-				//txtQuery.Styles[Style.Sql.Number].ForeColor = Color.Olive;
-				//txtQuery.Styles[Style.Sql.Word].ForeColor = Color.Blue;
-				//txtQuery.Styles[Style.Sql.Word2].ForeColor = Color.Blue;
-				//txtQuery.Styles[Style.Sql.String].ForeColor = Color.FromArgb(163, 21, 21); // Red
-				//txtQuery.Styles[Style.Sql.Character].ForeColor = Color.FromArgb(163, 21, 21); // Red
-				//txtQuery.Styles[Style.Sql.Operator].ForeColor = Color.Purple;
-
-
-
-				//var keywords = new List<string>();
-				//keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToUpper()));
-				//keywords.AddRange(_dataSource.GetReservedKeywords().Select(k => k.ToLower()));
-				//txtQuery.SetKeywords(0, string.Join(" ", keywords.ToArray()));
-
-				// txtQuery.Autocom
-
-				//keywords = new List<string>();
-				//keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToUpper()));
-				//keywords.AddRange(_dataSource.ColumnTypes.Select(c => c.TypeName.ToLower()));
-				//txtQuery.SetKeywords(1, string.Join(" ", keywords.ToArray()));
-
-				// _findReplace = new FindReplace(txtQuery);
-				// _findReplace.KeyPressed += _findReplace_KeyPressed;
-
 				_lock = false;
 				return true;
 			}
@@ -254,29 +211,10 @@ namespace PaJaMa.Database.Studio.Query
 						_currentCommand.CommandTimeout = 600000;
 						using (var dr = _currentCommand.ExecuteReader())
 						{
-							// this.Invoke(new Action(() =>
-							// {
-							//if (!_stopRequested && !dr.HasRows)
-							//{
-							//	lblResults.Text = "Complete.";
-							//	lblResults.Visible = true;
-							//	setDatabaseText();
-
-							//	return;
-							//}
 							bool hasNext = true;
 							while (!_stopRequested)
 							{
 								DataTable dt = new DataTable();
-								//var timer = new System.Threading.Timer((object stateInfo) =>
-								//{
-								//	this.Invoke(new Action(() =>
-								//	{
-								//		dt.EndLoadData();
-								//		dt.BeginLoadData();
-								//		Application.DoEvents();
-								//	}));
-								//}, null, 3000, 3000);
 
 								var schema = dr.GetSchemaTable();
 								if (schema == null || !hasNext)
@@ -293,7 +231,6 @@ namespace PaJaMa.Database.Studio.Query
 								{
 									foreach (var row in schema.Rows.OfType<DataRow>())
 									{
-										// int existingCount = dt.Columns.OfType<DataColumn>().Count(c => c.ColumnName == row["ColumnName"].ToString());
 										var colType = Type.GetType(row["DataType"].ToString());
 										if (colType == null || colType.Equals(typeof(byte[])) || colType == typeof(Array))
 											colType = typeof(string);
@@ -305,7 +242,6 @@ namespace PaJaMa.Database.Studio.Query
 											curr++;
 										}
 										dt.Columns.Add(colName, colType);
-										// grid.Columns.Add(colName, row["ColumnName"].ToString());
 									}
 
 									var lastSplit = _splitContainers.LastOrDefault();
@@ -317,13 +253,9 @@ namespace PaJaMa.Database.Studio.Query
 									splitContainer.Panel2Collapsed = true;
 									splitContainer.Panel2MinSize = 0;
 									grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
-									// grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
 									grid.Dock = DockStyle.Fill;
 									grid.AllowUserToAddRows = grid.AllowUserToDeleteRows = false;
 									grid.ReadOnly = true;
-									// grid.VirtualMode = true;
-									// grid.RowCount = 0;
-									// grid.CellValueNeeded += grid_CellValueNeeded;
 									grid.CellFormatting += grid_CellFormatting;
 									grid.DataError += Grid_DataError;
 									grid.RowPostPaint += Grid_RowPostPaint;
@@ -354,7 +286,6 @@ namespace PaJaMa.Database.Studio.Query
 									splitDetails.SplitterDistance = (int)((double)splitDetails.Width * 0.7);
 									grid.DataSource = dt;
 									grid.AutoGenerateColumns = true;
-									// grid.Tag = new List<DataTable>() { dt };
 
 									foreach (DataGridViewColumn col in grid.Columns)
 									{
@@ -404,23 +335,6 @@ namespace PaJaMa.Database.Studio.Query
 
 									dt.Rows.Add(row);
 
-									// if (i % 1000 == 0)
-									//if ((DateTime.Now - lastRefresh).TotalSeconds > 3)
-									//{
-									//	lastRefresh = DateTime.Now;
-									//	dt.EndLoadData();
-									//	// grid.RowCount += dt.Rows.Count;
-									//	dt = dt.Clone();
-									//	// (grid.Tag as List<DataTable>).Add(dt);
-									//	dt.BeginLoadData();
-									//	//dt.EndLoadData();
-									//	//dt.BeginLoadData();
-									//	//Application.DoEvents();
-
-									//	Application.DoEvents();
-									//}
-
-									// if (i % 1000 == 0)
 									if ((DateTime.Now - lastRefresh).TotalSeconds > 2)
 									{
 										lastRefresh = DateTime.Now;
@@ -440,18 +354,11 @@ namespace PaJaMa.Database.Studio.Query
 									Application.DoEvents();
 
 								}));
-
-								// var sum = (grid.Tag as List<DataTable>).Sum(t => t.Rows.Count);
-								// grid.RowCount = sum;
-								// totalResults += sum;
 								totalResults = dt.Rows.Count;
-
-								//grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 
 								if (!_stopRequested)
 									hasNext = dr.NextResult();
 							}
-							// }));
 						}
 						tries = 0;
 					}
@@ -511,25 +418,6 @@ namespace PaJaMa.Database.Studio.Query
 		{
 		}
 
-		//private object getDataTableObject(DataGridView grid, int rowIndex, int colIndex)
-		//{
-		//	var dts = grid.Tag as List<DataTable>;
-		//	if (dts.Count <= 0) return null;
-
-		//	int dtRowIndex = rowIndex;
-		//	int dtTableIndex = 0;
-		//	var dt = dts[dtTableIndex];
-
-		//	while (dtRowIndex >= dt.Rows.Count)
-		//	{
-		//		dtRowIndex -= dt.Rows.Count;
-		//		dtTableIndex++;
-		//		dt = dts[dtTableIndex];
-		//	}
-
-		//	return dt.Rows[dtRowIndex][colIndex];
-		//}
-
 		private void grid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
 		{
 			var grid = sender as DataGridView;
@@ -546,40 +434,6 @@ namespace PaJaMa.Database.Studio.Query
 				e.Value = _errorDict[e.RowIndex][e.ColumnIndex];
 			}
 		}
-
-		//private void grid_CellValueNeeded(object sender, DataGridViewCellValueEventArgs e)
-		//{
-		//	var grid = sender as DataGridView;
-		//	e.Value = getDataTableObject(grid, e.RowIndex, e.ColumnIndex);
-
-		//	var cell = grid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-		//	if (e.Value == DBNull.Value)
-		//	{
-		//		cell.Style.BackColor = Color.LightYellow;
-		//		cell.Style.Font = new Font(grid.Font, FontStyle.Italic);
-		//	}
-
-		//	if (_errorDict.ContainsKey(cell.RowIndex) && _errorDict[cell.RowIndex].ContainsKey(cell.ColumnIndex))
-		//	{
-		//		cell.Style.BackColor = Color.Red;
-		//		e.Value = _errorDict[cell.RowIndex][cell.ColumnIndex];
-		//	}
-
-		//	if (e.Value == DBNull.Value)
-		//		e.Value = "NULL";
-
-		//	grid.Rows[e.RowIndex].HeaderCell.Value = (e.RowIndex + 1).ToString();
-
-		//	//int currPage = 0;
-		//	//int currRow = 0;
-		//	//var currDt = dts[currPage];
-		//	//while (e.RowIndex > currDt.Rows.Count + currRow)
-		//	//{
-		//	//	currPage++;
-		//	//	currRow += currDt.Rows.Count;
-		//	//	currDt = dts[currPage];
-		//	//}
-		//}
 
 		public void SelectTopN(int? topN, TreeNode selectedNode)
 		{
@@ -692,43 +546,26 @@ namespace PaJaMa.Database.Studio.Query
 
 		public void CommentSelected()
 		{
-			//txtQuery.BeginAutoUndo();
-			//int lineStart = txtQuery.SelectionStart;
-			//while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
-			//	lineStart--;
-			//int selectionEnd = txtQuery.SelectionEnd;
-			//for (int i = lineStart; i <= selectionEnd; i++)
-			//{
-			//	if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
-			//	{
-			//		txtQuery.InsertText(i, "-- ");
-			//	}
-			//}
-			//txtQuery.EndAutoUndo();
+			txtQuery.BeginAutoUndo();
+			int fromLine = txtQuery.Selection.FromLine;
+			int toLine = txtQuery.Selection.ToLine;
+			for (int i = Math.Min(fromLine, toLine); i <= Math.Max(fromLine, toLine); i++)
+			{
+				txtQuery.SetSelectedLine(i + 1);
+				txtQuery.InsertText("--");
+			}
+			txtQuery.SetSelectedLine(toLine);
+			txtQuery.EndAutoUndo();
 		}
 
 		public void UnCommentSelected()
 		{
-			//txtQuery.BeginAutoUndo();
-			//int lineStart = txtQuery.SelectionStart;
-			//while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
-			//	lineStart--;
-			//int selectionEnd = txtQuery.SelectionEnd;
-			//for (int i = lineStart; i <= selectionEnd; i++)
-			//{
-			//	if (i == 0 || (i < txtQuery.Text.Length && txtQuery.Text[i - 1] == '\n'))
-			//	{
-			//		if (txtQuery.Text.Substring(i, 2) == "--")
-			//		{
-			//			txtQuery.DeleteRange(i, 2);
-			//		}
-			//		if (txtQuery.Text.Substring(i, 1) == " ")
-			//		{
-			//			txtQuery.DeleteRange(i, 1);
-			//		}
-			//	}
-			//}
-			//txtQuery.EndAutoUndo();
+			txtQuery.BeginAutoUndo();
+			int toLine = txtQuery.Selection.ToLine;
+			// TODO rework
+			txtQuery.SelectedText = txtQuery.SelectedText.Replace("--", "");
+			// txtQuery.SetSelectedLine(toLine);
+			txtQuery.EndAutoUndo();
 		}
 
 		private void txtQuery_KeyDown(object sender, KeyEventArgs e)
@@ -777,7 +614,7 @@ namespace PaJaMa.Database.Studio.Query
 				_flagIntellisense = true;
 				//_autocompleteMenu.Items.SetAutocompleteItems(_intellisenseHelper.GetIntellisenseMatches(txtQuery.Text, txtQuery.SelectionStart, CurrentConnection)
 				//	.Select(m => new AutocompleteItem(m.ShortName, -1, m.Description)).ToArray());
-			//	e.Handled = true;
+				//	e.Handled = true;
 			}
 			else if (e.KeyCode == Keys.Down && _intelliBox.Visible)
 			{
@@ -819,17 +656,27 @@ namespace PaJaMa.Database.Studio.Query
 			//	_findReplace.ShowIncrementalSearch();
 			//	e.SuppressKeyPress = true;
 			//}
-			//else if (e.Control && e.KeyCode == Keys.G)
-			//{
-			//	//GoTo MyGoTo = new GoTo((Scintilla)sender);
-			//	//MyGoTo.ShowGoToDialog();
-			//	e.SuppressKeyPress = true;
-			//}
-			//else if (e.Control && e.KeyCode == Keys.W)
-			//{
-			//	txtQuery.WordWrap = !txtQuery.WordWrap;
-			//	e.SuppressKeyPress = true;
-			//}
+			//else 
+			if (e.Control && e.KeyCode == Keys.G)
+			{
+				//GoTo MyGoTo = new GoTo((Scintilla)sender);
+				//MyGoTo.ShowGoToDialog();
+				var result = InputBox.Show("Enter line number");
+				if (result.Result == DialogResult.OK)
+				{
+					int line = -1;
+					if (int.TryParse(result.Text, out line))
+					{
+						txtQuery.SetSelectedLine(line);
+					}
+				}
+				e.SuppressKeyPress = true;
+			}
+			else if (e.Control && e.KeyCode == Keys.W)
+			{
+				txtQuery.WordWrap = !txtQuery.WordWrap;
+				e.SuppressKeyPress = true;
+			}
 			//else if (e.KeyCode == Keys.A && e.Modifiers == Keys.Control)
 			//	(sender as TextBox).SelectAll();
 		}
@@ -979,8 +826,6 @@ namespace PaJaMa.Database.Studio.Query
 				}
 				if (_intelliBox.Items.Count > 0)
 					_intelliBox.SelectedIndex = 0;
-				// Point p = new Point();
-				// GetCaretPos(out p);
 				Range fragment = txtQuery.Selection.GetFragment(@"[\w\.]");
 				Point p = txtQuery.PlaceToPoint(fragment.End);
 
@@ -1022,26 +867,6 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				showIntellisense();
 			}
-			//if (e.KeyCode == Keys.Enter)
-			//{
-			//	if (txtQuery.SelectionStart > 0 && txtQuery.SelectedText.Length == 0)
-			//	{
-			//		int lineStart = txtQuery.SelectionStart - 1;
-			//		while ((lineStart > 0) && (txtQuery.Text[lineStart - 1] != '\n'))
-			//		{
-			//			lineStart--;
-			//		}
-			//		var indentMatch = Regex.Match(txtQuery.Text.Substring(lineStart, (txtQuery.SelectionStart - lineStart)),
-			//			"^([ \t]+)");
-			//		if (indentMatch.Success)
-			//		{
-			//			txtQuery.InsertText(txtQuery.SelectionStart, indentMatch.Groups[1].Value);
-			//			txtQuery.SelectionStart += indentMatch.Groups[1].Value.Length;
-			//		}
-			//	}
-
-			//}
-
 			_flagIntellisense = false;
 		}
 
