@@ -1,6 +1,6 @@
 ﻿namespace PaJaMa.Database.Studio.Query.QueryBuilder
 {
-	partial class frmScriptInsert
+	partial class frmEditFilter
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -60,11 +60,11 @@
 			this.btnGenerate.Name = "btnGenerate";
 			this.btnGenerate.Size = new System.Drawing.Size(102, 23);
 			this.btnGenerate.TabIndex = 7;
-			this.btnGenerate.Text = "Generate";
+			this.btnGenerate.Text = "Edit";
 			this.btnGenerate.UseVisualStyleBackColor = true;
 			this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
 			// 
-			// frmScriptInsert
+			// frmEditFilter
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -72,9 +72,9 @@
 			this.Controls.Add(this.btnGenerate);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.txtFilter);
-			this.Name = "frmScriptInsert";
+			this.Name = "frmEditFilter";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Script Insert";
+			this.Text = "Edit Rows";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

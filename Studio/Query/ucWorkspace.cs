@@ -32,6 +32,7 @@ namespace PaJaMa.Database.Studio.Query
 		private string _initialConnString;
 		private Type _initialDbType;
 		private DataSource _dataSource;
+		private List<DataGridViewCellEventArgs> _changedCells = new List<DataGridViewCellEventArgs>();
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		public static extern int GetScrollPos(IntPtr hWnd, int nBar);
@@ -1100,6 +1101,123 @@ namespace PaJaMa.Database.Studio.Query
 			var tag = treeTables.SelectedNode.Tag as Library.DatabaseObjects.Database;
 			txtSearchDatabase.Text = tag.DatabaseName;
 			pnlSearch.Visible = true;
+		}
+
+		private void editRowsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var frm = new frmEditFilter();
+			frm.Table = treeTables.SelectedNode.Tag as Table;
+			frm.Connection = _currentConnection;
+			frm.FormClosed += (object sender2, FormClosedEventArgs e2) =>
+			{
+				if (frm.DialogResult == DialogResult.OK)
+				{
+					var output = addQueryOutput(null, new QueryOutput() { Database = frm.Table.Database.DatabaseName, Query = frm.Script });
+					output.txtQuery.ReadOnly = true;
+					output.QueryExecuted += new EventHandler<QueryExecutedEventArgs>((sender3, e3) =>
+					{
+						_changedCells = new List<DataGridViewCellEventArgs>();
+						output.txtQuery.ReadOnly = false;
+						output.txtQuery.Text = frm.Script;
+						output.txtQuery.ReadOnly = true;
+						if (!frm.Table.KeyConstraints.Any())
+						{
+							frm.Table.Database.DataSource.PopulateKeysForTable(_currentConnection, frm.Table);
+						}
+						if (!frm.Table.KeyConstraints.Any())
+						{
+							MessageBox.Show("No primary keys!");
+							return;
+						}
+						e3.Grids[0].Tag = new Tuple<Table, string>(frm.Table, output.txtQuery.Text);
+						e3.Grids[0].ReadOnly = false;
+						e3.Grids[0].CellValueChanged += UcWorkspace_CellValueChanged;
+						foreach (var constraint in frm.Table.KeyConstraints)
+						{
+							foreach (var col in constraint.Columns)
+							{
+								e3.Grids[0].Columns[col.ColumnName].ReadOnly = true;
+								e3.Grids[0].Columns[col.ColumnName].DefaultCellStyle.BackColor = Color.LightGray;
+							}
+						}
+
+					});
+					output.ExecuteQuery();
+				}
+			};
+			frm.Show();
+		}
+
+
+		private void UcWorkspace_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+		{
+			var curr = _changedCells.Find(cc => cc.RowIndex == e.RowIndex && cc.ColumnIndex == e.ColumnIndex);
+			if (curr != null)
+			{
+				_changedCells.Remove(curr);
+			}
+			_changedCells.Add(e);
+			var grid = sender as DataGridView;
+			grid.KeyDown -= changedGrid_KeyDown;
+			grid.KeyDown += changedGrid_KeyDown;
+			grid.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.LightYellow;
+			var tbl = grid.Tag as Tuple<Table, string>;
+			var dbName = tbl.Item1.Database.DataSource.GetConvertedObjectName(tbl.Item1.Database.DatabaseName);
+			var objName = tbl.Item1.GetObjectNameWithSchema(tbl.Item1.Database.DataSource);
+			var indQueries = _changedCells.GroupBy(cc => cc.RowIndex);
+			var sb = new StringBuilder();
+			foreach (var q in indQueries)
+			{
+				var qry = string.Format(@"UPDATE {0}{1} SET ", string.IsNullOrEmpty(dbName) ? string.Empty : dbName + ".", objName);
+				bool firstIn = true;
+				foreach (var cc in q)
+				{
+					if (!firstIn)
+					{
+						qry += ", ";
+					}
+					firstIn = false;
+					qry += tbl.Item1.Database.DataSource.GetConvertedObjectName(grid.Columns[cc.ColumnIndex].Name);
+					qry += " = " + grid.Rows[cc.RowIndex].Cells[cc.ColumnIndex].Value;
+				}
+				qry += " WHERE ";
+				firstIn = true;
+				foreach (var k in tbl.Item1.KeyConstraints)
+				{
+					foreach (var col in k.Columns)
+					{
+						if (!firstIn)
+						{
+							qry += " AND ";
+						}
+						firstIn = false;
+						qry += tbl.Item1.Database.DataSource.GetConvertedObjectName(col.ColumnName) + " = " + (grid.Rows[q.Key].Cells[col.ColumnName].Value == DBNull.Value ? "null" :
+							string.Format("'{0}'", grid.Rows[q.Key].Cells[col.ColumnName].Value.ToString().Replace("'", "\\'")));
+					}
+				}
+				qry += ";\r\n";
+				sb.AppendLine(qry);
+			}
+
+			sb.AppendLine(tbl.Item2 + ";");
+
+			var output = tabOutputs.SelectedTab.Controls[0] as ucQueryOutput;
+			output.txtQuery.ReadOnly = false;
+			output.txtQuery.Text = sb.ToString();
+			output.txtQuery.ReadOnly = true;
+		}
+
+		private void changedGrid_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Escape)
+			{
+				var grid = sender as DataGridView;
+				if (grid.Tag == null) return;
+				var tbl = grid.Tag as Tuple<Table, string>;
+				var output = tabOutputs.SelectedTab.Controls[0] as ucQueryOutput;
+				output.txtQuery.Text = tbl.Item2;
+				output.ExecuteQuery();
+			}
 		}
 	}
 }

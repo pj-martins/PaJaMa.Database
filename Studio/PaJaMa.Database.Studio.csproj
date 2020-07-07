@@ -267,6 +267,12 @@
     <Compile Include="Query\frmSearchResults.Designer.cs">
       <DependentUpon>frmSearchResults.cs</DependentUpon>
     </Compile>
+    <Compile Include="Query\QueryBuilder\frmEditFilter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Query\QueryBuilder\frmEditFilter.Designer.cs">
+      <DependentUpon>frmEditFilter.cs</DependentUpon>
+    </Compile>
     <Compile Include="Query\QueryBuilder\frmScriptInsert.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -417,6 +423,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Query\frmSearchResults.resx">
       <DependentUpon>frmSearchResults.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Query\QueryBuilder\frmEditFilter.resx">
+      <DependentUpon>frmEditFilter.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Query\QueryBuilder\frmScriptInsert.resx">
       <DependentUpon>frmScriptInsert.cs</DependentUpon>
