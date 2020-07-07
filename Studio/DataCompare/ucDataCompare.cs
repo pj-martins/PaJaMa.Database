@@ -214,7 +214,10 @@ namespace PaJaMa.Database.Studio.DataCompare
 				}
 			}
 
-			gridTables.DataSource = new BindingList<TableWorkspace>(lst.Workspaces.OrderBy(w => w.SourceTable.ToString()).ToList());
+			gridTables.DataSource = new BindingList<TableWorkspace>(
+				lst.Workspaces
+				.Where(ws => ws.TargetTable != null)
+				.OrderBy(w => w.SourceTable.ToString()).ToList());
 		}
 
 		private void btnGo_Click(object sender, EventArgs e)
