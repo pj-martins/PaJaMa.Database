@@ -29,9 +29,29 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 		{
 			try
 			{
-				if (!Table.Columns.Any())
-					Table.Database.DataSource.PopulateChildColumns(Connection, Table);
-				var dbName = Table.Database.DataSource.GetConvertedObjectName(Table.Database.DatabaseName);
+				var ds = Table.Database.DataSource;
+				var whereClause = string.Empty;
+				if (tabMain.SelectedIndex == 0)
+				{
+					var firstIn = true;
+					foreach (DataGridViewRow row in gridColumns.Rows)
+					{
+						var oper = row.Cells["Operator"].Value?.ToString();
+						var val = row.Cells["Value"].Value?.ToString();
+						if (!string.IsNullOrEmpty(oper) && !string.IsNullOrEmpty(val))
+						{
+							whereClause += firstIn ? "WHERE " : " AND ";
+							whereClause += ds.GetConvertedObjectName(row.Cells["ColumnName"].Value.ToString()) + " "
+								+ oper + string.Format(" {0}", oper == "LIKE" ? $"'%{val}%'" : $"'{val}'");
+						}
+					}
+				}
+				else
+				{
+					whereClause = txtFilter.Text;
+				}
+
+				var dbName = ds.GetConvertedObjectName(Table.Database.DatabaseName);
 				Connection.ChangeDatabase(Table.Database.DatabaseName);
 				var objName = Table.GetObjectNameWithSchema(Table.Database.DataSource);
 				var columns = Table.Columns.Select(c => c.ColumnName).ToArray();
@@ -39,7 +59,7 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 				Script = string.Format("SELECT *\r\nFROM {1}{0} {2}",
 					objName,
 					string.IsNullOrEmpty(dbName) ? string.Empty : dbName + ".",
-					txtFilter.Text
+					whereClause
 					);
 
 				this.DialogResult = DialogResult.OK;
@@ -49,6 +69,15 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 			{
 				MessageBox.Show("Invalid filter");
 			}
+		}
+
+		private void frmEditFilter_Load(object sender, EventArgs e)
+		{
+			if (!Table.Columns.Any())
+				Table.Database.DataSource.PopulateChildColumns(Connection, Table);
+
+			gridColumns.AutoGenerateColumns = false;
+			gridColumns.DataSource = Table.Columns.Take(100).ToList();
 		}
 	}
 }
