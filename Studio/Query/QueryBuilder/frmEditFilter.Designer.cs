@@ -33,15 +33,16 @@
 			this.btnGenerate = new System.Windows.Forms.Button();
 			this.tabMain = new System.Windows.Forms.TabControl();
 			this.pageFilter = new System.Windows.Forms.TabPage();
-			this.pageCustom = new System.Windows.Forms.TabPage();
 			this.gridColumns = new System.Windows.Forms.DataGridView();
+			this.pageCustom = new System.Windows.Forms.TabPage();
+			this.Key = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.Operator = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.tabMain.SuspendLayout();
 			this.pageFilter.SuspendLayout();
-			this.pageCustom.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.gridColumns)).BeginInit();
+			this.pageCustom.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// txtFilter
@@ -67,7 +68,7 @@
 			// btnGenerate
 			// 
 			this.btnGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnGenerate.Location = new System.Drawing.Point(319, 315);
+			this.btnGenerate.Location = new System.Drawing.Point(376, 350);
 			this.btnGenerate.Name = "btnGenerate";
 			this.btnGenerate.Size = new System.Drawing.Size(102, 23);
 			this.btnGenerate.TabIndex = 7;
@@ -85,7 +86,7 @@
 			this.tabMain.Location = new System.Drawing.Point(12, 12);
 			this.tabMain.Name = "tabMain";
 			this.tabMain.SelectedIndex = 0;
-			this.tabMain.Size = new System.Drawing.Size(409, 297);
+			this.tabMain.Size = new System.Drawing.Size(466, 332);
 			this.tabMain.TabIndex = 8;
 			// 
 			// pageFilter
@@ -94,10 +95,26 @@
 			this.pageFilter.Location = new System.Drawing.Point(4, 22);
 			this.pageFilter.Name = "pageFilter";
 			this.pageFilter.Padding = new System.Windows.Forms.Padding(3);
-			this.pageFilter.Size = new System.Drawing.Size(401, 271);
+			this.pageFilter.Size = new System.Drawing.Size(458, 306);
 			this.pageFilter.TabIndex = 0;
 			this.pageFilter.Text = "Filter";
 			this.pageFilter.UseVisualStyleBackColor = true;
+			// 
+			// gridColumns
+			// 
+			this.gridColumns.AllowUserToAddRows = false;
+			this.gridColumns.AllowUserToDeleteRows = false;
+			this.gridColumns.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.gridColumns.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.Key,
+            this.ColumnName,
+            this.Operator,
+            this.Value});
+			this.gridColumns.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.gridColumns.Location = new System.Drawing.Point(3, 3);
+			this.gridColumns.Name = "gridColumns";
+			this.gridColumns.Size = new System.Drawing.Size(452, 300);
+			this.gridColumns.TabIndex = 0;
 			// 
 			// pageCustom
 			// 
@@ -111,20 +128,12 @@
 			this.pageCustom.Text = "Custom";
 			this.pageCustom.UseVisualStyleBackColor = true;
 			// 
-			// gridColumns
+			// Key
 			// 
-			this.gridColumns.AllowUserToAddRows = false;
-			this.gridColumns.AllowUserToDeleteRows = false;
-			this.gridColumns.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.gridColumns.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.ColumnName,
-            this.Operator,
-            this.Value});
-			this.gridColumns.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.gridColumns.Location = new System.Drawing.Point(3, 3);
-			this.gridColumns.Name = "gridColumns";
-			this.gridColumns.Size = new System.Drawing.Size(395, 265);
-			this.gridColumns.TabIndex = 0;
+			this.Key.HeaderText = "Key";
+			this.Key.Name = "Key";
+			this.Key.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.Key.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
 			// 
 			// ColumnName
 			// 
@@ -152,7 +161,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(433, 350);
+			this.ClientSize = new System.Drawing.Size(490, 385);
 			this.Controls.Add(this.tabMain);
 			this.Controls.Add(this.btnGenerate);
 			this.Name = "frmEditFilter";
@@ -161,9 +170,9 @@
 			this.Load += new System.EventHandler(this.frmEditFilter_Load);
 			this.tabMain.ResumeLayout(false);
 			this.pageFilter.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.gridColumns)).EndInit();
 			this.pageCustom.ResumeLayout(false);
 			this.pageCustom.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.gridColumns)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -176,6 +185,7 @@
 		private System.Windows.Forms.TabPage pageFilter;
 		private System.Windows.Forms.TabPage pageCustom;
 		private System.Windows.Forms.DataGridView gridColumns;
+		private System.Windows.Forms.DataGridViewCheckBoxColumn Key;
 		private System.Windows.Forms.DataGridViewTextBoxColumn ColumnName;
 		private System.Windows.Forms.DataGridViewComboBoxColumn Operator;
 		private System.Windows.Forms.DataGridViewTextBoxColumn Value;

@@ -1112,6 +1112,13 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				if (frm.DialogResult == DialogResult.OK)
 				{
+					var keyedColumns = frm.GetKeyedColumns();
+					if (!keyedColumns.Any())
+					{
+						MessageBox.Show("No keys selected!");
+						return;
+					}
+
 					var output = addQueryOutput(null, new QueryOutput() { Database = frm.Table.Database.DatabaseName, Query = frm.Script });
 					output.txtQuery.ReadOnly = true;
 					output.QueryExecuted += new EventHandler<QueryExecutedEventArgs>((sender3, e3) =>
@@ -1120,30 +1127,17 @@ namespace PaJaMa.Database.Studio.Query
 						output.txtQuery.ReadOnly = false;
 						output.txtQuery.Text = frm.Script;
 						output.txtQuery.ReadOnly = true;
-						if (!frm.Table.KeyConstraints.Any())
-						{
-							frm.Table.Database.DataSource.PopulateKeysForTable(_currentConnection, frm.Table);
-						}
-						if (!frm.Table.KeyConstraints.Any())
-						{
-							MessageBox.Show("No primary keys!");
-							return;
-						}
-						e3.Grids[0].Tag = new Tuple<Table, string>(frm.Table, output.txtQuery.Text);
+						e3.Grids[0].Tag = new Tuple<Table, string, List<Column>>(frm.Table, output.txtQuery.Text, keyedColumns);
 						e3.Grids[0].ReadOnly = false;
 						e3.Grids[0].CellValueChanged += gridEdit_CellValueChanged;
 						e3.Grids[0].UserDeletingRow += gridEdit_UserDeletingRow;
 						e3.Grids[0].RowsAdded += gridEdit_RowsAdded;
 						e3.Grids[0].AllowUserToAddRows = e3.Grids[0].AllowUserToDeleteRows = true;
-						foreach (var constraint in frm.Table.KeyConstraints)
+						foreach (var col in keyedColumns)
 						{
-							foreach (var col in constraint.Columns)
-							{
-								// e3.Grids[0].Columns[col.ColumnName].ReadOnly = true;
-								e3.Grids[0].Columns[col.ColumnName].DefaultCellStyle.BackColor = Color.LightGray;
-							}
+							// e3.Grids[0].Columns[col.ColumnName].ReadOnly = true;
+							e3.Grids[0].Columns[col.ColumnName].DefaultCellStyle.BackColor = Color.LightGray;
 						}
-
 					});
 					output.ExecuteQuery();
 				}
@@ -1151,7 +1145,7 @@ namespace PaJaMa.Database.Studio.Query
 			frm.Show();
 		}
 
-		private ChangeOperation getChangeOperation(Tuple<Table, string> tbl, DataGridViewRow row)
+		private ChangeOperation getChangeOperation(Tuple<Table, string, List<Column>> tbl, DataGridViewRow row)
 		{
 			if (row.Tag is ChangeOperation)
 			{
@@ -1159,12 +1153,9 @@ namespace PaJaMa.Database.Studio.Query
 			}
 			var currentChange = new ChangeOperation();
 			_changes.Add(currentChange);
-			foreach (var k in tbl.Item1.KeyConstraints)
+			foreach (var col in tbl.Item3)
 			{
-				foreach (var col in k.Columns)
-				{
-					currentChange.KeyValues.Add(col.ColumnName, row.Cells[col.ColumnName].Value);
-				}
+				currentChange.KeyValues.Add(col.ColumnName, row.Cells[col.ColumnName].Value);
 			}
 
 			row.Tag = currentChange;
@@ -1181,7 +1172,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void gridEdit_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
 		{
-			var tbl = (sender as DataGridView).Tag as Tuple<Table, string>;
+			var tbl = (sender as DataGridView).Tag as Tuple<Table, string, List<Column>>;
 			var change = this.getChangeOperation(tbl, e.Row);
 			change.ChangeType = ChangeType.Delete;
 			this.generateChangeQuery(tbl);
@@ -1194,7 +1185,7 @@ namespace PaJaMa.Database.Studio.Query
 			grid.KeyDown += changedGrid_KeyDown;
 			var row = grid.Rows[e.RowIndex];
 			row.Cells[e.ColumnIndex].Style.BackColor = Color.LightYellow;
-			var tbl = grid.Tag as Tuple<Table, string>;
+			var tbl = grid.Tag as Tuple<Table, string, List<Column>>;
 			var dbName = tbl.Item1.Database.DataSource.GetConvertedObjectName(tbl.Item1.Database.DatabaseName);
 			var objName = tbl.Item1.GetObjectNameWithSchema(tbl.Item1.Database.DataSource);
 
@@ -1234,7 +1225,7 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		private void generateChangeQuery(Tuple<Table, string> tbl)
+		private void generateChangeQuery(Tuple<Table, string, List<Column>> tbl)
 		{
 			var dbName = tbl.Item1.Database.DataSource.GetConvertedObjectName(tbl.Item1.Database.DatabaseName);
 			var objName = tbl.Item1.GetObjectNameWithSchema(tbl.Item1.Database.DataSource);

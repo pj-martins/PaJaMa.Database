@@ -76,8 +76,26 @@ namespace PaJaMa.Database.Studio.Query.QueryBuilder
 			if (!Table.Columns.Any())
 				Table.Database.DataSource.PopulateChildColumns(Connection, Table);
 
+			if (!Table.KeyConstraints.Any())
+				Table.Database.DataSource.PopulateKeysForTable(Connection, Table);
+
 			gridColumns.AutoGenerateColumns = false;
 			gridColumns.DataSource = Table.Columns.Take(100).ToList();
+			foreach (DataGridViewRow row in gridColumns.Rows)
+			{
+				if (Table.KeyConstraints.Any(kc => kc.Columns.Any(c => c.ColumnName == (row.DataBoundItem as Column).ColumnName)))
+				{
+					row.Cells["Key"].Value = true;
+				}
+			}
+		}
+
+		public List<Column> GetKeyedColumns()
+		{
+			return gridColumns.Rows.OfType<DataGridViewRow>()
+				.Where(r => (bool)(r.Cells["Key"].Value ?? false) == true)
+				.Select(r => r.DataBoundItem as Column)
+				.ToList();
 		}
 	}
 }
