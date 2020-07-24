@@ -110,7 +110,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 		public string WhereClause { get; set; }
 
 		public TableWorkspace(CompareHelper compareHelper, Table sourceTable, DatabaseObjects.Database targetDatabase, Table targetTable,
-			bool ignoreCase, bool forData) : base(sourceTable, targetDatabase, targetTable, ignoreCase, forData)
+			bool ignoreCase, bool forData, bool condensed) : base(sourceTable, targetDatabase, targetTable, ignoreCase, forData, condensed)
 		{
 			_compareHelper = compareHelper;
 		}
@@ -170,7 +170,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			DropWorkspaces = new List<DropWorkspace>();
 		}
 
-		public static TableWorkspaceList GetTableWorkspaces(CompareHelper compareHelper, bool forData)
+		public static TableWorkspaceList GetTableWorkspaces(CompareHelper compareHelper, bool forData, bool condensed)
 		{
 			var lst = new TableWorkspaceList();
 
@@ -188,7 +188,7 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 			{
 				Table sourceTable = tbl;
 				Table targetTable = toTbls.FirstOrDefault(t => t.TableName == tbl.TableName && t.Schema.MappedSchemaName == tbl.Schema.MappedSchemaName);
-				lst.Workspaces.Add(new TableWorkspace(compareHelper, sourceTable, compareHelper.ToDataSource.CurrentDatabase, targetTable, compareHelper.IgnoreCase, forData));
+				lst.Workspaces.Add(new TableWorkspace(compareHelper, sourceTable, compareHelper.ToDataSource.CurrentDatabase, targetTable, compareHelper.IgnoreCase, forData, condensed));
 			}
 
 			foreach (var table in toTbls

@@ -270,8 +270,9 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 		};
 
 		internal override string CombinedSQL => $@"
-SELECT z.*, TABLE_NAME AS TableName, COLUMN_NAME AS ColumnName, c.TABLE_SCHEMA as SchemaName
+SELECT z.*, c.TABLE_NAME AS TableName, COLUMN_NAME AS ColumnName, c.TABLE_SCHEMA as SchemaName
 FROM information_schema.columns c
+JOIN information_schema.tables t ON t.table_name = c.table_name and t.table_schema = c.table_schema
 LEFT JOIN (
 SELECT DISTINCT fk.name AS ForeignKeyName, ct.name AS ChildTableName, cc.name AS ChildColumnName, pt.name AS ParentTableName, 
 	pc.name AS ParentColumnName, 
@@ -296,6 +297,7 @@ ON z.ChildTableName = c.table_name
 	AND z.ChildColumnName = c.column_name
 	AND z.SCHEMA_NAME = c.TABLE_SCHEMA
 WHERE c.TABLE_SCHEMA not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})
+	AND t.table_type = 'BASE TABLE'
 ";
 
 		public override string GetConvertedObjectName(string objectName)

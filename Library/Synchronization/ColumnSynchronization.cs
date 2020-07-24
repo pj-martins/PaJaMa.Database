@@ -27,7 +27,7 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetCreateItems()
 		{
-			return GetAddAlterItems(null, false);
+			return GetAddAlterItems(null, false, false);
 		}
 
 
@@ -46,7 +46,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return def;
 		}
 
-		public List<SynchronizationItem> GetAddAlterItems(Column targetColumn, bool ignoreCase)
+		public List<SynchronizationItem> GetAddAlterItems(Column targetColumn, bool ignoreCase, bool condensed)
 		{
 			var items = new List<SynchronizationItem>();
 
@@ -88,6 +88,16 @@ namespace PaJaMa.Database.Library.Synchronization
 			else
 				differences = base.GetPropertyDifferences(targetColumn, ignoreCase);
 
+			if (condensed && differences.Any())
+			{
+				differences = differences.Where(x => x.PropertyName != "ColumnDefault").ToList();
+			}
+
+			if (differences.Any())
+			{
+
+			}
+
 			// case mismatch
 			if (!ignoreCase && targetColumn != null && targetColumn.ColumnName != DatabaseObject.ColumnName)
 			{
@@ -128,7 +138,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					var colType = TargetDatabase.DataSource.ColumnTypes.First(c => c.DataType == DatabaseObject.ColumnType.DataType);
 					hasTempConstraint = true;
-					if (TargetDatabase.DataSource.NamedConstraints)
+					if (TargetDatabase.DataSource.DefaultNamedConstraints)
 					{
 						tempConstraint = "constraint_" + Guid.NewGuid().ToString().Replace("-", "_");
 						DatabaseObject.ConstraintName = tempConstraint;
@@ -149,7 +159,10 @@ namespace PaJaMa.Database.Library.Synchronization
 				defConstraint.Table = DatabaseObject.Parent as Table;
 				defConstraint.Column = DatabaseObject;
 				var defSync = new DefaultConstraintSynchronization(TargetDatabase, defConstraint);
+				var currNamed = TargetDatabase.DataSource.NamedConstraints;
+				TargetDatabase.DataSource.NamedConstraints = TargetDatabase.DataSource.DefaultNamedConstraints;
 				sb.AppendLine(defSync.GetRawDropText());
+				TargetDatabase.DataSource.NamedConstraints = currNamed;
 			}
 
 			item = new SynchronizationItem(DatabaseObject);
@@ -165,7 +178,7 @@ namespace PaJaMa.Database.Library.Synchronization
 				item.AddScript(10, syncItem.GetRawCreateText());
 			}
 
-			if (targetColumn != null)
+			if (targetColumn != null && !condensed)
 			{
 				var dcs = (DatabaseObject.Parent as Table).DefaultConstraints.Where(dc => dc.Column.ColumnName == DatabaseObject.ColumnName);
 				foreach (var dc in dcs)
@@ -179,9 +192,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
-			return GetAddAlterItems(target as Column, ignoreCase);
+			return GetAddAlterItems(target as Column, ignoreCase, condensed);
 		}
 	}
 }

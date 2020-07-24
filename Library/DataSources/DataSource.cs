@@ -374,6 +374,8 @@ namespace PaJaMa.Database.Library.DataSources
 								if (!tbl.Columns.Any(c => c.ColumnName == col.ColumnName))
 								{
 									col.Schema = schema;
+									col.ColumnType = database.DataSource.GetColumnType(rdr["DataType"].ToString(), col.ColumnDefault);
+									col.Parent = tbl;
 									tbl.Columns.Add(col);
 								}
 
@@ -383,7 +385,7 @@ namespace PaJaMa.Database.Library.DataSources
 									// TODO: WHY???
 									if (fk.ParentTableSchema == "tmp" || fk.ChildTableSchema == "tmp") continue;
 									fk.Schema = schema;
-									tbl.ForeignKeys.Add(fk);
+									// tbl.ForeignKeys.Add(fk);
 									fks.Add(fk);
 								}
 								
@@ -406,13 +408,20 @@ namespace PaJaMa.Database.Library.DataSources
 				{
 					fk.ParentTable = database.Schemas.Find(s => s.SchemaName == fk.ParentTableSchema).Tables.Find(t => t.TableName == fk.ParentTableName);
 					fk.ChildTable = database.Schemas.Find(s => s.SchemaName == fk.ChildTableSchema).Tables.Find(t => t.TableName == fk.ChildTableName);
-					// TODO: multiple
 					fk.Columns.Add(new ForeignKeyColumn()
 					{
 						ChildColumn = fk.ChildTable.Columns.First(c => c.ColumnName == fk.ChildColumnName),
 						ParentColumn = fk.ParentTable.Columns.First(c => c.ColumnName == fk.ParentColumnName)
 					});
-					fk.ChildTable.ForeignKeys.Add(fk);
+					var curr = fk.ChildTable.ForeignKeys.FirstOrDefault(x => x.ForeignKeyName == fk.ForeignKeyName);
+					if (curr != null)
+					{
+						curr.Columns.AddRange(fk.Columns);
+					}
+					else
+					{
+						fk.ChildTable.ForeignKeys.Add(fk);
+					}
 				}
 			}
 		}

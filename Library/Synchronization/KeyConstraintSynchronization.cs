@@ -50,9 +50,10 @@ namespace PaJaMa.Database.Library.Synchronization
 				DatabaseObject.ConstraintName), sourceParent);
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
-			var items = base.GetAlterItems(target, ignoreCase);
+			if (target != null && condensed) return new List<SynchronizationItem>();
+			var items = base.GetAlterItems(target, ignoreCase, condensed);
 			if (target != null)
 			{
 				var targetKey = target as KeyConstraint;

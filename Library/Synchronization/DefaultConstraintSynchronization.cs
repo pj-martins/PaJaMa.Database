@@ -1,5 +1,6 @@
 ﻿using PaJaMa.Common;
 using PaJaMa.Database.Library.DatabaseObjects;
+using PaJaMa.Database.Library.DataSources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,7 +53,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override string GetRawDropText()
 		{
 			// TODO: what else applies to?
-			if (!TargetDatabase.DataSource.NamedConstraints)
+			if (!TargetDatabase.DataSource.GetType().Equals(typeof(SqlServerDataSource)) && !TargetDatabase.DataSource.NamedConstraints)
 			{
 				return string.Format(@"ALTER TABLE {0} ALTER COLUMN {1} DROP DEFAULT;",
 					DatabaseObject.Table.GetObjectNameWithSchema(TargetDatabase.DataSource), DatabaseObject.Column.GetQueryObjectName(TargetDatabase.DataSource));

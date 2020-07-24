@@ -30,7 +30,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			sourceParent);
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
 			var diffs = GetPropertyDifferences(target, ignoreCase);
 			var diff = getColumnDifference(target);

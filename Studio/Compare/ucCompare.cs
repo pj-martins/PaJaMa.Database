@@ -213,7 +213,7 @@ namespace PaJaMa.Database.Studio.Compare
 
 		private void refreshTables(List<DropWorkspace> dropWorkspaces)
 		{
-			var lst = TableWorkspaceList.GetTableWorkspaces(_compareHelper, false);
+			var lst = TableWorkspaceList.GetTableWorkspaces(_compareHelper, false, chkCondensed.Checked);
 
 			foreach (var dw in lst.DropWorkspaces)
 			{
