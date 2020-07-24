@@ -374,7 +374,7 @@ namespace PaJaMa.Database.Library.DataSources
 								if (!tbl.Columns.Any(c => c.ColumnName == col.ColumnName))
 								{
 									col.Schema = schema;
-									col.ColumnType = database.DataSource.GetColumnType(rdr["DataType"].ToString(), col.ColumnDefault);
+									// col.ColumnType = database.DataSource.GetColumnType(rdr["DataType"].ToString(), col.ColumnDefault);
 									col.Parent = tbl;
 									tbl.Columns.Add(col);
 								}
