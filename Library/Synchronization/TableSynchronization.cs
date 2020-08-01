@@ -583,7 +583,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
 			var dbName = DatabaseObject.Database.DataSource.GetConvertedObjectName(DatabaseObject.Database.DatabaseName);
-			return getStandardDropItems(string.Format("DROP TABLE {1}{0}",
+			return getStandardDropItems(string.Format("DROP TABLE {1}{0};",
 				DatabaseObject.GetObjectNameWithSchema(TargetDatabase.DataSource),
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				), sourceParent);

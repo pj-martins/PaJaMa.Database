@@ -903,10 +903,10 @@ namespace PaJaMa.Database.Studio.Query
 						foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
 						{
 							var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
-							sb.AppendLine(dcSyncItem.GetRawDropText() + ";");
+							sb.AppendLine(dcSyncItem.GetRawDropText());
 						}
 					}
-					sb.AppendLine(syncItem.GetRawDropText() + ";");
+					sb.AppendLine(syncItem.GetRawDropText());
 				}
 			}
 			if (sb.Length > 0)
