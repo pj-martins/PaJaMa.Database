@@ -888,22 +888,30 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var tag = treeTables.SelectedNode.Tag as DatabaseObjectBase;
-			if (tag != null)
+			var sb = new StringBuilder();
+			string databaseName = string.Empty;
+			foreach (var node in treeTables.SelectedNodes)
 			{
-				var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
-				var sb = new StringBuilder();
-				if (tag is Column col && !string.IsNullOrEmpty(col.ColumnDefault) && col.Parent is Table tbl)
+				var tag = node.Tag as DatabaseObjectBase;
+				if (tag != null)
 				{
-					if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
-					foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+					databaseName = tag.Database.DatabaseName;
+					var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
+					if (tag is Column col && !string.IsNullOrEmpty(col.ColumnDefault) && col.Parent is Table tbl)
 					{
-						var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
-						sb.AppendLine(dcSyncItem.GetRawDropText() + ";");
+						if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
+						foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+						{
+							var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
+							sb.AppendLine(dcSyncItem.GetRawDropText() + ";");
+						}
 					}
+					sb.AppendLine(syncItem.GetRawDropText() + ";");
 				}
-				sb.AppendLine(syncItem.GetRawDropText());
-				addQueryOutput(null, new QueryOutput() { Database = tag.Database.DatabaseName, Query = sb.ToString() });
+			}
+			if (sb.Length > 0)
+			{
+				addQueryOutput(null, new QueryOutput() { Database = databaseName, Query = sb.ToString() });
 			}
 		}
 

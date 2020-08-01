@@ -342,6 +342,7 @@
 			this.chkNamedConstraints.TabIndex = 9;
 			this.chkNamedConstraints.Text = "Named Constraints";
 			this.chkNamedConstraints.UseVisualStyleBackColor = true;
+			this.chkNamedConstraints.Checked = true;
 			// 
 			// chkCaseInsensitive
 			// 
