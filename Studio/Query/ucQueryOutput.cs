@@ -126,7 +126,7 @@ namespace PaJaMa.Database.Studio.Query
 				cboDatabases.Items.Clear();
 				cboDatabases.Items.AddRange(dataSource.Databases.ToArray());
 
-				if (!string.IsNullOrEmpty(queryOutput.Database) && queryOutput.Database != CurrentConnection.Database)
+				if (!string.IsNullOrEmpty(queryOutput.Database) && queryOutput.Database != CurrentConnection.Database && dataSource.Databases.Any(d => d.DatabaseName == queryOutput.Database))
 					CurrentConnection.ChangeDatabase(queryOutput.Database);
 
 				_lock = true;

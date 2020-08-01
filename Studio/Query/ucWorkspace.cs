@@ -132,6 +132,8 @@ namespace PaJaMa.Database.Studio.Query
 				}
 			}
 
+			tabOutputs.TabPages.Clear();
+
 			splitMain.Enabled = false;
 			treeTables.Nodes.Clear();
 		}
@@ -168,10 +170,12 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
+			var dlgResult = MessageBox.Show("Load previous queries?", "Loading queries", MessageBoxButtons.YesNo);
+
 			tabOutputs.Visible = true;
 			if (tabOutputs.TabPages.Count < 1)
 			{
-				if (Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
+				if (dlgResult == DialogResult.Yes && Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
 				{
 					foreach (var queryOutput in Settings.QueryOutputs[txtConnectionString.Text])
 					{
@@ -897,13 +901,22 @@ namespace PaJaMa.Database.Studio.Query
 				{
 					databaseName = tag.Database.DatabaseName;
 					var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
-					if (tag is Column col && !string.IsNullOrEmpty(col.ColumnDefault) && col.Parent is Table tbl)
+					if (tag is Column col && col.Parent is Table tbl)
 					{
-						if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
-						foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+						if (!string.IsNullOrEmpty(col.ColumnDefault))
 						{
-							var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
-							sb.AppendLine(dcSyncItem.GetRawDropText());
+							if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
+							foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+							{
+								var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
+								sb.AppendLine(dcSyncItem.GetRawDropText());
+							}
+						}
+						if (!tbl.ForeignKeys.Any()) tbl.Database.DataSource.PopulateForeignKeysForTable(_currentConnection, tbl);
+						foreach (var fk in tbl.ForeignKeys.Where(x => x.ChildColumnName == col.ColumnName || x.ParentColumnName == col.ColumnName))
+						{
+							var fkSyncItem = new ForeignKeySynchronization(tag.Database, fk);
+							sb.AppendLine(fkSyncItem.GetRawDropText());
 						}
 					}
 					sb.AppendLine(syncItem.GetRawDropText());
