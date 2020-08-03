@@ -19,9 +19,11 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
-			return getStandardDropItems(string.Format("ALTER TABLE {0} DROP COLUMN {1};",
+			var dbName = DatabaseObject.Database.DataSource.GetConvertedObjectName(DatabaseObject.Database.DatabaseName);
+			return getStandardDropItems(string.Format("ALTER TABLE {2}{0} DROP COLUMN {1};",
 						DatabaseObject.Parent.GetObjectNameWithSchema(TargetDatabase.DataSource),
-						DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource)),
+						DatabaseObject.GetQueryObjectName(TargetDatabase.DataSource),
+						string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."),
 						sourceParent, 1);
 		}
 

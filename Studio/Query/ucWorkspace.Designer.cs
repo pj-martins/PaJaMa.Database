@@ -39,7 +39,7 @@
 			this.pnlControls = new System.Windows.Forms.Panel();
 			this.txtReadonlyConnString = new System.Windows.Forms.TextBox();
 			this.btnSearch = new System.Windows.Forms.Button();
-			this.treeTables = new System.Windows.Forms.TreeView();
+			this.treeTables = new WinControls.MultiSelectTreeView();
 			this.mnuTree = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.selectTop1000ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -474,7 +474,7 @@
 		private System.Windows.Forms.Button btnConnect;
 		private System.Windows.Forms.Button btnDisconnect;
 		private System.Windows.Forms.Panel pnlControls;
-		private System.Windows.Forms.TreeView treeTables;
+		private PaJaMa.WinControls.MultiSelectTreeView treeTables;
 		private System.Windows.Forms.SplitContainer splitMain;
 		private System.Windows.Forms.ContextMenuStrip mnuTree;
 		private System.Windows.Forms.ToolStripMenuItem selectTop1000ToolStripMenuItem;

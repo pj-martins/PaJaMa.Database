@@ -132,6 +132,8 @@ namespace PaJaMa.Database.Studio.Query
 				}
 			}
 
+			tabOutputs.TabPages.Clear();
+
 			splitMain.Enabled = false;
 			treeTables.Nodes.Clear();
 		}
@@ -168,10 +170,12 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
+			var dlgResult = MessageBox.Show("Load previous queries?", "Loading queries", MessageBoxButtons.YesNo);
+
 			tabOutputs.Visible = true;
 			if (tabOutputs.TabPages.Count < 1)
 			{
-				if (Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
+				if (dlgResult == DialogResult.Yes && Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
 				{
 					foreach (var queryOutput in Settings.QueryOutputs[txtConnectionString.Text])
 					{
@@ -888,22 +892,39 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var tag = treeTables.SelectedNode.Tag as DatabaseObjectBase;
-			if (tag != null)
+			var sb = new StringBuilder();
+			string databaseName = string.Empty;
+			foreach (var node in treeTables.SelectedNodes)
 			{
-				var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
-				var sb = new StringBuilder();
-				if (tag is Column col && !string.IsNullOrEmpty(col.ColumnDefault) && col.Parent is Table tbl)
+				var tag = node.Tag as DatabaseObjectBase;
+				if (tag != null)
 				{
-					if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
-					foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+					databaseName = tag.Database.DatabaseName;
+					var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
+					if (tag is Column col && col.Parent is Table tbl)
 					{
-						var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
-						sb.AppendLine(dcSyncItem.GetRawDropText() + ";");
+						if (!string.IsNullOrEmpty(col.ColumnDefault))
+						{
+							if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
+							foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+							{
+								var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
+								sb.AppendLine(dcSyncItem.GetRawDropText());
+							}
+						}
+						if (!tbl.ForeignKeys.Any()) tbl.Database.DataSource.PopulateForeignKeysForTable(_currentConnection, tbl);
+						foreach (var fk in tbl.ForeignKeys.Where(x => x.ChildColumnName == col.ColumnName || x.ParentColumnName == col.ColumnName))
+						{
+							var fkSyncItem = new ForeignKeySynchronization(tag.Database, fk);
+							sb.AppendLine(fkSyncItem.GetRawDropText());
+						}
 					}
+					sb.AppendLine(syncItem.GetRawDropText());
 				}
-				sb.AppendLine(syncItem.GetRawDropText());
-				addQueryOutput(null, new QueryOutput() { Database = tag.Database.DatabaseName, Query = sb.ToString() });
+			}
+			if (sb.Length > 0)
+			{
+				addQueryOutput(null, new QueryOutput() { Database = databaseName, Query = sb.ToString() });
 			}
 		}
 
