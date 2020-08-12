@@ -52,7 +52,8 @@ namespace PaJaMa.Database.Studio.Classes
 						schema = db.Schemas[0];
 						if (!noSchema)
 						{
-							if (parts.Length > 2) schema = db.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == stripSurroundingChars(parts[1]));
+							if (parts.Length > 2) schema = db.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == (string.IsNullOrEmpty(parts[1]) ? 
+								db.DataSource.DefaultSchemaName : stripSurroundingChars(parts[1])));
 							if (schema == null && parts.Length > 1) schema = db.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == stripSurroundingChars(parts[0]));
 							if (schema == null) schema = db.Schemas.FirstOrDefault(s => s.SchemaName.ToLower() == db.DataSource.DefaultSchemaName.ToLower());
 						}
@@ -118,7 +119,8 @@ namespace PaJaMa.Database.Studio.Classes
 					var noSchema = selectedDb.Schemas.Count == 1 && string.IsNullOrEmpty(selectedDb.Schemas[0].SchemaName);
 					if (periodParts.Length > 2 && !noSchema)
 					{
-						var childSchema = selectedDb.Schemas.FirstOrDefault(s => s.SchemaName == stripSurroundingChars(periodParts[1]));
+						var childSchema = selectedDb.Schemas.FirstOrDefault(s => s.SchemaName == (string.IsNullOrEmpty(periodParts[1]) ? 
+							selectedDb.DataSource.DefaultSchemaName : stripSurroundingChars(periodParts[1])));
 						if (childSchema != null)
 						{
 							matches.AddRange(getSortObjects<Table>(childSchema.Tables, partial).Select(t => new IntellisenseMatch(_dataSource.GetConvertedObjectName(t.TableName),
