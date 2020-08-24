@@ -38,7 +38,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 					else
 					{
-						var toItems = new ExtendedPropertySynchronization(targetObject.Database, fromProp).GetSynchronizationItems(toProperty, true);
+						var toItems = new ExtendedPropertySynchronization(targetObject.Database, fromProp).GetSynchronizationItems(toProperty, true, false);
 						if (toItems.Any())
 							items.AddRange(toItems);
 
@@ -58,8 +58,9 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
+			if (condensed) return new List<SynchronizationItem>();
 			var differences = base.GetPropertyDifferences(target, ignoreCase);
 			if (DatabaseObject.IgnoreSchema)
 			{
@@ -80,9 +81,10 @@ namespace PaJaMa.Database.Library.Synchronization
 			return new List<SynchronizationItem>();
 		}
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
-			var items = base.GetSynchronizationItems(target, ignoreCase);
+			if (condensed) return new List<SynchronizationItem>();
+			var items = base.GetSynchronizationItems(target, ignoreCase, condensed);
 			var ext = target as ExtendedProperty;
 			if ((ext.PropValue != null && DatabaseObject.PropValue == null) || (ext.PropValue == null && DatabaseObject.PropValue != null) ||
 				(ext.PropValue != null && DatabaseObject.PropValue != null && ext.PropValue.ToString().Trim() != DatabaseObject.PropValue.ToString().Trim()))

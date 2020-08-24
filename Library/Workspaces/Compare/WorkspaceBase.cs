@@ -42,19 +42,19 @@ namespace PaJaMa.Database.Library.Workspaces.Compare
 	{
 		public virtual DatabaseObjectBase SourceObject { get; set; }
 		public WorkspaceWithSourceBase(DatabaseObjectBase sourceObject, DatabaseObjects.Database targetDatabase, DatabaseObjectBase targetObject,
-			bool ignoreCase, bool forData) : base(targetDatabase, targetObject)
+			bool ignoreCase, bool forData, bool condensed) : base(targetDatabase, targetObject)
 		{
 			SourceObject = sourceObject;
 			if (!forData)
 			{
-				populateDifferences(ignoreCase);
+				populateDifferences(ignoreCase, condensed);
 			}
 		}
 
-		private void populateDifferences(bool ignoreCase)
+		private void populateDifferences(bool ignoreCase, bool condensed)
 		{
 			var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(TargetDatabase, SourceObject);
-			SynchronizationItems.AddRange(syncItem.GetSynchronizationItems(TargetObject, ignoreCase));
+			SynchronizationItems.AddRange(syncItem.GetSynchronizationItems(TargetObject, ignoreCase, condensed));
 
 			if (SourceObject is DatabaseObjectWithExtendedProperties)
 				SynchronizationItems.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(TargetDatabase, SourceObject as DatabaseObjectWithExtendedProperties,

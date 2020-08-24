@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 
 namespace PaJaMa.Database.Studio.Classes
 {
@@ -14,4 +15,9 @@ namespace PaJaMa.Database.Studio.Classes
 	}
 
 	public delegate void QueryEventHandler(object sender, QueryEventArgs e);
+
+	public class QueryExecutedEventArgs : EventArgs
+	{
+		public List<DataGridView> Grids { get; set; }
+	}
 }

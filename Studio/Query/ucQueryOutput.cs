@@ -43,6 +43,7 @@ namespace PaJaMa.Database.Studio.Query
 		public DbConnection CurrentConnection;
 		public ucWorkspace Workspace { get; set; }
 		public QueryOutput QueryOutput { get; set; }
+		public EventHandler<QueryExecutedEventArgs> QueryExecuted;
 
 		public const string PATTERN = "(.* |^|\n|.)([A-Za-z]+)$";
 
@@ -125,7 +126,7 @@ namespace PaJaMa.Database.Studio.Query
 				cboDatabases.Items.Clear();
 				cboDatabases.Items.AddRange(dataSource.Databases.ToArray());
 
-				if (!string.IsNullOrEmpty(queryOutput.Database) && queryOutput.Database != CurrentConnection.Database)
+				if (!string.IsNullOrEmpty(queryOutput.Database) && queryOutput.Database != CurrentConnection.Database && dataSource.Databases.Any(d => d.DatabaseName == queryOutput.Database))
 					CurrentConnection.ChangeDatabase(queryOutput.Database);
 
 				_lock = true;
@@ -233,6 +234,7 @@ namespace PaJaMa.Database.Studio.Query
 			var sbErrors = new StringBuilder();
 			int tries = 2;
 			bool hasTable = false;
+			var createdGrids = new List<DataGridView>();
 			foreach (var part in parts)
 			{
 				while (tries > 0)
@@ -281,6 +283,7 @@ namespace PaJaMa.Database.Studio.Query
 								hasTable = true;
 
 								var grid = new DataGridView();
+								createdGrids.Add(grid);
 								this.Invoke(new Action(() =>
 								{
 									foreach (var row in schema.Rows.OfType<DataRow>())
@@ -480,6 +483,7 @@ namespace PaJaMa.Database.Studio.Query
 				txtQuery.Focus();
 				this.Parent.Text = this.Parent.Text.Replace(" (Executing)", "");
 				populateDetailPanels();
+				this.QueryExecuted?.Invoke(this, new QueryExecutedEventArgs() { Grids = createdGrids });
 			}));
 		}
 
@@ -1134,6 +1138,11 @@ namespace PaJaMa.Database.Studio.Query
 		private void UnwrapTextToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			txtQuery.WrapMode = WrapMode.None;
+		}
+
+		public void ExecuteQuery()
+		{
+			btnGo_Click(btnGo, new EventArgs());
 		}
 	}
 }

@@ -16,8 +16,9 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
+			if (condensed) return new List<SynchronizationItem>();
 			var items = new List<SynchronizationItem>();
 			var propDifferences = GetPropertyDifferences(target, ignoreCase);
 			if (propDifferences.Any())

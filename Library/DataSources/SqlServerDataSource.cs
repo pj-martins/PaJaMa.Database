@@ -269,7 +269,36 @@ left join {0}.sys.server_principals sp on sp.sid = dp.sid
 "db_denydatawriter"
 		};
 
-		internal override string CombinedSQL => throw new NotImplementedException();
+		internal override string CombinedSQL => $@"
+SELECT z.*, c.TABLE_NAME AS TableName, COLUMN_NAME AS ColumnName, c.TABLE_SCHEMA as SchemaName
+FROM information_schema.columns c
+JOIN information_schema.tables t ON t.table_name = c.table_name and t.table_schema = c.table_schema
+LEFT JOIN (
+SELECT DISTINCT fk.name AS ForeignKeyName, ct.name AS ChildTableName, cc.name AS ChildColumnName, pt.name AS ParentTableName, 
+	pc.name AS ParentColumnName, 
+	REPLACE(update_referential_action_desc, '_', ' ') AS UpdateRule,
+	REPLACE(delete_referential_action_desc, '_', ' ') AS DeleteRule,
+	CASE WHEN is_not_trusted = 1 THEN 'NO' ELSE '' END AS WithCheck,
+	ps.name AS ParentTableSchema,
+	cs.name AS ChildTableSchema,
+    ps.name AS SCHEMA_NAME
+FROM {{0}}.sys.foreign_keys fk
+JOIN {{0}}.sys.tables ct ON ct.object_id = fk.parent_object_id
+JOIN {{0}}.sys.tables pt ON pt.object_id = fk.referenced_object_id
+JOIN {{0}}.sys.foreign_key_columns fkc ON fkc.constraint_object_id = fk.object_id
+JOIN {{0}}.sys.all_columns cc ON cc.object_id = fkc.parent_object_id
+	AND cc.column_id = fkc.parent_column_id
+JOIN {{0}}.sys.all_columns pc ON pc.object_id = fkc.referenced_object_id
+	AND pc.column_id = fkc.referenced_column_id
+JOIN {{0}}.sys.schemas cs ON cs.schema_id = ct.schema_id
+JOIN {{0}}.sys.schemas ps ON ps.schema_id = pt.schema_id
+) z
+ON z.ChildTableName = c.table_name
+	AND z.ChildColumnName = c.column_name
+	AND z.SCHEMA_NAME = c.TABLE_SCHEMA
+WHERE c.TABLE_SCHEMA not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})
+	AND t.table_type = 'BASE TABLE'
+";
 
 		public override string GetConvertedObjectName(string objectName)
 		{

@@ -32,6 +32,8 @@
 			this.splitQuery = new System.Windows.Forms.SplitContainer();
 			this.txtQuery = new ScintillaNET.Scintilla();
 			this.mnuQuery = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.wrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.unwrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.pnlResults = new System.Windows.Forms.Panel();
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabResults = new System.Windows.Forms.TabPage();
@@ -50,8 +52,6 @@
 			this.mnuGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyAllWithheadersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.wrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.unwrapTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).BeginInit();
 			this.splitQuery.Panel1.SuspendLayout();
 			this.splitQuery.Panel2.SuspendLayout();
@@ -106,7 +106,21 @@
             this.wrapTextToolStripMenuItem,
             this.unwrapTextToolStripMenuItem});
 			this.mnuQuery.Name = "mnuQuery";
-			this.mnuQuery.Size = new System.Drawing.Size(181, 70);
+			this.mnuQuery.Size = new System.Drawing.Size(140, 48);
+			// 
+			// wrapTextToolStripMenuItem
+			// 
+			this.wrapTextToolStripMenuItem.Name = "wrapTextToolStripMenuItem";
+			this.wrapTextToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+			this.wrapTextToolStripMenuItem.Text = "&Wrap Text";
+			this.wrapTextToolStripMenuItem.Click += new System.EventHandler(this.WrapTextToolStripMenuItem_Click);
+			// 
+			// unwrapTextToolStripMenuItem
+			// 
+			this.unwrapTextToolStripMenuItem.Name = "unwrapTextToolStripMenuItem";
+			this.unwrapTextToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+			this.unwrapTextToolStripMenuItem.Text = "&Unwrap Text";
+			this.unwrapTextToolStripMenuItem.Click += new System.EventHandler(this.UnwrapTextToolStripMenuItem_Click);
 			// 
 			// pnlResults
 			// 
@@ -296,20 +310,6 @@
 			this.copyAllWithheadersToolStripMenuItem.Text = "Copy with &headers";
 			this.copyAllWithheadersToolStripMenuItem.Click += new System.EventHandler(this.CopyWithheadersToolStripMenuItem_Click);
 			// 
-			// wrapTextToolStripMenuItem
-			// 
-			this.wrapTextToolStripMenuItem.Name = "wrapTextToolStripMenuItem";
-			this.wrapTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.wrapTextToolStripMenuItem.Text = "&Wrap Text";
-			this.wrapTextToolStripMenuItem.Click += new System.EventHandler(this.WrapTextToolStripMenuItem_Click);
-			// 
-			// unwrapTextToolStripMenuItem
-			// 
-			this.unwrapTextToolStripMenuItem.Name = "unwrapTextToolStripMenuItem";
-			this.unwrapTextToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.unwrapTextToolStripMenuItem.Text = "&Unwrap Text";
-			this.unwrapTextToolStripMenuItem.Click += new System.EventHandler(this.UnwrapTextToolStripMenuItem_Click);
-			// 
 			// ucQueryOutput
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -345,7 +345,6 @@
 		private System.Windows.Forms.ProgressBar progMain;
 		private System.Windows.Forms.Button btnGo;
 		private System.Windows.Forms.Timer timDuration;
-		private ScintillaNET.Scintilla txtQuery;
 		private System.Windows.Forms.Label lblDatabase;
 		internal System.Windows.Forms.ComboBox cboDatabases;
 		private System.Windows.Forms.TabControl tabControl1;
@@ -359,5 +358,6 @@
 		private System.Windows.Forms.ContextMenuStrip mnuQuery;
 		private System.Windows.Forms.ToolStripMenuItem wrapTextToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem unwrapTextToolStripMenuItem;
+		internal ScintillaNET.Scintilla txtQuery;
 	}
 }

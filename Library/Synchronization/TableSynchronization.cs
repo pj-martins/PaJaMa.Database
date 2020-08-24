@@ -98,7 +98,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return items;
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
 			var targetTable = target as Table;
 
@@ -183,7 +183,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					}
 					if (tk != null)
 					{
-						items.AddRange(new ForeignKeySynchronization(TargetDatabase, fk).GetSynchronizationItems(tk, ignoreCase));
+						items.AddRange(new ForeignKeySynchronization(TargetDatabase, fk).GetSynchronizationItems(tk, ignoreCase, condensed));
 					}
 					else
 					{
@@ -207,12 +207,12 @@ namespace PaJaMa.Database.Library.Synchronization
 					var tc = targetTable.Columns.FirstOrDefault(c => string.Compare(c.ColumnName, fc.ColumnName, ignoreCase) == 0);
 					if (tc == null)
 					{
-						items.AddRange(new ColumnSynchronization(TargetDatabase, fc).GetAddAlterItems(null, ignoreCase));
+						items.AddRange(new ColumnSynchronization(TargetDatabase, fc).GetAddAlterItems(null, ignoreCase, false));
 						_createdColumns.Add(fc.ColumnName);
 					}
 					else
 					{
-						var alteredItems = new ColumnSynchronization(TargetDatabase, fc).GetSynchronizationItems(tc, ignoreCase);
+						var alteredItems = new ColumnSynchronization(TargetDatabase, fc).GetSynchronizationItems(tc, ignoreCase, condensed);
 						if (alteredItems.Any())
 						{
 							items.AddRange(alteredItems);
@@ -223,14 +223,17 @@ namespace PaJaMa.Database.Library.Synchronization
 			}
 
 			if (!recreate)
-				items.AddRange(getKeyConstraintUpdateItems(targetTable, ignoreCase));
+				items.AddRange(getKeyConstraintUpdateItems(targetTable, ignoreCase, condensed));
 
-			items.AddRange(getIndexCreateUpdateItems(targetTable, ignoreCase));
-			items.AddRange(getDefaultConstraintCreateUpdateItems(targetTable, ignoreCase));
-			items.AddRange(getTriggerUpdateItems(targetTable, ignoreCase));
-			foreach (var column in DatabaseObject.Columns)
+			if (!condensed)
 			{
-				items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(TargetDatabase, column, targetTable == null ? null : targetTable.Columns.FirstOrDefault(c => c.ColumnName == column.ColumnName)));
+				items.AddRange(getIndexCreateUpdateItems(targetTable, ignoreCase));
+				items.AddRange(getDefaultConstraintCreateUpdateItems(targetTable, ignoreCase));
+				items.AddRange(getTriggerUpdateItems(targetTable, ignoreCase));
+				foreach (var column in DatabaseObject.Columns)
+				{
+					items.AddRange(ExtendedPropertySynchronization.GetExtendedProperties(TargetDatabase, column, targetTable == null ? null : targetTable.Columns.FirstOrDefault(c => c.ColumnName == column.ColumnName)));
+				}
 			}
 			TargetDatabase.DataSource.CheckUnnecessaryItems(items);
 			return items;
@@ -340,7 +343,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			return item;
 		}
 
-		private List<SynchronizationItem> getKeyConstraintUpdateItems(Table targetTable, bool ignoreCase)
+		private List<SynchronizationItem> getKeyConstraintUpdateItems(Table targetTable, bool ignoreCase, bool condensed)
 		{
 			var items = new List<SynchronizationItem>();
 
@@ -352,7 +355,17 @@ namespace PaJaMa.Database.Library.Synchronization
 				{
 					bool drop = false;
 					Difference diff = null;
-					var fromConstraint = DatabaseObject.KeyConstraints.FirstOrDefault(c => string.Compare(c.ConstraintName, toConstraint.ConstraintName, ignoreCase) == 0);
+					KeyConstraint fromConstraint = null;
+					if (!DatabaseObject.Database.DataSource.NamedConstraints || !targetTable.Database.DataSource.NamedConstraints)
+					{
+						fromConstraint = DatabaseObject.KeyConstraints.FirstOrDefault(c =>
+							c.Columns.All(x => toConstraint.Columns.Any(y => y.ColumnName == x.ColumnName)) &&
+							toConstraint.Columns.All(x => c.Columns.Any(y => y.ColumnName == x.ColumnName)));
+					}
+					else
+					{
+						fromConstraint = DatabaseObject.KeyConstraints.FirstOrDefault(c => string.Compare(c.ConstraintName, toConstraint.ConstraintName, ignoreCase) == 0);
+					}
 					if (fromConstraint == null)
 						drop = true;
 					else if (DataSourcesAreDifferent && fromConstraint.Columns.Any(c => !toConstraint.Columns.Any(t => string.Compare(t.ColumnName, c.ColumnName, ignoreCase) == 0
@@ -371,7 +384,7 @@ namespace PaJaMa.Database.Library.Synchronization
 						var item = new SynchronizationItem(toConstraint);
 						items.Add(item);
 						item.Differences.Add(diff);
-						foreach (var constraintItem in new KeyConstraintSynchronization(TargetDatabase, fromConstraint).GetAlterItems(toConstraint, ignoreCase))
+						foreach (var constraintItem in new KeyConstraintSynchronization(TargetDatabase, fromConstraint).GetAlterItems(toConstraint, ignoreCase, condensed))
 						{
 							foreach (var script in constraintItem.Scripts)
 							{
@@ -559,7 +572,7 @@ namespace PaJaMa.Database.Library.Synchronization
 					if (fromTrigger == null)
 						drop = true;
 					else
-						items.AddRange(new TriggerSynchronization(TargetDatabase, fromTrigger).GetSynchronizationItems(toTrigger, ignoreCase));
+						items.AddRange(new TriggerSynchronization(TargetDatabase, fromTrigger).GetSynchronizationItems(toTrigger, ignoreCase, false));
 
 					if (drop)
 						items.AddRange(new TriggerSynchronization(TargetDatabase, toTrigger).GetDropItems(DatabaseObject));
@@ -582,8 +595,11 @@ namespace PaJaMa.Database.Library.Synchronization
 
 		public override List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
 		{
-			return getStandardDropItems(string.Format("DROP TABLE {0}", DatabaseObject.GetObjectNameWithSchema(TargetDatabase.DataSource)),
-				sourceParent);
+			var dbName = DatabaseObject.Database.DataSource.GetConvertedObjectName(DatabaseObject.Database.DatabaseName);
+			return getStandardDropItems(string.Format("DROP TABLE {1}{0}",
+				DatabaseObject.GetObjectNameWithSchema(TargetDatabase.DataSource),
+				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
+				), sourceParent);
 		}
 
 		public override List<DatabaseObjectBase> GetMissingDependencies(List<DatabaseObjectBase> existingTargetObjects, List<SynchronizationItem> selectedItems,

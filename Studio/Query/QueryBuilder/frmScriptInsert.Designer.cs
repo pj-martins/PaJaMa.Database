@@ -74,7 +74,7 @@
 			this.Controls.Add(this.txtFilter);
 			this.Name = "frmScriptInsert";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Rename";
+			this.Text = "Script Insert";
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

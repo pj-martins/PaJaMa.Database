@@ -32,6 +32,7 @@ namespace PaJaMa.Database.Studio.Query
 		private string _initialConnString;
 		private Type _initialDbType;
 		private DataSource _dataSource;
+		private List<ChangeOperation> _changes = new List<ChangeOperation>();
 
 		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		public static extern int GetScrollPos(IntPtr hWnd, int nBar);
@@ -131,6 +132,8 @@ namespace PaJaMa.Database.Studio.Query
 				}
 			}
 
+			tabOutputs.TabPages.Clear();
+
 			splitMain.Enabled = false;
 			treeTables.Nodes.Clear();
 		}
@@ -167,10 +170,12 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
+			var dlgResult = MessageBox.Show("Load previous queries?", "Loading queries", MessageBoxButtons.YesNo);
+
 			tabOutputs.Visible = true;
 			if (tabOutputs.TabPages.Count < 1)
 			{
-				if (Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
+				if (dlgResult == DialogResult.Yes && Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
 				{
 					foreach (var queryOutput in Settings.QueryOutputs[txtConnectionString.Text])
 					{
@@ -887,22 +892,39 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var tag = treeTables.SelectedNode.Tag as DatabaseObjectBase;
-			if (tag != null)
+			var sb = new StringBuilder();
+			string databaseName = string.Empty;
+			foreach (var node in treeTables.SelectedNodes)
 			{
-				var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
-				var sb = new StringBuilder();
-				if (tag is Column col && !string.IsNullOrEmpty(col.ColumnDefault) && col.Parent is Table tbl)
+				var tag = node.Tag as DatabaseObjectBase;
+				if (tag != null)
 				{
-					if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
-					foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+					databaseName = tag.Database.DatabaseName;
+					var syncItem = DatabaseObjectSynchronizationBase.GetSynchronization(tag.Database, tag);
+					if (tag is Column col && col.Parent is Table tbl)
 					{
-						var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
-						sb.AppendLine(dcSyncItem.GetRawDropText() + ";");
+						if (!string.IsNullOrEmpty(col.ColumnDefault))
+						{
+							if (!tbl.DefaultConstraints.Any()) tbl.Database.DataSource.PopulateConstraintsForTable(_currentConnection, tbl);
+							foreach (var dc in tbl.DefaultConstraints.Where(dc => dc.Column.ColumnName == col.ColumnName))
+							{
+								var dcSyncItem = new DefaultConstraintSynchronization(tag.Database, dc);
+								sb.AppendLine(dcSyncItem.GetRawDropText());
+							}
+						}
+						if (!tbl.ForeignKeys.Any()) tbl.Database.DataSource.PopulateForeignKeysForTable(_currentConnection, tbl);
+						foreach (var fk in tbl.ForeignKeys.Where(x => x.ChildColumnName == col.ColumnName || x.ParentColumnName == col.ColumnName))
+						{
+							var fkSyncItem = new ForeignKeySynchronization(tag.Database, fk);
+							sb.AppendLine(fkSyncItem.GetRawDropText());
+						}
 					}
+					sb.AppendLine(syncItem.GetRawDropText());
 				}
-				sb.AppendLine(syncItem.GetRawDropText());
-				addQueryOutput(null, new QueryOutput() { Database = tag.Database.DatabaseName, Query = sb.ToString() });
+			}
+			if (sb.Length > 0)
+			{
+				addQueryOutput(null, new QueryOutput() { Database = databaseName, Query = sb.ToString() });
 			}
 		}
 
@@ -1100,6 +1122,204 @@ namespace PaJaMa.Database.Studio.Query
 			var tag = treeTables.SelectedNode.Tag as Library.DatabaseObjects.Database;
 			txtSearchDatabase.Text = tag.DatabaseName;
 			pnlSearch.Visible = true;
+		}
+
+		private void editRowsToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var frm = new frmEditFilter();
+			frm.Table = treeTables.SelectedNode.Tag as Table;
+			frm.Connection = _currentConnection;
+			frm.FormClosed += (object sender2, FormClosedEventArgs e2) =>
+			{
+				if (frm.DialogResult == DialogResult.OK)
+				{
+					var keyedColumns = frm.GetKeyedColumns();
+					if (!keyedColumns.Any())
+					{
+						MessageBox.Show("No keys selected!");
+						return;
+					}
+
+					var output = addQueryOutput(null, new QueryOutput() { Database = frm.Table.Database.DatabaseName, Query = frm.Script });
+					output.txtQuery.ReadOnly = true;
+					output.QueryExecuted += new EventHandler<QueryExecutedEventArgs>((sender3, e3) =>
+					{
+						_changes = new List<ChangeOperation>();
+						output.txtQuery.ReadOnly = false;
+						output.txtQuery.Text = frm.Script;
+						output.txtQuery.ReadOnly = true;
+						e3.Grids[0].Tag = new Tuple<Table, string, List<Column>>(frm.Table, output.txtQuery.Text, keyedColumns);
+						e3.Grids[0].ReadOnly = false;
+						e3.Grids[0].CellValueChanged += gridEdit_CellValueChanged;
+						e3.Grids[0].UserDeletingRow += gridEdit_UserDeletingRow;
+						e3.Grids[0].RowsAdded += gridEdit_RowsAdded;
+						e3.Grids[0].AllowUserToAddRows = e3.Grids[0].AllowUserToDeleteRows = true;
+						foreach (var col in keyedColumns)
+						{
+							// e3.Grids[0].Columns[col.ColumnName].ReadOnly = true;
+							e3.Grids[0].Columns[col.ColumnName].DefaultCellStyle.BackColor = Color.LightGray;
+						}
+					});
+					output.ExecuteQuery();
+				}
+			};
+			frm.Show();
+		}
+
+		private ChangeOperation getChangeOperation(Tuple<Table, string, List<Column>> tbl, DataGridViewRow row)
+		{
+			if (row.Tag is ChangeOperation)
+			{
+				return row.Tag as ChangeOperation;
+			}
+			var currentChange = new ChangeOperation();
+			_changes.Add(currentChange);
+			foreach (var col in tbl.Item3)
+			{
+				currentChange.KeyValues.Add(col.ColumnName, row.Cells[col.ColumnName].Value);
+			}
+
+			row.Tag = currentChange;
+
+			return currentChange;
+		}
+
+		private void gridEdit_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+		{
+			var operation = new ChangeOperation();
+			operation.ChangeType = ChangeType.Add;
+			(sender as DataGridView).Rows[e.RowIndex].Tag = operation;
+		}
+
+		private void gridEdit_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
+		{
+			var tbl = (sender as DataGridView).Tag as Tuple<Table, string, List<Column>>;
+			var change = this.getChangeOperation(tbl, e.Row);
+			change.ChangeType = ChangeType.Delete;
+			this.generateChangeQuery(tbl);
+		}
+
+		private void gridEdit_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+		{
+			var grid = sender as DataGridView;
+			grid.KeyDown -= changedGrid_KeyDown;
+			grid.KeyDown += changedGrid_KeyDown;
+			var row = grid.Rows[e.RowIndex];
+			row.Cells[e.ColumnIndex].Style.BackColor = Color.LightYellow;
+			var tbl = grid.Tag as Tuple<Table, string, List<Column>>;
+			var dbName = tbl.Item1.Database.DataSource.GetConvertedObjectName(tbl.Item1.Database.DatabaseName);
+			var objName = tbl.Item1.GetObjectNameWithSchema(tbl.Item1.Database.DataSource);
+
+			ChangeOperation currentChange = this.getChangeOperation(tbl, row);
+			if (currentChange.ChangeType == ChangeType.Add)
+			{
+				if (!_changes.Contains(currentChange))
+				{
+					_changes.Add(currentChange);
+				}
+			}
+			else
+			{
+				currentChange.ChangeType = ChangeType.Edit;
+			}
+
+			var currentColumn = grid.Columns[e.ColumnIndex];
+			if (!currentChange.ColumnValues.ContainsKey(currentColumn.Name))
+			{
+				currentChange.ColumnValues.Add(currentColumn.Name, null);
+			}
+
+			currentChange.ColumnValues[currentColumn.Name] = grid.Rows[e.RowIndex].Cells[currentColumn.Name].Value;
+			this.generateChangeQuery(tbl);
+		}
+
+		private void changedGrid_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.KeyCode == Keys.Escape)
+			{
+				var grid = sender as DataGridView;
+				if (grid.Tag == null) return;
+				var tbl = grid.Tag as Tuple<Table, string>;
+				var output = tabOutputs.SelectedTab.Controls[0] as ucQueryOutput;
+				output.txtQuery.Text = tbl.Item2;
+				output.ExecuteQuery();
+			}
+		}
+
+		private void generateChangeQuery(Tuple<Table, string, List<Column>> tbl)
+		{
+			var dbName = tbl.Item1.Database.DataSource.GetConvertedObjectName(tbl.Item1.Database.DatabaseName);
+			var objName = tbl.Item1.GetObjectNameWithSchema(tbl.Item1.Database.DataSource);
+
+			var sb = new StringBuilder();
+			foreach (var change in _changes)
+			{
+				string qry = string.Empty;
+				bool firstIn;
+				if (change.ChangeType == ChangeType.Add)
+				{
+					qry = string.Format(@"INSERT INTO {0}{1} ", string.IsNullOrEmpty(dbName) ? string.Empty : dbName + ".", objName);
+					var columns = string.Empty;
+					var vals = string.Empty;
+					firstIn = true;
+					foreach (var cc in change.ColumnValues)
+					{
+						if (!firstIn)
+						{
+							columns += ", ";
+							vals += ", ";
+						}
+						firstIn = false;
+						columns += tbl.Item1.Database.DataSource.GetConvertedObjectName(cc.Key);
+						vals += cc.Value == null ? "null" : $"'{cc.Value}'";
+					}
+					qry += $"({columns}) VALUES ({vals})";
+				}
+				else if (change.ChangeType == ChangeType.Edit)
+				{
+					qry = string.Format(@"UPDATE {0}{1} SET ", string.IsNullOrEmpty(dbName) ? string.Empty : dbName + ".", objName);
+					firstIn = true;
+					foreach (var cc in change.ColumnValues)
+					{
+						if (!firstIn)
+						{
+							qry += ", ";
+						}
+						firstIn = false;
+						qry += tbl.Item1.Database.DataSource.GetConvertedObjectName(cc.Key);
+						qry += " = " + (cc.Value == null ? "null" : $"'{cc.Value}'");
+					}
+				}
+				else if (change.ChangeType == ChangeType.Delete)
+				{
+					qry = string.Format(@"DELETE FROM {0}{1} ", string.IsNullOrEmpty(dbName) ? string.Empty : dbName + ".", objName);
+				}
+
+				if (change.ChangeType == ChangeType.Edit || change.ChangeType == ChangeType.Delete)
+				{
+					qry += " WHERE ";
+					firstIn = true;
+					foreach (var k in change.KeyValues)
+					{
+						if (!firstIn)
+						{
+							qry += " AND ";
+						}
+						firstIn = false;
+						qry += tbl.Item1.Database.DataSource.GetConvertedObjectName(k.Key) + " = " + (k.Value == DBNull.Value ? "null" :
+							string.Format("'{0}'", k.Value.ToString().Replace("'", "\\'")));
+					}
+				}
+				qry += ";\r\n";
+				sb.AppendLine(qry);
+			}
+
+			sb.AppendLine(tbl.Item2 + ";");
+
+			var output = tabOutputs.SelectedTab.Controls[0] as ucQueryOutput;
+			output.txtQuery.ReadOnly = false;
+			output.txtQuery.Text = sb.ToString();
+			output.txtQuery.ReadOnly = true;
 		}
 	}
 }
