@@ -226,7 +226,7 @@ namespace PaJaMa.Database.Studio.Query
 			_errorDict = new Dictionary<int, Dictionary<int, string>>();
 			int totalResults = 0;
 			int recordsAffected = 0;
-			var parts = _query.Split(new string[] { "\r\ngo\r\n", "\r\nGO\r\n", "\r\nGo\r\n", "\r\ngO\r\n",
+			var parts = _query.Replace("\r\r", "\r").Split(new string[] { "\r\ngo\r\n", "\r\nGO\r\n", "\r\nGo\r\n", "\r\ngO\r\n",
 					"\ngo\n", "\nGO\n", "\nGo\n", "\ngO\n"
 				}, StringSplitOptions.RemoveEmptyEntries);
 
