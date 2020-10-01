@@ -17,10 +17,10 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
 			if (target == null)
-				return base.GetSynchronizationItems(target, ignoreCase);
+				return base.GetSynchronizationItems(target, ignoreCase, false);
 
 			var targetSchema = target as Schema;
 			if (DatabaseObject.SchemaOwner != targetSchema.SchemaOwner)

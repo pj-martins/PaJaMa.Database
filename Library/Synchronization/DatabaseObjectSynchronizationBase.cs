@@ -22,12 +22,12 @@ namespace PaJaMa.Database.Library.Synchronization
 			DatabaseObject = obj;
 		}
 
-		public virtual List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
+		public virtual List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
 			if (target == null)
 				return GetCreateItems();
 
-			return GetAlterItems(target, ignoreCase);
+			return GetAlterItems(target, ignoreCase, condensed);
 		}
 
 		public virtual List<SynchronizationItem> GetDropItems(DatabaseObjectBase sourceParent)
@@ -37,7 +37,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		}
 
 		public abstract List<SynchronizationItem> GetCreateItems();
-		public virtual List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public virtual List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
 			var items = GetCreateItems();
 			var dropItem = items.FirstOrDefault();

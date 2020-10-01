@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
             return new List<SynchronizationItem>();
 		}

@@ -52,6 +52,7 @@
 			this.mnuGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.copyAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.copyAllWithheadersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.copyToJSONToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			((System.ComponentModel.ISupportInitialize)(this.splitQuery)).BeginInit();
 			this.splitQuery.Panel1.SuspendLayout();
 			this.splitQuery.Panel2.SuspendLayout();
@@ -292,23 +293,31 @@
 			// 
 			this.mnuGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyAllToolStripMenuItem,
-            this.copyAllWithheadersToolStripMenuItem});
+            this.copyAllWithheadersToolStripMenuItem,
+            this.copyToJSONToolStripMenuItem});
 			this.mnuGrid.Name = "mnuGrid";
-			this.mnuGrid.Size = new System.Drawing.Size(173, 48);
+			this.mnuGrid.Size = new System.Drawing.Size(181, 92);
 			// 
 			// copyAllToolStripMenuItem
 			// 
 			this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
-			this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+			this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.copyAllToolStripMenuItem.Text = "&Copy";
 			this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.CopyToolStripMenuItem_Click);
 			// 
 			// copyAllWithheadersToolStripMenuItem
 			// 
 			this.copyAllWithheadersToolStripMenuItem.Name = "copyAllWithheadersToolStripMenuItem";
-			this.copyAllWithheadersToolStripMenuItem.Size = new System.Drawing.Size(172, 22);
+			this.copyAllWithheadersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
 			this.copyAllWithheadersToolStripMenuItem.Text = "Copy with &headers";
 			this.copyAllWithheadersToolStripMenuItem.Click += new System.EventHandler(this.CopyWithheadersToolStripMenuItem_Click);
+			// 
+			// copyToJSONToolStripMenuItem
+			// 
+			this.copyToJSONToolStripMenuItem.Name = "copyToJSONToolStripMenuItem";
+			this.copyToJSONToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.copyToJSONToolStripMenuItem.Text = "Copy to &JSON";
+			this.copyToJSONToolStripMenuItem.Click += new System.EventHandler(this.copyToJSONToolStripMenuItem_Click);
 			// 
 			// ucQueryOutput
 			// 
@@ -359,5 +368,6 @@
 		private System.Windows.Forms.ToolStripMenuItem wrapTextToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem unwrapTextToolStripMenuItem;
 		internal ScintillaNET.Scintilla txtQuery;
+		private System.Windows.Forms.ToolStripMenuItem copyToJSONToolStripMenuItem;
 	}
 }

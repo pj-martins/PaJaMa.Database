@@ -16,13 +16,15 @@ namespace PaJaMa.Database.Library.Synchronization
 		{
 		}
 
-		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetAlterItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
+			if (condensed) return new List<SynchronizationItem>();
 			var items = new List<SynchronizationItem>();
 			var diffs = GetPropertyDifferences(target, ignoreCase);
 			if (diffs.Any())
 			{
 				var createAlter = DatabaseObject.Definition;
+				if (string.IsNullOrEmpty(createAlter)) return new List<SynchronizationItem>();
 				createAlter = Regex.Replace(createAlter, "CREATE VIEW", "ALTER VIEW", RegexOptions.IgnoreCase);
 				items.AddRange(getStandardItems(createAlter, difference: getDifference(DifferenceType.Alter, DatabaseObject, target)));
 			}

@@ -1,4 +1,5 @@
-﻿using PaJaMa.Database.Library.DatabaseObjects;
+﻿using Newtonsoft.Json.Linq;
+using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Workspaces;
 using PaJaMa.Database.Studio.Classes;
@@ -227,7 +228,7 @@ namespace PaJaMa.Database.Studio.Query
 			_errorDict = new Dictionary<int, Dictionary<int, string>>();
 			int totalResults = 0;
 			int recordsAffected = 0;
-			var parts = _query.Split(new string[] { "\r\ngo\r\n", "\r\nGO\r\n", "\r\nGo\r\n", "\r\ngO\r\n",
+			var parts = _query.Replace("\r\r", "\r").Split(new string[] { "\r\ngo\r\n", "\r\nGO\r\n", "\r\nGo\r\n", "\r\ngO\r\n",
 					"\ngo\n", "\nGO\n", "\nGo\n", "\ngO\n"
 				}, StringSplitOptions.RemoveEmptyEntries);
 
@@ -906,13 +907,15 @@ namespace PaJaMa.Database.Studio.Query
 
 		public void SaveOutput()
 		{
-			QueryOutput.Query = txtQuery.Text;
+			QueryOutput.Query = txtQuery.Text.Length > 50000 ? "" : txtQuery.Text;
 			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
 
 			var queryHistoryPath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 				"DatabaseStudio", "QueryHistory", "QueryHistory_" + DateTime.Now.ToString("yyyyMMdd") + ".sql"));
 			if (!queryHistoryPath.Directory.Exists) queryHistoryPath.Directory.Create();
-			File.AppendAllText(queryHistoryPath.FullName, "\r\n\r\n\r\n" + txtQuery.Text);
+			File.AppendAllText(queryHistoryPath.FullName, "\r\n\r\n\r\n" + 
+				CurrentConnection.ConnectionString + "\r\n\r\n" +
+				txtQuery.Text);
 		}
 
 		private void selectIntellisenseItem()
@@ -1116,6 +1119,22 @@ namespace PaJaMa.Database.Studio.Query
 		private void CopyWithheadersToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			copyGridContent(true);
+		}
+
+		private void copyToJSONToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			var grid = mnuGrid.SourceControl as DataGridView;
+			var array = new JArray();
+			foreach (DataGridViewRow row in grid.Rows)
+			{
+				var jobj = new JObject();
+				foreach (DataGridViewColumn col in grid.Columns)
+				{
+					jobj.Add(new JProperty(col.HeaderText, row.Cells[col.Index].Value == DBNull.Value ? null : row.Cells[col.Index].Value));
+				}
+				array.Add(jobj);
+			}
+			Clipboard.SetDataObject(array.ToString());
 		}
 
 		private void copyGridContent(bool withHeader)

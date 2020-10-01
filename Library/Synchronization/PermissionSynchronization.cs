@@ -73,10 +73,11 @@ namespace PaJaMa.Database.Library.Synchronization
 			return base.GetMissingDependencies(existingTargetObjects, selectedItems, isForDrop, ignoreCase);
 		}
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
+			if (condensed) return new List<SynchronizationItem>();
 			if (target == null)
-				return base.GetSynchronizationItems(target, ignoreCase);
+				return base.GetSynchronizationItems(target, ignoreCase, false);
 
 			var items = new List<SynchronizationItem>();
 			var targetPermission = target as Permission;

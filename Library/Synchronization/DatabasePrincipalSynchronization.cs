@@ -73,14 +73,15 @@ namespace PaJaMa.Database.Library.Synchronization
 						string.Format(@"ALTER USER [{0}] WITH LOGIN = [{1}], DEFAULT_SCHEMA=[{2}]", DatabaseObject.PrincipalName,
 						DatabaseObject.LoginName, DatabaseObject.DefaultSchema);
 
-		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase)
+		public override List<SynchronizationItem> GetSynchronizationItems(DatabaseObjectBase target, bool ignoreCase, bool condensed)
 		{
+			if (condensed) return new List<SynchronizationItem>();
 			var items = new List<SynchronizationItem>();
 
 			if (DatabaseObject.PrincipalType != PrincipalType.DatabaseRole)
 			{
 				if (target == null)
-					return base.GetSynchronizationItems(target, ignoreCase);
+					return base.GetSynchronizationItems(target, ignoreCase, false);
 
 				var diffs = GetPropertyDifferences(target, ignoreCase);
 				if (diffs.Any())
