@@ -56,11 +56,12 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 		public int? CharacterMaximumLength { get; set; }
 
 		[Ignore]
-		public UInt64 CharacterMaximumLength2
+		public object CharacterMaximumLength2
 		{
-			get { return (UInt64)CharacterMaximumLength; }
+			get { return CharacterMaximumLength; }
 			set
 			{
+				if (value == null) value = 0;
 				var parsed = 0;
 				int.TryParse(value.ToString(), out parsed);
 				CharacterMaximumLength = parsed;

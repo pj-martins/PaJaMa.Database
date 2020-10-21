@@ -214,7 +214,7 @@ namespace PaJaMa.Database.Studio.Query
 			pnlControls.Visible = true;
 			splitMain.Enabled = true;
 
-			foreach (var db in _dataSource.Databases)
+			foreach (var db in _dataSource.Databases.OrderBy(d => d.DatabaseName.ToLower()))
 			{
 				if (db.DatabaseName == "information_schema") continue;
 				var node = treeTables.Nodes.Add(db.DatabaseName, db.DatabaseName);
@@ -351,7 +351,7 @@ namespace PaJaMa.Database.Studio.Query
 				var node3 = node2.Nodes.Add("Columns");
 				if (table.Columns.Any())
 				{
-					foreach (var column in table.Columns)
+					foreach (var column in table.Columns.OrderBy(c => c.OrdinalPosition))
 					{
 						var node4 = node3.Nodes.Add(table.Database + "_" + table.TableName + "_" + column.ColumnName, column.ColumnName + " (" + column.ColumnType.TypeName +
 							(column.CharacterMaximumLength.GetValueOrDefault() > 0 ? " (" + column.CharacterMaximumLength.Value.ToString() + ")" : "") +
@@ -383,7 +383,7 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void refreshColumnNodes(Table table, TreeNode parentNode)
 		{
-			foreach (var column in table.Columns)
+			foreach (var column in table.Columns.OrderBy(c => c.OrdinalPosition))
 			{
 				var node = parentNode.Nodes.Add(table.Database + "_" + table.TableName + "_" + column.ColumnName, column.ColumnName + " (" + column.ColumnType.TypeName +
 						(column.CharacterMaximumLength != null && column.CharacterMaximumLength.GetValueOrDefault() > 0 ? "(" + column.CharacterMaximumLength.Value.ToString() + ")" : "")
