@@ -170,7 +170,11 @@ namespace PaJaMa.Database.Studio.Query
 				return;
 			}
 
-			var dlgResult = MessageBox.Show("Load previous queries?", "Loading queries", MessageBoxButtons.YesNo);
+			DialogResult dlgResult = DialogResult.No;
+			if (Settings.QueryOutputs.ContainsKey(txtConnectionString.Text))
+			{
+				dlgResult = MessageBox.Show("Load previous queries?", "Loading queries", MessageBoxButtons.YesNo);
+			}
 
 			tabOutputs.Visible = true;
 			if (tabOutputs.TabPages.Count < 1)
