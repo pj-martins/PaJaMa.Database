@@ -26,7 +26,7 @@ select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION a
     case when co.IS_NULLABLE = 'YES' then true else false END AS IsNullable2,
 	 case when EXTRA = 'auto_increment' then TRUE ELSE false end as IsIdentity2, 
 	 CONCAT('DF_', co.TABLE_NAME, '_', COLUMN_NAME) as ConstraintName,
-	  COLUMN_DEFAULT as ColumnDefault, null as Formula, NUMERIC_PRECISION as NumericPrecision2, NUMERIC_SCALE as NumericScale2,
+	  COLUMN_DEFAULT as ColumnDefault, GENERATION_EXPRESSION as Formula, NUMERIC_PRECISION as NumericPrecision2, NUMERIC_SCALE as NumericScale2,
 	  t.TABLE_SCHEMA AS SchemaName, null AS Increment
 FROM INFORMATION_SCHEMA.COLUMNS co
 JOIN INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME and t.TABLE_SCHEMA = co.TABLE_SCHEMA
@@ -58,7 +58,7 @@ AND tc.CONSTRAINT_SCHEMA <> 'tmp'";
 		internal override string DatabaseSQL => "";
 
 		internal override string CombinedSQL => $@"
-SELECT z.*, TABLE_NAME AS TableName, COLUMN_NAME AS ColumnName, c.TABLE_SCHEMA as SchemaName
+SELECT z.*, TABLE_NAME AS TableName, COLUMN_NAME AS ColumnName, c.TABLE_SCHEMA as SchemaName, c.GENERATION_EXPRESSION as Formula
 FROM information_schema.columns c
 LEFT JOIN (
 SELECT DISTINCT

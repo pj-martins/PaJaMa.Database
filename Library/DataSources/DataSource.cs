@@ -908,5 +908,10 @@ ON UPDATE {6}
 			}
 			return objs;
 		}
+
+		public virtual object FormatValueForInsert(object rawValue)
+        {
+			return rawValue;
+        }
 	}
 }

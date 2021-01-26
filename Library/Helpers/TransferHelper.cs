@@ -14,8 +14,10 @@ namespace PaJaMa.Database.Library.Helpers
 	public class TransferHelper
 	{
 		private BackgroundWorker _worker;
-		public TransferHelper(BackgroundWorker worker)
+		private DataSources.DataSource _dataSource;
+		public TransferHelper(DataSources.DataSource dataSource, BackgroundWorker worker)
 		{
+			_dataSource = dataSource;
 			_worker = worker;
 		}
 		public bool Transfer(List<TableWorkspace> workspaces, DbTransaction trans, DatabaseObjects.Database fromDatabase)
@@ -52,7 +54,7 @@ namespace PaJaMa.Database.Library.Helpers
 							_worker.ReportProgress((int)(100 * i / counts), string.Format("Copying {1} of {2}: {0}",
 											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), i, counts));
 							long rowCount = 0;
-							var commonCols = table.SourceTable.Columns.Select(c => c.ColumnName).Intersect(table.TargetTable.Columns.Select(c => c.ColumnName));
+							var commonCols = table.SourceTable.Columns.Where(c => string.IsNullOrEmpty(c.Formula)).Select(c => c.ColumnName).Intersect(table.TargetTable.Columns.Select(c => c.ColumnName));
 							cmdSrc.CommandText = string.Format("select count(*) from {0} {1}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource),
 								table.WhereClause);
 							rowCount = Convert.ToInt64(cmdSrc.ExecuteScalar());
@@ -102,7 +104,7 @@ namespace PaJaMa.Database.Library.Helpers
 										}
 										var batchSize = table.TransferBatchSize == 0 ? TableWorkspace.DEFAULT_BATCH_SIZE : table.TransferBatchSize;
 										var insertQry = $@"insert into {table.TargetTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource)} 
-            ({string.Join(", ", columns.Select(dc => table.TargetObject.Database.DataSource.GetConvertedObjectName(dc)).ToArray())}) values ";
+			({string.Join(", ", columns.Select(dc => table.TargetObject.Database.DataSource.GetConvertedObjectName(dc)).ToArray())}) values ";
 										var sb = new StringBuilder(insertQry);
 										bool firstIn = true;
 										long counter = 0;
@@ -116,13 +118,9 @@ namespace PaJaMa.Database.Library.Helpers
 												cmd.Cancel();
 												break;
 											}
+
 											sb.AppendLine((firstIn ? "" : ",\r\n") + "(" + string.Join(", ",
-												columns.Select(dc => getReaderValue(rdr, dc) == DBNull.Value ? "NULL" : "'" + getReaderValue(rdr, dc).ToString()
-													.Replace("\\", "\\\\")
-													.Replace("'", "''")
-													.Replace("ʹ", "ʹʹ")
-													.Replace("′", "′′")
-													+ "'").ToArray()) + ")");
+												columns.Select(dc => getInsertValue(rdr, dc)).ToArray()) + ")");
 											counter++;
 											firstIn = false;
 											if (rowsCopied % 100 == 0)
@@ -172,6 +170,18 @@ namespace PaJaMa.Database.Library.Helpers
 				}
 			}
 			return true;
+		}
+
+		private string getInsertValue(DbDataReader rdr, string dc)
+		{
+			var val = getReaderValue(rdr, dc);
+			if (val == DBNull.Value) return "NULL";
+			if (val.GetType() == typeof(bool))
+			{
+				return (bool)val ? "1" : "0";
+			}
+			return "'" + _dataSource.FormatValueForInsert(val).ToString().Replace("\\", "\\\\").Replace("'", "''").Replace("ʹ", "ʹʹ").Replace("′", "′′") + "'";
+
 		}
 		private object getReaderValue(DbDataReader rdr, string columnName)
 		{

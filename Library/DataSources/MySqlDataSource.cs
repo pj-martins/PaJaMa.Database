@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using MySql.Data.Types;
 using PaJaMa.Database.Library.DatabaseObjects;
 using System;
 using System.Collections.Generic;
@@ -162,5 +163,15 @@ and tc.TABLE_SCHEMA = '{0}'";
 		{
 			return $" and tc.TABLE_NAME = '{table.TableName}'";
 		}
-	}
+
+        public override object FormatValueForInsert(object rawValue)
+        {
+			if (rawValue != null && rawValue.GetType() == typeof(MySqlDateTime))
+            {
+				var dt = (MySqlDateTime)rawValue;
+				return dt.GetDateTime().ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            return base.FormatValueForInsert(rawValue);
+        }
+    }
 }
