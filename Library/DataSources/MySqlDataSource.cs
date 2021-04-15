@@ -134,7 +134,8 @@ and tc.TABLE_SCHEMA = '{0}'";
 					_columnTypes.Add(new ColumnType("json", DataType.Json, "0"));
 					_columnTypes.Add(new ColumnType("set", DataType.Array, "0"));
                     _columnTypes.Add(new ColumnType("bit", DataType.Integer, "0"));
-                }
+					_columnTypes.Add(new ColumnType("point", DataType.Point, "0"));
+				}
 				return _columnTypes;
 			}
 		}
