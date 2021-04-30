@@ -1163,5 +1163,33 @@ namespace PaJaMa.Database.Studio.Query
 		{
 			btnGo_Click(btnGo, new EventArgs());
 		}
-	}
+
+		private Table getDraggedTable(DragEventArgs e)
+        {
+			var nodes = e.Data.GetData(typeof(List<TreeNode>));
+			if (nodes != null)
+			{
+				return ((List<TreeNode>)nodes)
+					.Where(x => x.Tag is Table || (x.Parent != null && x.Parent.Tag is Table))
+					.Select(x => x.Tag as Table ?? x.Parent.Tag as Table).FirstOrDefault();
+			}
+			return null;
+		}
+
+        private void txtQuery_DragEnter(object sender, DragEventArgs e)
+        {
+			if (getDraggedTable(e) != null) e.Effect = DragDropEffects.Move;
+		}
+
+        private void txtQuery_DragDrop(object sender, DragEventArgs e)
+        {
+			var table = getDraggedTable(e);
+			if (table != null)
+            {
+				// var charPos = txtQuery.CharPositionFromPoint(e.X, e.Y);
+				if (!table.Columns.Any()) table.Database.DataSource.PopulateChildColumns(this.CurrentConnection, table);
+				txtQuery.InsertText(txtQuery.CurrentPosition, string.Join(",\r\n", table.Columns.Select(x => table.Database.DataSource.GetConvertedObjectName(x.ColumnName))));
+            }
+        }
+    }
 }
