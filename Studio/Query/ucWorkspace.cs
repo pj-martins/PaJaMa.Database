@@ -152,6 +152,19 @@ namespace PaJaMa.Database.Studio.Query
 			{
 				_dataSource = Activator.CreateInstance(cboServer.SelectedItem as Type, new object[] { txtConnectionString.Text }) as DataSource;
 				_currentConnection = _dataSource.OpenConnection(string.Empty);
+				try
+                {
+					var builder = new DbConnectionStringBuilder() { ConnectionString = txtConnectionString.Text };
+					object port = -1;
+					builder.TryGetValue("port", out port);
+					object server = string.Empty;
+					builder.TryGetValue("server", out server);
+					ParentTabControl.SelectedTab.Text = $"{server}{(port == null ? "" : $":{port}")}";
+				}
+				catch (Exception sbex)
+                {
+					// DO NOTHING FOR NOW
+                }
 				if (chkUseDummyDA.Checked)
 				{
 					DbDataAdapter dummy;
