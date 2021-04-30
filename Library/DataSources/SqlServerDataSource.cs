@@ -360,20 +360,6 @@ ON UPDATE {6}
 	  keyConstraint.Columns.OrderBy(c => c.Ordinal).Select(c => string.Format("{0} {1}", this.GetConvertedObjectName(c.ColumnName), c.Descending ? "DESC" : "ASC"))));
 		}
 
-		internal override string GetColumnPostPart(Column column)
-		{
-			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
-			if (column.CharacterMaximumLength != null && !targetType.IsFixedSize)
-			{
-				string max = column.CharacterMaximumLength.ToString();
-				if (max == "-1")
-					max = "max";
-				return "(" + max + ")";
-			}
-
-			return base.GetColumnPostPart(column);
-		}
-
 		internal override bool IgnoreDrop(DatabaseObjectBase sourceParent, DatabaseObjectBase obj)
 		{
 			if (obj is DefaultConstraint && sourceParent is Table)

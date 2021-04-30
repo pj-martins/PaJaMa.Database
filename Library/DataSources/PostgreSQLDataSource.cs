@@ -351,15 +351,6 @@ indexCols.OrderBy(c => c.Ordinal).Select(c =>
 			return string.Format("DROP INDEX {0}", index.GetQueryObjectName(this));
 		}
 
-		internal override string GetColumnPostPart(Column column)
-		{
-			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
-			if (column.CharacterMaximumLength.GetValueOrDefault() > 0 && !targetType.IsFixedSize)
-				return "(" + column.CharacterMaximumLength.ToString() + ")";
-
-			return base.GetColumnPostPart(column);
-		}
-
 		internal override string GetColumnDefault(Column column, string columnDefault)
 		{
 			var def = base.GetColumnDefault(column, columnDefault);

@@ -40,7 +40,7 @@ namespace PaJaMa.Database.Library.Synchronization
 			if (!string.IsNullOrEmpty(colDef) && colDef.StartsWith("((") && colDef.EndsWith("))"))
 				colDef = colDef.Substring(1, colDef.Length - 2);
 
-			if (!string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(DatabaseObject.ConstraintName) && DatabaseObject.Parent is Table
+			if (TargetDatabase.DataSource.NamedConstraints && !string.IsNullOrEmpty(colDef) && !string.IsNullOrEmpty(DatabaseObject.ConstraintName) && DatabaseObject.Parent is Table
 				&& !(DatabaseObject.Parent as Table).KeyConstraints.Any(k => k.ConstraintName == DatabaseObject.ConstraintName))
 				def = "CONSTRAINT " + TargetDatabase.DataSource.GetConvertedObjectName(DatabaseObject.ConstraintName) + " DEFAULT(" + colDef + ")";
 			else if (!string.IsNullOrEmpty(colDef))

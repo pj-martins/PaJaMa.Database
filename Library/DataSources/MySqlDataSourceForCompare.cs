@@ -25,7 +25,7 @@ select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION a
 	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength2, DATA_TYPE as DataType,
     case when co.IS_NULLABLE = 'YES' then true else false END AS IsNullable2,
 	 case when EXTRA = 'auto_increment' then TRUE ELSE false end as IsIdentity2, 
-	 CONCAT('DF_', co.TABLE_NAME, '_', COLUMN_NAME) as ConstraintName,
+	 '' as ConstraintName,
 	  COLUMN_DEFAULT as ColumnDefault, GENERATION_EXPRESSION as Formula, NUMERIC_PRECISION as NumericPrecision2, NUMERIC_SCALE as NumericScale2,
 	  t.TABLE_SCHEMA AS SchemaName, null AS Increment
 FROM INFORMATION_SCHEMA.COLUMNS co

@@ -638,6 +638,15 @@ ON UPDATE {6}
 
 		internal virtual string GetColumnPostPart(Column column)
 		{
+			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
+			if (column.CharacterMaximumLength != null && !targetType.IsFixedSize)
+			{
+				string max = column.CharacterMaximumLength.ToString();
+				if (max == "-1")
+					max = "max";
+				return "(" + max + ")";
+			}
+
 			if (column.NumericPrecision != null && (column.ColumnType.DataType == DataType.Numeric || column.ColumnType.DataType == DataType.Decimal))
 				return "(" + column.NumericPrecision.ToString() + ", " + column.NumericScale.ToString() + ")";
 
