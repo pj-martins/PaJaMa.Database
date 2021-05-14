@@ -120,8 +120,9 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 			}
 		}
 
-		public void RemoveForeignKeys(IDbCommand cmd)
+		public string RemoveForeignKeys(IDbCommand cmd)
 		{
+			var sbAll = new StringBuilder();
 			foreach (var fk in getForeignKeys())
 			{
 				if (fk.HasBeenDropped)
@@ -130,14 +131,17 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				bool currNamed = this.Database.DataSource.NamedConstraints;
 				this.Database.DataSource.NamedConstraints = this.Database.DataSource.DefaultNamedConstraints;
 				cmd.CommandText = new ForeignKeySynchronization(Database, fk).GetRawDropText();
+				sbAll.AppendLine(cmd.CommandText);
 				cmd.ExecuteNonQuery();
 				fk.HasBeenDropped = true;
 				this.Database.DataSource.NamedConstraints = currNamed;
 			}
+			return sbAll.ToString();
 		}
 
-		public void AddForeignKeys(IDbCommand cmd)
+		public string AddForeignKeys(IDbCommand cmd)
 		{
+			var sbAll = new StringBuilder();
 			foreach (var fk in getForeignKeys())
 			{
 				if (!fk.HasBeenDropped)
@@ -151,6 +155,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 					foreach (var script in item.Scripts.Where(s => s.Value.Length > 0).OrderBy(s => (int)s.Key))
 					{
 						cmd.CommandText = script.Value.ToString();
+						sbAll.AppendLine(cmd.CommandText);
 						cmd.CommandTimeout = 1200;
 						cmd.ExecuteNonQuery();
 					}
@@ -158,9 +163,10 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				fk.HasBeenDropped = false;
 				this.Database.DataSource.NamedConstraints = currNamed;
 			}
+			return sbAll.ToString();
 		}
 
-		public void TruncateDelete(Database targetDatabase, IDbCommand cmd, bool truncate)
+		public string TruncateDelete(Database targetDatabase, IDbCommand cmd, bool truncate)
 		{
 			var schema = Schema.GetQueryObjectName(targetDatabase.DataSource);
 			if (!string.IsNullOrEmpty(schema)) schema += ".";
@@ -174,6 +180,7 @@ namespace PaJaMa.Database.Library.DatabaseObjects
 				cmd.CommandText = string.Format("delete from {0}{1}", schema, GetQueryObjectName(targetDatabase.DataSource));
 				cmd.ExecuteNonQuery();
 			}
+			return cmd.CommandText;
 		}
 
 		public override string ToString()

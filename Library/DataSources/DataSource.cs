@@ -639,7 +639,7 @@ ON UPDATE {6}
 		internal virtual string GetColumnPostPart(Column column)
 		{
 			var targetType = this.ColumnTypes.First(t => t.DataType == column.ColumnType.DataType);
-			if (column.CharacterMaximumLength != null && !targetType.IsFixedSize)
+			if (column.CharacterMaximumLength != null && column.CharacterMaximumLength != 0 && column.ColumnType.DataType != DataType.Text && !targetType.IsFixedSize)
 			{
 				string max = column.CharacterMaximumLength.ToString();
 				if (max == "-1")
