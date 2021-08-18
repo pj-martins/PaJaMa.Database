@@ -159,7 +159,16 @@ namespace PaJaMa.Database.Studio.Query
 					builder.TryGetValue("port", out port);
 					object server = string.Empty;
 					builder.TryGetValue("server", out server);
-					ParentTabControl.SelectedTab.Text = $"{server}{(port == null ? "" : $":{port}")}";
+					if (string.IsNullOrEmpty(server?.ToString()))
+					{
+						builder.TryGetValue("data source", out server);
+					}
+					if (string.IsNullOrEmpty(server?.ToString()))
+					{
+						server = txtConnectionString.Text.Substring(0, 10) + "...";
+					}
+					ParentTabControl.SelectedTab.Text = $"{server}{(port == null ? "" : $":{port}")}" +
+						$" - {_currentConnection.Database}";
 				}
 				catch (Exception sbex)
                 {
