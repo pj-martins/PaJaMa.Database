@@ -10,21 +10,21 @@ using System.Threading.Tasks;
 
 namespace PaJaMa.Database.Library.DataSources
 {
-	public class MySqlDataSource : DataSource
-	{
-		public MySqlDataSource(string connectionString) : base(connectionString)
-		{
-		}
+    public class MySqlDataSource : DataSource
+    {
+        public MySqlDataSource(string connectionString) : base(connectionString)
+        {
+        }
 
         internal override List<string> SystemSchemaNames => new List<string>() { "information_schema", "performance_schema", "tmp", "sys" };
 
         public override string DefaultSchemaName => "";
-		public override List<string> SurroundingCharacters => new List<string>() { "`" };
+        public override List<string> SurroundingCharacters => new List<string>() { "`" };
 
-		protected override Type connectionType => typeof(MySqlConnection);
+        protected override Type connectionType => typeof(MySqlConnection);
 
-		// TODO: owner
-		internal override string SchemaSQL => "";
+        // TODO: owner
+        internal override string SchemaSQL => "";
 
         internal override string ViewSQL => @"
 select
@@ -41,7 +41,7 @@ JOIN INFORMATION_SCHEMA.VIEWS t on t.TABLE_NAME = c.TABLE_NAME
 	AND t.TABLE_SCHEMA = c.TABLE_SCHEMA
 ";
 
-		internal override string SchemaViewSQL => @"
+        internal override string SchemaViewSQL => @"
 select
 	'' as SchemaName,
 	t.TABLE_NAME as ViewName,
@@ -49,9 +49,9 @@ select
 FROM INFORMATION_SCHEMA.TABLES t
 WHERE t.TABLE_SCHEMA = 'information_schema'";
 
-		internal override string TableSQL => "select TABLE_NAME as TableName, '' as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = '{0}'";
+        internal override string TableSQL => "select TABLE_NAME as TableName, '' as SchemaName, null as Definition from INFORMATION_SCHEMA.TABLES where TABLE_TYPE = 'BASE TABLE' and TABLE_SCHEMA = '{0}'";
 
-		internal override string ColumnSQL => @"
+        internal override string ColumnSQL => @"
 select co.TABLE_NAME as TableName, COLUMN_NAME as ColumnName, ORDINAL_POSITION as OrdinalPosition2, 
 	CHARACTER_MAXIMUM_LENGTH as CharacterMaximumLength2, DATA_TYPE as DataType,
     case when co.IS_NULLABLE = 'YES' then true else false END AS IsNullable2,
@@ -63,7 +63,7 @@ FROM INFORMATION_SCHEMA.COLUMNS co
 JOIN INFORMATION_SCHEMA.TABLES t on t.TABLE_NAME = co.TABLE_NAME and t.TABLE_SCHEMA = co.TABLE_SCHEMA
 WHERE (t.TABLE_TYPE = 'BASE TABLE' or t.TABLE_TYPE = 'SYSTEM VIEW') and co.TABLE_SCHEMA = '{0}'";
 
-		internal override string ForeignKeySQL => @"
+        internal override string ForeignKeySQL => @"
 SELECT distinct
     tc.constraint_name as ForeignKeyName, tc.table_name as ChildTableName, kcu.column_name as ChildColumnName, 
    c.referenced_table_name AS ParentTableName, referenced_column_name AS ParentColumnName, UPDATE_RULE as UpdateRule, DELETE_RULE as DeleteRule,
@@ -92,56 +92,56 @@ and tc.TABLE_SCHEMA = '{0}'";
 
         internal override string TriggerSQL => "";
 
-		internal override string DatabaseSQL => "SELECT SCHEMA_NAME AS DatabaseName FROM information_schema.schemata";
+        internal override string DatabaseSQL => "SELECT SCHEMA_NAME AS DatabaseName FROM information_schema.schemata";
 
-		internal override string CombinedSQL => throw new NotImplementedException();
+        internal override string CombinedSQL => throw new NotImplementedException();
 
 
-		private List<ColumnType> _columnTypes;
-		public override List<ColumnType> ColumnTypes
-		{
-			get
-			{
-				if (_columnTypes == null)
-				{
-					_columnTypes = new List<ColumnType>();
-					_columnTypes.Add(new ColumnType("int", DataType.Integer, "0"));
+        private List<ColumnType> _columnTypes;
+        public override List<ColumnType> ColumnTypes
+        {
+            get
+            {
+                if (_columnTypes == null)
+                {
+                    _columnTypes = new List<ColumnType>();
+                    _columnTypes.Add(new ColumnType("int", DataType.Integer, "0"));
                     _columnTypes.Add(new ColumnType("mediumint", DataType.Integer, "0"));
                     _columnTypes.Add(new ColumnType("integer", DataType.Integer, "0"));
-					_columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "0"));
-					_columnTypes.Add(new ColumnType("tinyint", DataType.SmallInteger, "0"));
-					_columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
-					_columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
-					_columnTypes.Add(new ColumnType("numeric", DataType.Numeric, "0"));
-					_columnTypes.Add(new ColumnType("float", DataType.Float, "0"));
-					_columnTypes.Add(new ColumnType("double", DataType.Float, "0"));
-					_columnTypes.Add(new ColumnType("date", DataType.DateOnly, "0"));
-					_columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "0"));
-					_columnTypes.Add(new ColumnType("timestamp", DataType.DateTime, "0"));
-					_columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "0"));
-					_columnTypes.Add(new ColumnType("varchar", DataType.VarChar, "''"));
-					_columnTypes.Add(new ColumnType("char", DataType.Char, "''"));
-					_columnTypes.Add(new ColumnType("varbinary", DataType.VarBinary, "0"));
-					_columnTypes.Add(new ColumnType("binary", DataType.Binary, "0"));
-					_columnTypes.Add(new ColumnType("blob", DataType.Binary, "0"));
-					_columnTypes.Add(new ColumnType("mediumblob", DataType.Binary, "0"));
+                    _columnTypes.Add(new ColumnType("smallint", DataType.SmallInteger, "0"));
+                    _columnTypes.Add(new ColumnType("tinyint", DataType.SmallInteger, "0"));
+                    _columnTypes.Add(new ColumnType("bigint", DataType.BigInt, "0"));
+                    _columnTypes.Add(new ColumnType("decimal", DataType.Decimal, "0"));
+                    _columnTypes.Add(new ColumnType("numeric", DataType.Numeric, "0"));
+                    _columnTypes.Add(new ColumnType("float", DataType.Float, "0"));
+                    _columnTypes.Add(new ColumnType("double", DataType.Float, "0"));
+                    _columnTypes.Add(new ColumnType("date", DataType.DateOnly, "0"));
+                    _columnTypes.Add(new ColumnType("datetime", DataType.DateTime, "0"));
+                    _columnTypes.Add(new ColumnType("timestamp", DataType.DateTime, "0"));
+                    _columnTypes.Add(new ColumnType("time", DataType.TimeOnly, "0"));
+                    _columnTypes.Add(new ColumnType("varchar", DataType.VarChar, "''"));
+                    _columnTypes.Add(new ColumnType("char", DataType.Char, "''"));
+                    _columnTypes.Add(new ColumnType("varbinary", DataType.VarBinary, "0"));
+                    _columnTypes.Add(new ColumnType("binary", DataType.Binary, "0"));
+                    _columnTypes.Add(new ColumnType("blob", DataType.Binary, "0"));
+                    _columnTypes.Add(new ColumnType("mediumblob", DataType.Binary, "0"));
                     _columnTypes.Add(new ColumnType("longblob", DataType.Binary, "0"));
                     _columnTypes.Add(new ColumnType("text", DataType.Text, "0"));
-					_columnTypes.Add(new ColumnType("tinytext", DataType.Text, "0"));
-					_columnTypes.Add(new ColumnType("mediumtext", DataType.Text, "0"));
-					_columnTypes.Add(new ColumnType("longtext", DataType.Text, "0"));
-					_columnTypes.Add(new ColumnType("enum", DataType.Integer, "0"));
-					_columnTypes.Add(new ColumnType("json", DataType.Json, "0"));
-					_columnTypes.Add(new ColumnType("set", DataType.Array, "0"));
+                    _columnTypes.Add(new ColumnType("tinytext", DataType.Text, "0"));
+                    _columnTypes.Add(new ColumnType("mediumtext", DataType.Text, "0"));
+                    _columnTypes.Add(new ColumnType("longtext", DataType.Text, "0"));
+                    _columnTypes.Add(new ColumnType("enum", DataType.Integer, "0"));
+                    _columnTypes.Add(new ColumnType("json", DataType.Json, "0"));
+                    _columnTypes.Add(new ColumnType("set", DataType.Array, "0"));
                     _columnTypes.Add(new ColumnType("bit", DataType.Integer, "0"));
-					_columnTypes.Add(new ColumnType("point", DataType.Point, "0"));
-				}
-				return _columnTypes;
-			}
-		}
+                    _columnTypes.Add(new ColumnType("point", DataType.Point, "0"));
+                }
+                return _columnTypes;
+            }
+        }
 
-		public override string GetConvertedObjectName(string objectName)
-		{
+        public override string GetConvertedObjectName(string objectName)
+        {
             return string.Format("`{0}`", objectName);
         }
 
@@ -150,29 +150,45 @@ and tc.TABLE_SCHEMA = '{0}'";
             return topN <= 0 ? string.Empty : string.Format("LIMIT {0}", topN);
         }
 
-		internal override string GetForeignKeyDropScript(ForeignKey foreignKey)
+        internal override string GetForeignKeyDropScript(ForeignKey foreignKey)
         {
             return "ALTER TABLE {0} DROP FOREIGN KEY {1};";
         }
 
-		protected override string keysTableWhere(Table table)
-		{
-			return $" and ku.TABLE_NAME = '{table.TableName}'";
-		}
+        protected override string keysTableWhere(Table table)
+        {
+            return $" and ku.TABLE_NAME = '{table.TableName}'";
+        }
 
-		protected override string foreignKeysTableWhere(Table table)
-		{
-			return $" and tc.TABLE_NAME = '{table.TableName}'";
-		}
+        protected override string foreignKeysTableWhere(Table table)
+        {
+            return $" and tc.TABLE_NAME = '{table.TableName}'";
+        }
 
         public override object FormatValueForInsert(object rawValue)
         {
-			if (rawValue != null && rawValue.GetType() == typeof(MySqlDateTime))
+            if (rawValue != null && rawValue.GetType() == typeof(MySqlDateTime))
             {
-				var dt = (MySqlDateTime)rawValue;
-				return dt.GetDateTime().ToString("yyyy-MM-dd HH:mm:ss");
+                var dt = (MySqlDateTime)rawValue;
+                if (dt.Year == 0) return null;
+                return dt.GetDateTime().ToString("yyyy-MM-dd HH:mm:ss");
             }
             return base.FormatValueForInsert(rawValue);
+        }
+
+        internal override string GetColumnAddAlterScript(Column column, Column targetColumn, string postScript, string defaultValue)
+        {
+            var colType = this.GetConvertedColumnType(column.ColumnType.DataType, true);
+            if (this.GetType() == column.Database.DataSource.GetType())
+                colType = column.ColumnType.TypeName;
+            return string.Format("ALTER TABLE {0} {6} {1} {2}{3} {4} {5};",
+                   column.Parent.GetObjectNameWithSchema(this),
+                   column.GetQueryObjectName(this),
+                   colType,
+                   postScript,
+                   column.IsNullable ? "NULL" : "NOT NULL",
+                   defaultValue,
+                   targetColumn == null ? "ADD" : "MODIFY COLUMN");
         }
     }
 }

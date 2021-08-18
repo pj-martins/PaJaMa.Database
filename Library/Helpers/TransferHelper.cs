@@ -22,6 +22,7 @@ namespace PaJaMa.Database.Library.Helpers
 		}
 		public bool Transfer(List<TableWorkspace> workspaces, DbTransaction trans, DatabaseObjects.Database fromDatabase)
 		{
+			StringBuilder sbAll = new StringBuilder();
 			string tableName = string.Empty;
 			using (var cmd = trans.Connection.CreateCommand())
 			{
@@ -136,6 +137,7 @@ namespace PaJaMa.Database.Library.Helpers
 											if (counter >= batchSize)
 											{
 												cmd.CommandText = sb.ToString();
+												sbAll.AppendLine(sb.ToString());
 												cmd.ExecuteNonQuery();
 												sb = new StringBuilder(insertQry);
 												counter = 0;
@@ -145,6 +147,7 @@ namespace PaJaMa.Database.Library.Helpers
 										if (!_worker.CancellationPending && !firstIn)
 										{
 											cmd.CommandText = sb.ToString();
+											sbAll.AppendLine(sb.ToString());
 											cmd.ExecuteNonQuery();
 										}
 									}
@@ -180,7 +183,12 @@ namespace PaJaMa.Database.Library.Helpers
 			{
 				return (bool)val ? "1" : "0";
 			}
-			return "'" + _dataSource.FormatValueForInsert(val).ToString().Replace("\\", "\\\\").Replace("'", "''").Replace("ʹ", "ʹʹ").Replace("′", "′′") + "'";
+			var formatted = _dataSource.FormatValueForInsert(val);
+			if (formatted == null)
+            {
+				return "NULL";
+            }
+			return "'" + formatted.ToString().Replace("\\", "\\\\").Replace("'", "''").Replace("ʹ", "ʹʹ").Replace("′", "′′") + "'";
 
 		}
 		private object getReaderValue(DbDataReader rdr, string columnName)

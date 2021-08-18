@@ -18,6 +18,7 @@ namespace PaJaMa.Database.Library.Helpers
 		public bool Synchronize(CompareHelper compareHelper, List<WorkspaceBase> workspaces, List<TableWorkspace> dataSpaces, 
 			List<TableWorkspace> truncDelete, BackgroundWorker worker)
 		{
+			bool success = true;
 			TransferHelper transferHelper = null;
 			if (dataSpaces.Any())
 				transferHelper = new TransferHelper(compareHelper.ToDataSource, worker);
@@ -41,12 +42,13 @@ namespace PaJaMa.Database.Library.Helpers
 								}
 
 								i = 0;
+								var sbAll = new StringBuilder();
 								foreach (var table in truncDelete)
 								{
 									if (table.RemoveAddKeys)
 									{
 										worker.ReportProgress(100 * i / truncDelete.Count, "Removing foreign keys for " + table.TargetTable.TableName);
-										table.TargetTable.RemoveForeignKeys(cmd);
+										sbAll.AppendLine(table.TargetTable.RemoveForeignKeys(cmd));
 									}
 								}
 
@@ -54,7 +56,7 @@ namespace PaJaMa.Database.Library.Helpers
 								foreach (var table in truncDelete)
 								{
 									worker.ReportProgress(100 * i / truncDelete.Count, "Truncating/Deleting " + table.TargetTable.TableName);
-									table.TargetTable.TruncateDelete(table.TargetDatabase, cmd, table.Truncate);
+									sbAll.AppendLine(table.TargetTable.TruncateDelete(table.TargetDatabase, cmd, table.Truncate));
 									i++;
 								}
 
@@ -65,7 +67,7 @@ namespace PaJaMa.Database.Library.Helpers
 									if (table.RemoveAddKeys)
 									{
 										worker.ReportProgress(100 * i / truncDelete.Count, "Adding foreign keys for " + table.TargetTable.TableName);
-										table.TargetTable.AddForeignKeys(cmd);
+										sbAll.AppendLine(table.TargetTable.AddForeignKeys(cmd));
 									}
 								}
 							}
@@ -100,20 +102,14 @@ namespace PaJaMa.Database.Library.Helpers
 
 					if (dataSpaces.Any())
 					{
-						bool success = false;
 						try
 						{
 							success = transferHelper.Transfer(dataSpaces, trans, compareHelper.FromDataSource.CurrentDatabase);
 						}
 						catch (Exception ex)
 						{
+							success = false;
 							DisplayMessage(this, new PromptEventArgs(ex.Message));
-						}
-
-						if (!success)
-						{
-							trans.Rollback();
-							return false;
 						}
 					}
 
@@ -127,13 +123,14 @@ namespace PaJaMa.Database.Library.Helpers
 								cmd.Transaction = trans;
 
 								i = 0;
+								var sb = new StringBuilder();
 								foreach (var table in adds)
 								{
 									i++;
 									if (table.RemoveAddKeys)
 									{
 										worker.ReportProgress(100 * i / adds.Count(), "Adding foreign keys for " + table.TargetTable.TableName);
-										table.TargetTable.AddForeignKeys(cmd);
+										sb.AppendLine(table.TargetTable.AddForeignKeys(cmd));
 									}
 								}
 							}
@@ -152,12 +149,19 @@ namespace PaJaMa.Database.Library.Helpers
 						}
 					}
 
-					trans.Commit();
+					if (!success)
+					{
+						trans.Rollback();
+					}
+					else
+					{
+						trans.Commit();
+					}
 				}
 				conn.Close();
 			}
 
-			return true;
+			return success;
 		}
 	}
 }
