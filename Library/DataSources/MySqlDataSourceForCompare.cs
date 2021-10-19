@@ -80,5 +80,5 @@ ON z.ChildTableName = c.table_name
 	AND z.TABLE_SCHEMA = c.TABLE_SCHEMA
 WHERE c.TABLE_SCHEMA not in ({string.Join(", ", SystemSchemaNames.Select(s => "'" + s + "'").ToArray())})
 ";
-	}
+    }
 }

@@ -190,5 +190,10 @@ and tc.TABLE_SCHEMA = '{0}'";
                    defaultValue,
                    targetColumn == null ? "ADD" : "MODIFY COLUMN");
         }
+
+        internal override string GetCreateIdentity(Column column)
+        {
+            return " AUTO_INCREMENT";
+        }
     }
 }
