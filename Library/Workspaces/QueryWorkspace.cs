@@ -8,9 +8,7 @@ namespace PaJaMa.Database.Library.Workspaces
 {
 	public class QueryWorkspace
 	{
-		public string ConnectionString { get; set; }
-		public string ConnectionType { get; set; }
-		public string Database { get; set; }
+		public DatabaseStudioConnection Connection { get; set; }
 		public List<QueryOutput> Queries { get; set; }
 
 		public QueryWorkspace()

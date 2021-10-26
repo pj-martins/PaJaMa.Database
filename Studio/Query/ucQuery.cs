@@ -1,4 +1,5 @@
-﻿using PaJaMa.Database.Library.Workspaces;
+﻿using PaJaMa.Database.Library;
+using PaJaMa.Database.Library.Workspaces;
 using PaJaMa.Database.Studio.Classes;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace PaJaMa.Database.Studio.Query
 				if (tabMain.SelectedTab != null)
 				{
 					var workSpace = (tabMain.SelectedTab.Controls[0] as ucWorkspace).GetWorkspace();
-					if (string.IsNullOrEmpty(workSpace.ConnectionString) || workSpace.ConnectionType == null)
+					if (workSpace.Connection == null)
 						MessageBox.Show("Incomplete workspace.");
 					else
 					{

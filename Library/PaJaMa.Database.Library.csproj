@@ -80,6 +80,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\DatabaseStudioSettings.cs" />
     <Compile Include="DatabaseObjects\Attributes.cs" />
     <Compile Include="DatabaseObjects\Column.cs" />
     <Compile Include="DatabaseObjects\Credential.cs" />

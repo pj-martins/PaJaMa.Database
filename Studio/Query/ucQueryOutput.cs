@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using PaJaMa.Database.Library;
 using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.DataSources;
 using PaJaMa.Database.Library.Workspaces;
@@ -33,6 +34,7 @@ namespace PaJaMa.Database.Studio.Query
 		private DateTime _start;
 		private DbCommand _currentCommand;
 		private DataSource _dataSource;
+		private DatabaseStudioConnection _studioConnection;
 		private string _query;
 		private bool _flagIntellisense;
 		private ListBox _intelliBox;
@@ -102,11 +104,12 @@ namespace PaJaMa.Database.Studio.Query
 			SaveOutput();
 		}
 
-		public bool Connect(DbConnection connection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
+		public bool Connect(DbConnection connection, DatabaseStudioConnection studioConnection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
 		{
 			try
 			{
 				_dataSource = dataSource;
+				_studioConnection = studioConnection;
 				_intellisenseHelper = new IntellisenseHelper(_dataSource);
 				if (useDummyDA)
 					CurrentConnection = connection;
@@ -914,7 +917,7 @@ namespace PaJaMa.Database.Studio.Query
 				"DatabaseStudio", "QueryHistory", "QueryHistory_" + DateTime.Now.ToString("yyyyMMdd") + ".sql"));
 			if (!queryHistoryPath.Directory.Exists) queryHistoryPath.Directory.Create();
 			File.AppendAllText(queryHistoryPath.FullName, "\r\n\r\n\r\n" + 
-				CurrentConnection.ConnectionString + "\r\n\r\n" +
+				_studioConnection.ConnectionName + "\r\n\r\n" +
 				txtQuery.Text);
 		}
 

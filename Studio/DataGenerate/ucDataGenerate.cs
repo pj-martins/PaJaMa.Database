@@ -1,4 +1,5 @@
 ﻿using PaJaMa.Common;
+using PaJaMa.Database.Library;
 using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Workspaces.Generate;
 using PaJaMa.Database.Studio.Classes;
@@ -35,13 +36,12 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		private void UcDataGenerate_Load(object sender, EventArgs e)
 		{
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (settings.ConnectionStrings == null)
-				settings.ConnectionStrings = string.Empty;
+			if (!settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(settings);
 
 			refreshConnStrings();
 
-			if (!string.IsNullOrEmpty(settings.LastQueryConnectionString))
-				cboConnectionString.Text = settings.LastQueryConnectionString;
+			//if (!string.IsNullOrEmpty(settings.LastQueryConnectionString))
+			//	cboConnection.Text = settings.LastQueryConnectionString;
 
 			new GridHelper().DecorateGrid(gridTables);
 		}
@@ -49,18 +49,15 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		private void refreshConnStrings()
 		{
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (!string.IsNullOrEmpty(settings.ConnectionStrings))
-			{
-				var conns = settings.ConnectionStrings.Split('|');
-				cboConnectionString.Items.Clear();
-				cboConnectionString.Items.AddRange(conns.OrderBy(c => c).ToArray());
-			}
+			if (!settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(settings);
+				cboConnection.Items.Clear();
+				cboConnection.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
 		}
 
 		private void btnConnect_Click(object sender, EventArgs e)
 		{
 
-			string connString = cboConnectionString.Text;
+			string connString = cboConnection.Text;
 
 			Exception exception = null;
 
@@ -103,12 +100,6 @@ namespace PaJaMa.Database.Studio.DataGenerate
 				refreshPage(false);
 
 				var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-				List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
-				if (!connStrings.Any(s => s == cboConnectionString.Text))
-					connStrings.Add(cboConnectionString.Text);
-
-				settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
-				settings.LastQueryConnectionString = cboConnectionString.Text;
 				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
 				_lockDbChange = true;
@@ -121,10 +112,10 @@ namespace PaJaMa.Database.Studio.DataGenerate
 
 				_lockDbChange = false;
 
-				btnConnect.Visible = btnRemoveConnString.Visible = false;
+				btnConnect.Visible = false;
 				btnDisconnect.Visible = true;
-				cboConnectionString.SelectionLength = 0;
-				cboConnectionString.Enabled = false;
+				cboConnection.SelectionLength = 0;
+				cboConnection.Enabled = false;
 				cboDatabase.Visible = true;
 				btnGo.Enabled = btnRefresh.Enabled = btnViewMissingDependencies.Enabled = btnAdd10.Enabled = btnAddNRows.Enabled = btnQuery.Enabled = true;
 			}
@@ -258,8 +249,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 			gridTables.DataSource = null;
 			btnDisconnect.Visible = false;
 			btnConnect.Visible = true;
-			cboConnectionString.Enabled = true;
-			btnRemoveConnString.Visible = true;
+			cboConnection.Enabled = true;
 			cboDatabase.Visible = false;
 			btnGo.Enabled = btnViewMissingDependencies.Enabled = btnRefresh.Enabled = btnAdd10.Enabled = btnAddNRows.Enabled = btnQuery.Enabled = false;
 		}
@@ -269,28 +259,6 @@ namespace PaJaMa.Database.Studio.DataGenerate
 			if (_lockDbChange) return;
 			_generatorHelper.DataSource.ChangeDatabase(cboDatabase.Text);
 			refreshPage(true);
-		}
-
-		private void btnRemoveConnString_Click(object sender, EventArgs e)
-		{
-			removeConnString(cboConnectionString.Text, true);
-		}
-
-		private void removeConnString(string connString, bool source)
-		{
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			List<string> connStrings = settings.ConnectionStrings.Split('|').ToList();
-			connStrings.Remove(connString);
-			settings.ConnectionStrings = string.Join("|", connStrings.ToArray());
-			settings.LastQueryConnectionString = string.Empty;
-			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
-			refreshConnStrings();
-			cboConnectionString.Text = string.Empty;
-		}
-
-		private void cboConnString_SelectedIndexChanged(object sender, EventArgs e)
-		{
-			btnRemoveConnString.Enabled = !string.IsNullOrEmpty(cboConnectionString.Text);
 		}
 
 		private void gridTables_MouseClick(object sender, MouseEventArgs e)

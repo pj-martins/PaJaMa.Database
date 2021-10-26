@@ -37,7 +37,7 @@
 			this.btnDisconnect = new System.Windows.Forms.Button();
 			this.btnConnect = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
-			this.cboConnectionString = new System.Windows.Forms.ComboBox();
+			this.cboConnection = new System.Windows.Forms.ComboBox();
 			this.gridResults = new System.Windows.Forms.DataGridView();
 			this.timer1 = new System.Windows.Forms.Timer(this.components);
 			this.panel2 = new System.Windows.Forms.Panel();
@@ -64,7 +64,7 @@
 			this.panel1.Controls.Add(this.btnDisconnect);
 			this.panel1.Controls.Add(this.btnConnect);
 			this.panel1.Controls.Add(this.label1);
-			this.panel1.Controls.Add(this.cboConnectionString);
+			this.panel1.Controls.Add(this.cboConnection);
 			this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
 			this.panel1.Location = new System.Drawing.Point(0, 0);
 			this.panel1.Name = "panel1";
@@ -125,15 +125,15 @@
 			this.label1.TabIndex = 7;
 			this.label1.Text = "Connection String";
 			// 
-			// cboConnectionString
+			// cboConnection
 			// 
-			this.cboConnectionString.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+			this.cboConnection.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.cboConnectionString.FormattingEnabled = true;
-			this.cboConnectionString.Location = new System.Drawing.Point(105, 12);
-			this.cboConnectionString.Name = "cboConnectionString";
-			this.cboConnectionString.Size = new System.Drawing.Size(562, 21);
-			this.cboConnectionString.TabIndex = 6;
+			this.cboConnection.FormattingEnabled = true;
+			this.cboConnection.Location = new System.Drawing.Point(105, 12);
+			this.cboConnection.Name = "cboConnection";
+			this.cboConnection.Size = new System.Drawing.Size(562, 21);
+			this.cboConnection.TabIndex = 6;
 			// 
 			// gridResults
 			// 
@@ -301,7 +301,7 @@
 		private System.Windows.Forms.Button btnDisconnect;
 		private System.Windows.Forms.Button btnConnect;
 		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.ComboBox cboConnectionString;
+		private System.Windows.Forms.ComboBox cboConnection;
 		private System.Windows.Forms.DataGridView gridResults;
 		private System.Windows.Forms.Timer timer1;
 		private System.Windows.Forms.Panel panel2;
