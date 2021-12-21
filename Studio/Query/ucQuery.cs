@@ -21,19 +21,38 @@ namespace PaJaMa.Database.Studio.Query
 		public ucQuery()
 		{
 			InitializeComponent();
+			MenuHelper.CreateFileMenu(this);
 		}
 
 		private void frmMain_Load(object sender, EventArgs e)
 		{
 			_settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 			if (_settings.QueryOutputs == null)
+			{
 				_settings.QueryOutputs = new Common.SerializableDictionary<string, List<QueryOutput>>();
+            }
+			else
+            {
+				bool missing = false;
+				foreach (var output in _settings.QueryOutputs.ToList())
+                {
+					if (!_settings.Connections.Any(x => x.ConnectionName == output.Key))
+                    {
+						_settings.QueryOutputs.Remove(output.Key);
+						missing = true;
+					}
+                }
+				if (missing)
+                {
+					PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(_settings);
+				}
+            }
 
 			if (tabMain.TabPages.Count < 1)
 				addWorkspace(null);
 		}
 
-		private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
 		{
 			try
 			{

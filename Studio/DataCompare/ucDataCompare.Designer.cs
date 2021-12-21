@@ -55,7 +55,6 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.connectionStringsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gridTables = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TargetTable = new System.Windows.Forms.DataGridViewComboBoxColumn();
@@ -338,8 +337,7 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openToolStripMenuItem,
-            this.saveToolStripMenuItem,
-            this.connectionStringsToolStripMenuItem});
+            this.saveToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "&File";
@@ -347,23 +345,16 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "&Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.saveToolStripMenuItem.Text = "&Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
-            // 
-            // connectionStringsToolStripMenuItem
-            // 
-            this.connectionStringsToolStripMenuItem.Name = "connectionStringsToolStripMenuItem";
-            this.connectionStringsToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
-            this.connectionStringsToolStripMenuItem.Text = "&Connection Strings";
-            this.connectionStringsToolStripMenuItem.Click += new System.EventHandler(this.connectionStringsToolStripMenuItem_Click);
             // 
             // gridTables
             // 
@@ -520,7 +511,6 @@
 		private System.Windows.Forms.Button btnDataDifferences;
 		private System.Windows.Forms.ToolStripMenuItem setBatchSizeToolStripMenuItem;
 		private System.Windows.Forms.CheckBox chkCaseInsensitive;
-		private System.Windows.Forms.ToolStripMenuItem connectionStringsToolStripMenuItem;
 		private System.Windows.Forms.DataGridView gridTables;
 		private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
 		private System.Windows.Forms.DataGridViewComboBoxColumn TargetTable;

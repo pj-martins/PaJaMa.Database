@@ -942,6 +942,8 @@ namespace PaJaMa.Database.Studio.Compare
 
         private void ucCompare_Load(object sender, EventArgs e)
         {
+            if (DesignMode || LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
+
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             refreshConnStrings();
 
@@ -957,6 +959,8 @@ namespace PaJaMa.Database.Studio.Compare
 
             this.ParentForm.FormClosing += ParentForm_FormClosing;
             this.ParentForm.Load += ParentForm_Load;
+
+            frmConnections.ConnectionsChanged += (object sender2, EventArgs e2) => refreshConnStrings();
         }
 
         private void ParentForm_Load(object sender, EventArgs e)
@@ -986,12 +990,6 @@ namespace PaJaMa.Database.Studio.Compare
         {
             Type type = e.ListItem as Type;
             e.Value = type.Name;
-        }
-
-        private void connectionStringsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new frmConnections().ShowDialog();
-            refreshConnStrings();
         }
 
         private void ChkDifferencesOnly_CheckedChanged(object sender, EventArgs e)

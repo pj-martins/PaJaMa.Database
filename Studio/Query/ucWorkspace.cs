@@ -55,6 +55,7 @@ namespace PaJaMa.Database.Studio.Query
             refreshConnStrings();
 
             this.ParentForm.FormClosing += ucWorkspace_FormClosing;
+            frmConnections.ConnectionsChanged += (object sender2, EventArgs e2) => refreshConnStrings();
 
             if (_initialConnection != null)
             {
@@ -133,27 +134,8 @@ namespace PaJaMa.Database.Studio.Query
             {
                 _dataSource = Activator.CreateInstance(typeof(DataSource).Assembly.GetType(conn.DataSourceType), new object[] { conn.GetConnectionString() }) as DataSource;
                 _currentConnection = _dataSource.OpenConnection(string.Empty);
-                try
-                {
-                    var builder = new DbConnectionStringBuilder() { ConnectionString = cboConnections.Text };
-                    object port = -1;
-                    builder.TryGetValue("port", out port);
-                    object server = string.Empty;
-                    builder.TryGetValue("server", out server);
-                    if (string.IsNullOrEmpty(server?.ToString()))
-                    {
-                        builder.TryGetValue("data source", out server);
-                    }
-                    if (string.IsNullOrEmpty(server?.ToString()))
-                    {
-                        server = cboConnections.Text.Substring(0, 10) + "...";
-                    }
-                    ParentTabControl.SelectedTab.Text = conn.ConnectionName;
-                }
-                catch (Exception sbex)
-                {
-                    // DO NOTHING FOR NOW
-                }
+                ParentTabControl.SelectedTab.Text = conn.ConnectionName;
+
                 if (chkUseDummyDA.Checked)
                 {
                     DbDataAdapter dummy;
@@ -235,7 +217,16 @@ namespace PaJaMa.Database.Studio.Query
             uc.Workspace = this;
             uc.Dock = DockStyle.Fill;
             uc.QueryOutput = queryOutput;
-            if (_dataSource == null || !uc.Connect(_currentConnection, cboConnections.SelectedItem as DatabaseStudioConnection, _dataSource, queryOutput, chkUseDummyDA.Checked))
+            DatabaseStudioConnection dsconn = null;
+            if (cboConnections.SelectedItem != null)
+            {
+                dsconn = cboConnections.SelectedItem as DatabaseStudioConnection;
+            }
+            else
+            {
+                dsconn = cboConnections.Items.OfType<DatabaseStudioConnection>().FirstOrDefault(x => x.ConnectionName == txtReadonlyConnString.Text);
+            }
+            if (_dataSource == null || !uc.Connect(_currentConnection, dsconn, _dataSource, queryOutput, chkUseDummyDA.Checked))
                 return null;
 
             bool add = false;
@@ -312,19 +303,22 @@ namespace PaJaMa.Database.Studio.Query
         {
             if (!Settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(Settings);
             cboConnections.Items.Clear();
-            cboConnections.Items.AddRange(Settings.Connections.ToArray());
+            cboConnections.Items.AddRange(Settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
         }
 
         private void ucWorkspace_FormClosing(object sender, FormClosingEventArgs e)
         {
+            Settings.QueryOutputs[cboConnections.Text] = new List<QueryOutput>();
             foreach (var page in tabOutputs.TabPages)
             {
                 if (page.Controls.Count > 0)
                 {
                     var uc = page.Controls[0] as ucQueryOutput;
-                    uc.SaveOutput();
+                    uc.SaveOutput(false);
+                    Settings.QueryOutputs[cboConnections.Text].Add(uc.QueryOutput);
                 }
             }
+            PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Settings);
             Disconnect();
         }
 

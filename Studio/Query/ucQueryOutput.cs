@@ -101,7 +101,7 @@ namespace PaJaMa.Database.Studio.Query
 			else
 				new Thread(new ThreadStart(execute)).Start();
 
-			SaveOutput();
+			SaveOutput(true);
 		}
 
 		public bool Connect(DbConnection connection, DatabaseStudioConnection studioConnection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
@@ -633,7 +633,7 @@ namespace PaJaMa.Database.Studio.Query
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 
-			SaveOutput();
+			SaveOutput(true);
 		}
 
 		public void PopulateScript(string script, TreeNode selectedNode)
@@ -908,10 +908,13 @@ namespace PaJaMa.Database.Studio.Query
 			}
 		}
 
-		public void SaveOutput()
+		public void SaveOutput(bool andSave)
 		{
 			QueryOutput.Query = txtQuery.Text.Length > 50000 ? "" : txtQuery.Text;
-			PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
+			if (andSave)
+			{
+				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
+			}
 
 			var queryHistoryPath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 				"DatabaseStudio", "QueryHistory", "QueryHistory_" + DateTime.Now.ToString("yyyyMMdd") + ".sql"));

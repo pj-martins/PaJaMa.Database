@@ -32,6 +32,7 @@ namespace PaJaMa.Database.Studio.DataCompare
         public ucDataCompare()
         {
             InitializeComponent();
+            MenuHelper.CreateFileMenu(this);
         }
 
         private void refreshConnStrings()
@@ -47,8 +48,12 @@ namespace PaJaMa.Database.Studio.DataCompare
         private void btnConnect_Click(object sender, EventArgs e)
         {
 
-            var fromConnection = cboSource.SelectedItem as DatabaseStudioConnection;
-            var toConnection = cboTarget.SelectedItem as DatabaseStudioConnection;
+            var fromConnection = cboSource.SelectedIndex < 0
+                ? cboSource.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == cboTarget.Text)
+                : cboSource.SelectedItem as DatabaseStudioConnection;
+            var toConnection = cboTarget.SelectedIndex < 0 
+                ? cboTarget.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == cboTarget.Text)
+                : cboTarget.SelectedItem as DatabaseStudioConnection;
 
             Exception exception = null;
 
@@ -568,6 +573,8 @@ namespace PaJaMa.Database.Studio.DataCompare
 
             this.ParentForm.FormClosing += ParentForm_FormClosing;
             this.ParentForm.Load += ParentForm_Load;
+
+            frmConnections.ConnectionsChanged += (object sender2, EventArgs e2) => refreshConnStrings();
         }
 
         private void ParentForm_Load(object sender, EventArgs e)
@@ -597,14 +604,6 @@ namespace PaJaMa.Database.Studio.DataCompare
         {
             Type type = e.ListItem as Type;
             e.Value = type.Name;
-        }
-
-        private void connectionStringsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (new frmConnectionStrings().ShowDialog() == DialogResult.OK)
-            {
-                refreshConnStrings();
-            }
         }
     }
 }

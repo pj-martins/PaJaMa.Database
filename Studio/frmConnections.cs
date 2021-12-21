@@ -15,6 +15,8 @@ namespace PaJaMa.Database.Studio
 {
     public partial class frmConnections : Form
     {
+        public static event EventHandler ConnectionsChanged;
+
         public frmConnections()
         {
             InitializeComponent();
@@ -29,7 +31,7 @@ namespace PaJaMa.Database.Studio
             }).ToArray());
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             gridMain.AutoGenerateColumns = false;
-            gridMain.DataSource = new BindingList<DatabaseStudioConnection>(settings.Connections);
+            gridMain.DataSource = new BindingList<DatabaseStudioConnection>(settings.Connections.OrderBy(x => x.ConnectionName).ToList());
         }
 
         private void gridMain_SelectionChanged(object sender, EventArgs e)
@@ -108,6 +110,7 @@ namespace PaJaMa.Database.Studio
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             settings.Connections = newConnections;
             PaJaMa.Common.SettingsHelper.SaveUserSettings(settings);
+            ConnectionsChanged?.Invoke(this, new EventArgs());
         }
 
 

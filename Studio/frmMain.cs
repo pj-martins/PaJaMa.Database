@@ -37,5 +37,5 @@ namespace PaJaMa.Database.Studio
 			ucQuery1.LoadFromIDatabase(e);
 			tabMain.SelectedTab = tabQuery;
 		}
-	}
+    }
 }

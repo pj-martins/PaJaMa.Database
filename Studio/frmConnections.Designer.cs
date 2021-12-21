@@ -102,6 +102,7 @@
             // 
             this.gridMain.AllowUserToAddRows = false;
             this.gridMain.AllowUserToDeleteRows = false;
+            this.gridMain.AllowUserToOrderColumns = true;
             this.gridMain.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.gridMain.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.ConnectionName,
