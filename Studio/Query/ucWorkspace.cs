@@ -55,7 +55,11 @@ namespace PaJaMa.Database.Studio.Query
             refreshConnStrings();
 
             this.ParentForm.FormClosing += ucWorkspace_FormClosing;
-            frmConnections.ConnectionsChanged += (object sender2, EventArgs e2) => refreshConnStrings();
+            frmConnections.ConnectionsChanged += (object sender2, EventArgs e2) =>
+            {
+                Settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+                refreshConnStrings();
+            };
 
             if (_initialConnection != null)
             {
