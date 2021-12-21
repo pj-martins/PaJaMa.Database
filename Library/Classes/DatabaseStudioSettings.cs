@@ -59,6 +59,7 @@ namespace PaJaMa.Database.Library
 
         public static void ConvertFromLegacy(DatabaseStudioSettings settings)
         {
+            if (settings.ConnectionStrings == null) return;
             var connStrings = settings.ConnectionStrings.Split('|');
             List<DatabaseStudioConnection> connections = new List<DatabaseStudioConnection>();
             foreach (var connString in connStrings)
