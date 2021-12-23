@@ -32,20 +32,17 @@
             this.tabMain = new System.Windows.Forms.TabControl();
             this.tabCompare = new System.Windows.Forms.TabPage();
             this.tabQuery = new System.Windows.Forms.TabPage();
-            this.tabDataCompare = new System.Windows.Forms.TabPage();
             this.tabDataGenerate = new System.Windows.Forms.TabPage();
             this.tabSearch = new System.Windows.Forms.TabPage();
             this.tabMonitor = new System.Windows.Forms.TabPage();
             this.ucCompare1 = new PaJaMa.Database.Studio.Compare.ucCompare();
             this.ucQuery1 = new PaJaMa.Database.Studio.Query.ucQuery();
-            this.ucDataCompare = new PaJaMa.Database.Studio.DataCompare.ucDataCompare();
             this.ucDataGenerate1 = new PaJaMa.Database.Studio.DataGenerate.ucDataGenerate();
             this.ucSearch1 = new PaJaMa.Database.Studio.Search.ucSearch();
             this.ucMonitor = new PaJaMa.Database.Studio.Monitor.ucMonitor();
             this.tabMain.SuspendLayout();
             this.tabCompare.SuspendLayout();
             this.tabQuery.SuspendLayout();
-            this.tabDataCompare.SuspendLayout();
             this.tabDataGenerate.SuspendLayout();
             this.tabSearch.SuspendLayout();
             this.tabMonitor.SuspendLayout();
@@ -56,7 +53,6 @@
             this.tabMain.Alignment = System.Windows.Forms.TabAlignment.Bottom;
             this.tabMain.Controls.Add(this.tabCompare);
             this.tabMain.Controls.Add(this.tabQuery);
-            this.tabMain.Controls.Add(this.tabDataCompare);
             this.tabMain.Controls.Add(this.tabDataGenerate);
             this.tabMain.Controls.Add(this.tabSearch);
             this.tabMain.Controls.Add(this.tabMonitor);
@@ -88,17 +84,6 @@
             this.tabQuery.TabIndex = 1;
             this.tabQuery.Text = "Query";
             this.tabQuery.UseVisualStyleBackColor = true;
-            // 
-            // tabDataCompare
-            // 
-            this.tabDataCompare.Controls.Add(this.ucDataCompare);
-            this.tabDataCompare.Location = new System.Drawing.Point(4, 4);
-            this.tabDataCompare.Name = "tabDataCompare";
-            this.tabDataCompare.Padding = new System.Windows.Forms.Padding(3);
-            this.tabDataCompare.Size = new System.Drawing.Size(1109, 555);
-            this.tabDataCompare.TabIndex = 5;
-            this.tabDataCompare.Text = "Data Compare";
-            this.tabDataCompare.UseVisualStyleBackColor = true;
             // 
             // tabDataGenerate
             // 
@@ -150,14 +135,6 @@
             this.ucQuery1.Size = new System.Drawing.Size(1103, 549);
             this.ucQuery1.TabIndex = 0;
             // 
-            // ucDataCompare
-            // 
-            this.ucDataCompare.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ucDataCompare.Location = new System.Drawing.Point(3, 3);
-            this.ucDataCompare.Name = "ucDataCompare";
-            this.ucDataCompare.Size = new System.Drawing.Size(1103, 549);
-            this.ucDataCompare.TabIndex = 1;
-            // 
             // ucDataGenerate1
             // 
             this.ucDataGenerate1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -198,7 +175,6 @@
             this.tabMain.ResumeLayout(false);
             this.tabCompare.ResumeLayout(false);
             this.tabQuery.ResumeLayout(false);
-            this.tabDataCompare.ResumeLayout(false);
             this.tabDataGenerate.ResumeLayout(false);
             this.tabSearch.ResumeLayout(false);
             this.tabMonitor.ResumeLayout(false);
@@ -219,7 +195,5 @@
 		private Search.ucSearch ucSearch1;
 		private System.Windows.Forms.TabPage tabMonitor;
 		private Monitor.ucMonitor ucMonitor;
-		private System.Windows.Forms.TabPage tabDataCompare;
-		private DataCompare.ucDataCompare ucDataCompare;
     }
 }

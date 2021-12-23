@@ -42,6 +42,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.cboSource = new System.Windows.Forms.ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.chkDataOnly = new System.Windows.Forms.CheckBox();
             this.chkCondensed = new System.Windows.Forms.CheckBox();
             this.chkDifferencesOnly = new System.Windows.Forms.CheckBox();
             this.chkNamedConstraints = new System.Windows.Forms.CheckBox();
@@ -71,6 +72,7 @@
             this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectTop1000ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setBatchSizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.diffTables = new PaJaMa.Database.Studio.Compare.ucDifferences();
             this.tabObjects = new System.Windows.Forms.TabPage();
             this.splitObjects = new System.Windows.Forms.SplitContainer();
             this.gridObjects = new System.Windows.Forms.DataGridView();
@@ -78,19 +80,18 @@
             this.ObjectType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ProgTargetObject = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewCheckBoxColumn2 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.diffObjects = new PaJaMa.Database.Studio.Compare.ucDifferences();
             this.tabDrop = new System.Windows.Forms.TabPage();
             this.splitDrops = new System.Windows.Forms.SplitContainer();
             this.gridDropObjects = new System.Windows.Forms.DataGridView();
             this.dataGridViewTextBoxColumn3 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ObjectType2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewCheckBoxColumn1 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.diffDrops = new PaJaMa.Database.Studio.Compare.ucDifferences();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.diffTables = new PaJaMa.Database.Studio.Compare.ucDifferences();
-            this.diffObjects = new PaJaMa.Database.Studio.Compare.ucDifferences();
-            this.diffDrops = new PaJaMa.Database.Studio.Compare.ucDifferences();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.tabMain.SuspendLayout();
@@ -175,24 +176,24 @@
             // 
             this.cboTargetDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cboTargetDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboTargetDatabase.Enabled = false;
             this.cboTargetDatabase.FormattingEnabled = true;
             this.cboTargetDatabase.Location = new System.Drawing.Point(1067, 39);
             this.cboTargetDatabase.Name = "cboTargetDatabase";
             this.cboTargetDatabase.Size = new System.Drawing.Size(121, 21);
             this.cboTargetDatabase.TabIndex = 13;
-            this.cboTargetDatabase.Visible = false;
             this.cboTargetDatabase.SelectedIndexChanged += new System.EventHandler(this.cboTargetDatabase_SelectedIndexChanged);
             // 
             // cboSourceDatabase
             // 
             this.cboSourceDatabase.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cboSourceDatabase.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cboSourceDatabase.Enabled = false;
             this.cboSourceDatabase.FormattingEnabled = true;
             this.cboSourceDatabase.Location = new System.Drawing.Point(1067, 12);
             this.cboSourceDatabase.Name = "cboSourceDatabase";
             this.cboSourceDatabase.Size = new System.Drawing.Size(121, 21);
             this.cboSourceDatabase.TabIndex = 12;
-            this.cboSourceDatabase.Visible = false;
             this.cboSourceDatabase.SelectedIndexChanged += new System.EventHandler(this.cboSourceDatabase_SelectedIndexChanged);
             // 
             // btnDisconnect
@@ -233,10 +234,11 @@
             // 
             this.cboTarget.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.cboTarget.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboTarget.FormattingEnabled = true;
             this.cboTarget.Location = new System.Drawing.Point(142, 39);
             this.cboTarget.Name = "cboTarget";
-            this.cboTarget.Size = new System.Drawing.Size(646, 21);
+            this.cboTarget.Size = new System.Drawing.Size(778, 21);
             this.cboTarget.TabIndex = 8;
             // 
             // label1
@@ -252,14 +254,16 @@
             // 
             this.cboSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.cboSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboSource.FormattingEnabled = true;
             this.cboSource.Location = new System.Drawing.Point(142, 12);
             this.cboSource.Name = "cboSource";
-            this.cboSource.Size = new System.Drawing.Size(646, 21);
+            this.cboSource.Size = new System.Drawing.Size(778, 21);
             this.cboSource.TabIndex = 6;
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.chkDataOnly);
             this.panel2.Controls.Add(this.chkCondensed);
             this.panel2.Controls.Add(this.chkDifferencesOnly);
             this.panel2.Controls.Add(this.chkNamedConstraints);
@@ -275,6 +279,18 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1292, 30);
             this.panel2.TabIndex = 11;
+            // 
+            // chkDataOnly
+            // 
+            this.chkDataOnly.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkDataOnly.AutoSize = true;
+            this.chkDataOnly.Location = new System.Drawing.Point(60, 5);
+            this.chkDataOnly.Margin = new System.Windows.Forms.Padding(1);
+            this.chkDataOnly.Name = "chkDataOnly";
+            this.chkDataOnly.Size = new System.Drawing.Size(73, 17);
+            this.chkDataOnly.TabIndex = 12;
+            this.chkDataOnly.Text = "Data Only";
+            this.chkDataOnly.UseVisualStyleBackColor = true;
             // 
             // chkCondensed
             // 
@@ -582,6 +598,17 @@
             this.setBatchSizeToolStripMenuItem.Visible = false;
             this.setBatchSizeToolStripMenuItem.Click += new System.EventHandler(this.setBatchSizeToolStripMenuItem_Click);
             // 
+            // diffTables
+            // 
+            this.diffTables.CompareHelper = null;
+            this.diffTables.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.diffTables.Location = new System.Drawing.Point(0, 0);
+            this.diffTables.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.diffTables.Name = "diffTables";
+            this.diffTables.Size = new System.Drawing.Size(911, 495);
+            this.diffTables.TabIndex = 0;
+            this.diffTables.Workspace = null;
+            // 
             // tabObjects
             // 
             this.tabObjects.Controls.Add(this.splitObjects);
@@ -661,6 +688,17 @@
             this.dataGridViewCheckBoxColumn2.HeaderText = "Select";
             this.dataGridViewCheckBoxColumn2.Name = "dataGridViewCheckBoxColumn2";
             // 
+            // diffObjects
+            // 
+            this.diffObjects.CompareHelper = null;
+            this.diffObjects.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.diffObjects.Location = new System.Drawing.Point(0, 0);
+            this.diffObjects.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.diffObjects.Name = "diffObjects";
+            this.diffObjects.Size = new System.Drawing.Size(371, 495);
+            this.diffObjects.TabIndex = 0;
+            this.diffObjects.Workspace = null;
+            // 
             // tabDrop
             // 
             this.tabDrop.Controls.Add(this.splitDrops);
@@ -727,6 +765,17 @@
             this.dataGridViewCheckBoxColumn1.HeaderText = "Select";
             this.dataGridViewCheckBoxColumn1.Name = "dataGridViewCheckBoxColumn1";
             // 
+            // diffDrops
+            // 
+            this.diffDrops.CompareHelper = null;
+            this.diffDrops.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.diffDrops.Location = new System.Drawing.Point(0, 0);
+            this.diffDrops.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.diffDrops.Name = "diffDrops";
+            this.diffDrops.Size = new System.Drawing.Size(364, 495);
+            this.diffDrops.TabIndex = 1;
+            this.diffDrops.Workspace = null;
+            // 
             // menuStrip1
             // 
             this.menuStrip1.BackColor = System.Drawing.Color.Transparent;
@@ -761,39 +810,6 @@
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.saveToolStripMenuItem.Text = "&Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
-            // 
-            // diffTables
-            // 
-            this.diffTables.CompareHelper = null;
-            this.diffTables.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.diffTables.Location = new System.Drawing.Point(0, 0);
-            this.diffTables.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.diffTables.Name = "diffTables";
-            this.diffTables.Size = new System.Drawing.Size(911, 495);
-            this.diffTables.TabIndex = 0;
-            this.diffTables.Workspace = null;
-            // 
-            // diffObjects
-            // 
-            this.diffObjects.CompareHelper = null;
-            this.diffObjects.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.diffObjects.Location = new System.Drawing.Point(0, 0);
-            this.diffObjects.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.diffObjects.Name = "diffObjects";
-            this.diffObjects.Size = new System.Drawing.Size(371, 495);
-            this.diffObjects.TabIndex = 0;
-            this.diffObjects.Workspace = null;
-            // 
-            // diffDrops
-            // 
-            this.diffDrops.CompareHelper = null;
-            this.diffDrops.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.diffDrops.Location = new System.Drawing.Point(0, 0);
-            this.diffDrops.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.diffDrops.Name = "diffDrops";
-            this.diffDrops.Size = new System.Drawing.Size(364, 495);
-            this.diffDrops.TabIndex = 1;
-            this.diffDrops.Workspace = null;
             // 
             // ucCompare
             // 
@@ -901,6 +917,7 @@
 		private System.Windows.Forms.CheckBox chkNamedConstraints;
 		private System.Windows.Forms.CheckBox chkDifferencesOnly;
 		private System.Windows.Forms.CheckBox chkCondensed;
-	}
+        private System.Windows.Forms.CheckBox chkDataOnly;
+    }
 }
 

@@ -94,7 +94,29 @@ and tc.TABLE_SCHEMA = '{0}'";
 
         internal override string DatabaseSQL => "SELECT SCHEMA_NAME AS DatabaseName FROM information_schema.schemata";
 
-        internal override string CombinedSQL => throw new NotImplementedException();
+        internal override string CombinedSQL => @"
+SELECT z.*, TABLE_NAME AS TableName, COLUMN_NAME AS ColumnName, '' as SchemaName, c.GENERATION_EXPRESSION as Formula
+FROM information_schema.columns c
+LEFT JOIN (
+SELECT DISTINCT
+    tc.constraint_name AS ForeignKeyName, tc.table_name AS ChildTableName, kcu.column_name AS ChildColumnName, 
+   c.referenced_table_name AS ParentTableName, referenced_column_name AS ParentColumnName, UPDATE_RULE AS UpdateRule, DELETE_RULE AS DeleteRule,
+	  '' AS ParentTableSchema, '' AS ChildTableSchema,  tc.TABLE_SCHEMA
+FROM information_schema.table_constraints AS tc
+JOIN information_schema.key_column_usage AS kcu
+	ON tc.constraint_name = kcu.constraint_name
+	AND tc.table_name = kcu.TABLE_NAME
+JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS c ON c.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+	AND c.CONSTRAINT_SCHEMA = tc.CONSTRAINT_SCHEMA
+WHERE constraint_type = 'FOREIGN KEY'
+	AND referenced_table_schema IS NOT NULL
+	AND tc.CONSTRAINT_SCHEMA <> 'tmp'
+) z
+ON z.ChildTableName = c.table_name
+	AND z.ChildColumnName = c.column_name
+	AND z.TABLE_SCHEMA = c.TABLE_SCHEMA
+WHERE c.TABLE_SCHEMA = '{0}'
+";
 
 
         private List<ColumnType> _columnTypes;

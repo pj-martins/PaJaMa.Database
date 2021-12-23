@@ -1,4 +1,4 @@
-﻿namespace PaJaMa.Database.Studio.DataCompare
+﻿namespace PaJaMa.Database.Studio.Compare
 {
 	partial class frmDataDetails
 	{

@@ -19,8 +19,6 @@ namespace PaJaMa.Database.Library
         public List<DatabaseStudioConnection> Connections { get; set; }
         public DatabaseStudioConnection LastCompareSourceConnection { get; set; }
         public DatabaseStudioConnection LastCompareTargetConnection { get; set; }
-        public DatabaseStudioConnection LastDataCompareSourceConnection { get; set; }
-        public DatabaseStudioConnection LastDataCompareTargetConnection { get; set; }
         public DatabaseStudioConnection LastSearchConnection { get; set; }
         public DatabaseStudioConnection LastQueryConnection { get; set; }
         public DatabaseStudioConnection LastMonitorConnection { get; set; }

@@ -5,7 +5,6 @@ using PaJaMa.Database.Library.Helpers;
 using PaJaMa.Database.Library.Synchronization;
 using PaJaMa.Database.Library.Workspaces.Compare;
 using PaJaMa.Database.Studio.Classes;
-using PaJaMa.Database.Studio.DataCompare;
 using PaJaMa.WinControls;
 using System;
 using System.Collections.Generic;
@@ -37,6 +36,7 @@ namespace PaJaMa.Database.Studio.Compare
         public ucCompare()
         {
             InitializeComponent();
+            MenuHelper.CreateFileMenu(this);
         }
 
         private void refreshConnStrings()
@@ -51,8 +51,12 @@ namespace PaJaMa.Database.Studio.Compare
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            var fromConnection = cboSource.SelectedItem as DatabaseStudioConnection;
-            var toConnection = cboTarget.SelectedItem as DatabaseStudioConnection;
+            var fromConnection = cboSource.SelectedIndex < 0
+                ? cboSource.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == cboTarget.Text)
+                : cboSource.SelectedItem as DatabaseStudioConnection;
+            var toConnection = cboTarget.SelectedIndex < 0
+                ? cboTarget.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == cboTarget.Text)
+                : cboTarget.SelectedItem as DatabaseStudioConnection;
 
             Exception exception = null;
 
@@ -89,7 +93,7 @@ namespace PaJaMa.Database.Studio.Compare
 
                     try
                     {
-                        _compareHelper = new CompareHelper(fromDataSource, toDataSource, false, worker);
+                        _compareHelper = new CompareHelper(fromDataSource, toDataSource, chkDataOnly.Checked, worker);
                     }
                     catch (Exception ex)
                     {
@@ -165,7 +169,7 @@ namespace PaJaMa.Database.Studio.Compare
                 cboSource.SelectionLength = 0;
                 cboTarget.SelectionLength = 0;
                 cboTarget.Enabled = cboSource.Enabled = chkNamedConstraints.Enabled = false;
-                cboSourceDatabase.Visible = cboTargetDatabase.Visible = true;
+                cboSourceDatabase.Enabled = cboTargetDatabase.Enabled = true;
                 btnSourceQuery.Enabled = btnTargetQuery.Enabled = true;
                 btnGo.Enabled = btnRefresh.Enabled = btnViewMissingDependencies.Enabled = btnSelectAll.Enabled = true;
             }
@@ -184,25 +188,35 @@ namespace PaJaMa.Database.Studio.Compare
                 WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
             }
 
-            var dropWorkspaces = new List<DropWorkspace>();
-            refreshTables(dropWorkspaces);
-            refreshObjects(dropWorkspaces);
+            if (chkDataOnly.Checked)
+            {
+                refreshTables();
+            }
+            else
+            {
+                var dropWorkspaces = new List<DropWorkspace>();
+                refreshTables(dropWorkspaces);
+                refreshObjects(dropWorkspaces);
 
-            gridDropObjects.AutoGenerateColumns = false;
-            gridDropObjects.DataSource = new BindingList<DropWorkspace>(dropWorkspaces.OrderBy(w => w.TargetObject.ToString()).ToList());
+                gridDropObjects.AutoGenerateColumns = false;
+                gridDropObjects.DataSource = new BindingList<DropWorkspace>(dropWorkspaces.OrderBy(w => w.TargetObject.ToString()).ToList());
 
-            _differencedTabs = new List<TabPage>();
-            identifyDifferences();
+                _differencedTabs = new List<TabPage>();
+                identifyDifferences();
+            }
             setTabText();
         }
 
-        private void refreshTables(List<DropWorkspace> dropWorkspaces)
+        private void refreshTables(List<DropWorkspace> dropWorkspaces = null)
         {
-            var lst = TableWorkspaceList.GetTableWorkspaces(_compareHelper, false, chkCondensed.Checked);
+            var lst = TableWorkspaceList.GetTableWorkspaces(_compareHelper, chkDataOnly.Checked, chkCondensed.Checked);
 
-            foreach (var dw in lst.DropWorkspaces)
+            if (dropWorkspaces != null)
             {
-                dropWorkspaces.Add(dw);
+                foreach (var dw in lst.DropWorkspaces)
+                {
+                    dropWorkspaces.Add(dw);
+                }
             }
 
             TargetTable.Items.Clear();
@@ -382,7 +396,7 @@ namespace PaJaMa.Database.Studio.Compare
             btnDisconnect.Visible = false;
             btnConnect.Visible = true;
             cboSource.Enabled = cboTarget.Enabled = chkNamedConstraints.Enabled = true;
-            cboSourceDatabase.Visible = cboTargetDatabase.Visible = false;
+            cboSourceDatabase.Enabled = cboTargetDatabase.Enabled = false;
             btnSourceQuery.Enabled = btnTargetQuery.Enabled = false;
             btnGo.Enabled = btnViewMissingDependencies.Enabled = btnRefresh.Enabled = btnSelectAll.Enabled = false;
             tabTables.Text = "Tables";
@@ -406,6 +420,7 @@ namespace PaJaMa.Database.Studio.Compare
         private void cboSourceDatabase_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_lockDbChange) return;
+            if (MessageBox.Show("Refresh now?", "Refresh", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
             _compareHelper.FromDataSource.ChangeDatabase(cboSourceDatabase.Text);
             refreshPage(true);
         }
@@ -413,6 +428,7 @@ namespace PaJaMa.Database.Studio.Compare
         private void cboTargetDatabase_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (_lockDbChange) return;
+            if (MessageBox.Show("Refresh now?", "Refresh", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
             _compareHelper.ToDataSource.ChangeDatabase(cboTargetDatabase.Text);
             refreshPage(true);
         }

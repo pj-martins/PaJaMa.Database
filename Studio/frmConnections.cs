@@ -32,6 +32,7 @@ namespace PaJaMa.Database.Studio
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             gridMain.AutoGenerateColumns = false;
             gridMain.DataSource = new BindingList<DatabaseStudioConnection>(settings.Connections.OrderBy(x => x.ConnectionName).ToList());
+            enableDisableControls();
         }
 
         private void gridMain_SelectionChanged(object sender, EventArgs e)
@@ -60,6 +61,7 @@ namespace PaJaMa.Database.Studio
             if (MessageBox.Show("Are you sure you want to remove this connection?", "Remove Connection", MessageBoxButtons.YesNo) == DialogResult.Yes)
             {
                 gridMain.Rows.Remove(gridMain.SelectedRows[0]);
+                enableDisableControls();
                 save();
             }
         }
@@ -68,6 +70,7 @@ namespace PaJaMa.Database.Studio
         {
             (gridMain.DataSource as BindingList<DatabaseStudioConnection>).Add(new DatabaseStudioConnection());
             gridMain.Rows[gridMain.Rows.Count - 1].Selected = true;
+            enableDisableControls();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -83,6 +86,7 @@ namespace PaJaMa.Database.Studio
             selectedItem.IntegratedSecurity = chkIntegratedSecurity.Checked;
             selectedItem.DataSourceType = (cboDataSource.SelectedItem as TypeDisplay).Type.FullName;
             save();
+            gridMain.Invalidate();
         }
 
         private void btnCopy_Click(object sender, EventArgs e)
@@ -113,7 +117,28 @@ namespace PaJaMa.Database.Studio
             ConnectionsChanged?.Invoke(this, new EventArgs());
         }
 
+        private void enableDisableControls()
+        {
+            bool enabled = gridMain.Rows.Count > 0;
+            txtConnectionName.Enabled =
+                cboDataSource.Enabled =
+                txtServer.Enabled =
+                numPort.Enabled =
+                txtDatabase.Enabled =
+                txtUser.Enabled =
+                txtPassword.Enabled =
+                txtAppend.Enabled =
+                chkIntegratedSecurity.Enabled =
+                btnCopy.Enabled =
+                btnSave.Enabled =
+                btnRemove.Enabled =
+                    enabled;
+        }
 
+        private void txtServer_TextChanged(object sender, EventArgs e)
+        {
+            gridMain.Invalidate();
+        }
     }
 
     public class TypeDisplay

@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace PaJaMa.Database.Studio.DataCompare
+namespace PaJaMa.Database.Studio.Compare
 {
 	public partial class frmDataDetails : Form
 	{
