@@ -83,7 +83,7 @@ namespace PaJaMa.Database.Library.Helpers
 
 		public bool Generate(BackgroundWorker worker, List<TableWorkspace> workspaces)
 		{
-			using (var conn = new SqlConnection(DataSource.ConnectionString))
+			using (var conn = DataSource.OpenConnection() as SqlConnection)
 			{
 				conn.Open();
 				using (var trans = conn.BeginTransaction())

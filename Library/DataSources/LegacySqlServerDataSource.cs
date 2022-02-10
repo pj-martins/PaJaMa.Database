@@ -12,7 +12,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
 	public class LegacySqlServerDataSource : SqlServerDataSource
 	{
-		public LegacySqlServerDataSource(string connectionString) : base(connectionString)
+		public LegacySqlServerDataSource(DatabaseConnection connection) : base(connection)
 		{
 		}
 

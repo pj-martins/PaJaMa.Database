@@ -11,7 +11,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
 	public class AccessOdbcDataSource : OdbcDataSource
 	{
-		public AccessOdbcDataSource(string connectionString) : base(connectionString)
+		public AccessOdbcDataSource(DatabaseConnection connection) : base(connection)
 		{
 		}
 

@@ -34,7 +34,7 @@ namespace PaJaMa.Database.Studio.Query
 		private DateTime _start;
 		private DbCommand _currentCommand;
 		private DataSource _dataSource;
-		private DatabaseStudioConnection _studioConnection;
+		private DatabaseConnection _studioConnection;
 		private string _query;
 		private bool _flagIntellisense;
 		private ListBox _intelliBox;
@@ -104,7 +104,7 @@ namespace PaJaMa.Database.Studio.Query
 			SaveOutput(true);
 		}
 
-		public bool Connect(DbConnection connection, DatabaseStudioConnection studioConnection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
+		public bool Connect(DbConnection connection, DatabaseConnection studioConnection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
 		{
 			try
 			{
@@ -115,7 +115,7 @@ namespace PaJaMa.Database.Studio.Query
 					CurrentConnection = connection;
 				else
 				{
-					CurrentConnection = dataSource.OpenConnection(string.Empty);
+					CurrentConnection = dataSource.OpenConnection();
 					// TODO: generic
 					if (CurrentConnection is SqlConnection)
 						(CurrentConnection as SqlConnection).InfoMessage += ucQueryOutput_InfoMessage;

@@ -77,7 +77,7 @@ namespace PaJaMa.Database.Library.Workspaces.Generate
 			_generatorHelper = generatorHelper;
 			Table = table;
 			var tables = new List<Table>();
-			using (var conn = new SqlConnection(generatorHelper.DataSource.ConnectionString))
+			using (var conn = generatorHelper.DataSource.OpenConnection())
 			{
 				using (var cmd = conn.CreateCommand())
 				{

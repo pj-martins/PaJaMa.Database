@@ -10,7 +10,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
 	public class OleDbDataSource : DataSource
 	{
-		public OleDbDataSource(string connectionString) : base(connectionString)
+		public OleDbDataSource(DatabaseConnection connection) : base(connection)
 		{
 		}
 

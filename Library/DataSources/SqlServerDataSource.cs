@@ -8,7 +8,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
 	public class SqlServerDataSource : DataSource
 	{
-		public SqlServerDataSource(string connectionString) : base(connectionString)
+		public SqlServerDataSource(DatabaseConnection connection) : base(connection)
 		{
 			this.NamedConstraints = true;
 		}

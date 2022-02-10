@@ -31,7 +31,7 @@ namespace PaJaMa.Database.Studio
             }).ToArray());
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             gridMain.AutoGenerateColumns = false;
-            gridMain.DataSource = new BindingList<DatabaseStudioConnection>(settings.Connections.OrderBy(x => x.ConnectionName).ToList());
+            gridMain.DataSource = new BindingList<DatabaseConnection>(settings.Connections.OrderBy(x => x.ConnectionName).ToList());
             enableDisableControls();
         }
 
@@ -40,7 +40,7 @@ namespace PaJaMa.Database.Studio
             var selection = gridMain.SelectedRows.Count > 0 ? gridMain.SelectedRows[0] : null;
             if (selection != null)
             {
-                var conn = (DatabaseStudioConnection)selection.DataBoundItem;
+                var conn = (DatabaseConnection)selection.DataBoundItem;
                 txtConnectionName.Text = conn.ConnectionName;
                 txtServer.Text = conn.Server;
                 numPort.Value = conn.Port;
@@ -48,6 +48,9 @@ namespace PaJaMa.Database.Studio
                 txtUser.Text = conn.UserName;
                 txtPassword.Text = conn.Password;
                 txtAppend.Text = conn.Append;
+                txtTunnel.Text = conn.Tunnel;
+                numTunnelPort.Value = conn.TunnelPort;
+                txtTunnelKey.Text = conn.TunnelKeyFile;
                 chkIntegratedSecurity.Checked = conn.IntegratedSecurity;
                 if (!string.IsNullOrEmpty(conn.DataSourceType))
                 {
@@ -68,14 +71,14 @@ namespace PaJaMa.Database.Studio
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            (gridMain.DataSource as BindingList<DatabaseStudioConnection>).Add(new DatabaseStudioConnection());
+            (gridMain.DataSource as BindingList<DatabaseConnection>).Add(new DatabaseConnection());
             gridMain.Rows[gridMain.Rows.Count - 1].Selected = true;
             enableDisableControls();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            var selectedItem = gridMain.SelectedRows[0].DataBoundItem as DatabaseStudioConnection;
+            var selectedItem = gridMain.SelectedRows[0].DataBoundItem as DatabaseConnection;
             selectedItem.ConnectionName = txtConnectionName.Text;
             selectedItem.Server = txtServer.Text;
             selectedItem.Port = (int)numPort.Value;
@@ -84,6 +87,9 @@ namespace PaJaMa.Database.Studio
             selectedItem.Password = txtPassword.Text;
             selectedItem.Append = txtAppend.Text;
             selectedItem.IntegratedSecurity = chkIntegratedSecurity.Checked;
+            selectedItem.Tunnel = txtTunnel.Text;
+            selectedItem.TunnelPort = (int)numTunnelPort.Value;
+            selectedItem.TunnelKeyFile = txtTunnelKey.Text;
             selectedItem.DataSourceType = (cboDataSource.SelectedItem as TypeDisplay).Type.FullName;
             save();
             gridMain.Invalidate();
@@ -91,8 +97,8 @@ namespace PaJaMa.Database.Studio
 
         private void btnCopy_Click(object sender, EventArgs e)
         {
-            var selectedItem = gridMain.SelectedRows[0].DataBoundItem as DatabaseStudioConnection;
-            var clone = new DatabaseStudioConnection()
+            var selectedItem = gridMain.SelectedRows[0].DataBoundItem as DatabaseConnection;
+            var clone = new DatabaseConnection()
             {
                 ConnectionName = selectedItem.ConnectionName + " - Copy",
                 Server = selectedItem.Server,
@@ -102,15 +108,18 @@ namespace PaJaMa.Database.Studio
                 UserName = selectedItem.UserName,
                 Password = selectedItem.Password,
                 IntegratedSecurity = selectedItem.IntegratedSecurity,
-                Append = selectedItem.Append
+                Append = selectedItem.Append,
+                Tunnel = selectedItem.Tunnel,
+                TunnelPort = selectedItem.TunnelPort,
+                TunnelKeyFile = selectedItem.TunnelKeyFile
             };
-            (gridMain.DataSource as BindingList<DatabaseStudioConnection>).Add(clone);
+            (gridMain.DataSource as BindingList<DatabaseConnection>).Add(clone);
             gridMain.Rows[gridMain.Rows.Count - 1].Selected = true;
         }
 
         private void save()
         {
-            var newConnections = gridMain.Rows.OfType<DataGridViewRow>().Select(x => x.DataBoundItem as DatabaseStudioConnection).ToList();
+            var newConnections = gridMain.Rows.OfType<DataGridViewRow>().Select(x => x.DataBoundItem as DatabaseConnection).ToList();
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             settings.Connections = newConnections;
             PaJaMa.Common.SettingsHelper.SaveUserSettings(settings);
@@ -132,12 +141,23 @@ namespace PaJaMa.Database.Studio
                 btnCopy.Enabled =
                 btnSave.Enabled =
                 btnRemove.Enabled =
+                txtTunnel.Enabled =
+                txtTunnelKey.Enabled =
                     enabled;
         }
 
         private void txtServer_TextChanged(object sender, EventArgs e)
         {
             gridMain.Invalidate();
+        }
+
+        private void btnBrowseKey_Click(object sender, EventArgs e)
+        {
+            var dlg = new OpenFileDialog();
+            if (dlg.ShowDialog() == DialogResult.OK)
+            {
+                txtTunnelKey.Text = dlg.FileName;
+            }
         }
     }
 

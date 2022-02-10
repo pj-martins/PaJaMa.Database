@@ -30,12 +30,12 @@ namespace PaJaMa.Database.Studio.Search
         private void UcSearch_Load(object sender, EventArgs e)
         {
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            if (!settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(settings);
+            if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
 
             refreshConnStrings();
 
             if (settings.LastSearchConnection != null)
-                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == settings.LastSearchConnection.ConnectionName);
+                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastSearchConnection.ConnectionName);
 
             var types = DataSource.GetDataSourceTypes();
 
@@ -46,14 +46,14 @@ namespace PaJaMa.Database.Studio.Search
         private void refreshConnStrings()
         {
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            if (!settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(settings);
+            if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
             cboConnection.Items.Clear();
             cboConnection.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            var connection = cboConnection.SelectedItem as DatabaseStudioConnection;
+            var connection = cboConnection.SelectedItem as DatabaseConnection;
 
             Exception exception = null;
 
@@ -63,10 +63,10 @@ namespace PaJaMa.Database.Studio.Search
             var worker = new BackgroundWorker();
             worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
             {
+                var dataSource = Activator.CreateInstance(typeof(DataSource).Assembly.GetType(connection.DataSourceType), new object[] { connection }) as DataSource;
                 try
                 {
-                    var dataSource = Activator.CreateInstance(typeof(DataSource).Assembly.GetType(connection.DataSourceType), new object[] { connection.GetConnectionString() }) as DataSource;
-                    using (var conn = dataSource.OpenConnection(string.Empty))
+                    using (var conn = dataSource.OpenConnection())
                     {
                         schema = conn.GetSchema("Databases");
                         database = conn.Database;
@@ -79,7 +79,7 @@ namespace PaJaMa.Database.Studio.Search
                     return;
                 }
 
-                _searchHelper = new SearchHelper(typeof(DataSource).Assembly.GetType(connection.DataSourceType), connection.GetConnectionString(), worker);
+                _searchHelper = new SearchHelper(dataSource, worker);
             };
 
             WinControls.WinProgressBox.ShowProgress(worker, progressBarStyle: ProgressBarStyle.Marquee);
@@ -90,7 +90,7 @@ namespace PaJaMa.Database.Studio.Search
                 refreshPage(false);
 
                 var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-                settings.LastSearchConnection = cboConnection.SelectedItem as DatabaseStudioConnection;
+                settings.LastSearchConnection = cboConnection.SelectedItem as DatabaseConnection;
                 PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
                 _lockDbChange = true;

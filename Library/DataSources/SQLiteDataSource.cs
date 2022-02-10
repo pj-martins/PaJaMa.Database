@@ -14,7 +14,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
 	public class SQLiteDataSource : SqlServerDataSource
 	{
-		public SQLiteDataSource(string connectionString) : base(connectionString)
+		public SQLiteDataSource(DatabaseConnection connection) : base(connection)
 		{
 		}
 

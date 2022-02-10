@@ -36,7 +36,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		private void UcDataGenerate_Load(object sender, EventArgs e)
 		{
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (!settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(settings);
+			if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
 
 			refreshConnStrings();
 
@@ -49,7 +49,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 		private void refreshConnStrings()
 		{
 			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (!settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(settings);
+			if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
 				cboConnection.Items.Clear();
 				cboConnection.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
 		}

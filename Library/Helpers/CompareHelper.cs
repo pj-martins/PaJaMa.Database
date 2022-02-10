@@ -15,7 +15,7 @@ using PaJaMa.Database.Library.DataSources;
 
 namespace PaJaMa.Database.Library.Helpers
 {
-	public class CompareHelper
+	public class CompareHelper : IDisposable
 	{
 		public event PromptEventHandler Prompt;
 
@@ -249,5 +249,18 @@ namespace PaJaMa.Database.Library.Helpers
 				}
 			}
 		}
-	}
+
+        public void Dispose()
+        {
+            if (this.FromDataSource != null)
+            {
+				this.FromDataSource.Dispose();
+            }
+
+			if (this.ToDataSource != null)
+            {
+				this.ToDataSource.Dispose();
+            }
+        }
+    }
 }

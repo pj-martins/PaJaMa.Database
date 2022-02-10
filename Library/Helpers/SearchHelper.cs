@@ -13,9 +13,9 @@ namespace PaJaMa.Database.Library.Helpers
 	public class SearchHelper
 	{
 		public DataSource DataSource { get; set; }
-		public SearchHelper(Type dataSourceType, string connectionString, BackgroundWorker worker)
+		public SearchHelper(DataSource dataSource, BackgroundWorker worker)
 		{
-			DataSource = Activator.CreateInstance(dataSourceType, new object[] { connectionString }) as DataSource;
+			DataSource = dataSource;
 			DataSource.PopulateChildren(null, true, worker);
 		}
 
@@ -34,7 +34,7 @@ namespace PaJaMa.Database.Library.Helpers
 							   group c by c.Column.Parent into g
 							   select g;
 
-			using (var conn = DataSource.OpenConnection(string.Empty))
+			using (var conn = DataSource.OpenConnection())
 			{
 				using (var cmd = conn.CreateCommand())
 				{

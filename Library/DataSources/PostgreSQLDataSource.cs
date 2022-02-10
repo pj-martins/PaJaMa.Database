@@ -13,7 +13,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
 	public class PostgreSQLDataSource : DataSource
 	{
-		public PostgreSQLDataSource(string connectionString) : base(connectionString)
+		public PostgreSQLDataSource(DatabaseConnection connection) : base(connection)
 		{
 		}
 

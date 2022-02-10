@@ -42,7 +42,7 @@ namespace PaJaMa.Database.Studio.Compare
         private void refreshConnStrings()
         {
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            if (!settings.Connections.Any()) DatabaseStudioConnection.ConvertFromLegacy(settings);
+            if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
             cboSource.Items.Clear();
             cboTarget.Items.Clear();
             cboSource.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
@@ -52,11 +52,11 @@ namespace PaJaMa.Database.Studio.Compare
         private void btnConnect_Click(object sender, EventArgs e)
         {
             var fromConnection = cboSource.SelectedIndex < 0
-                ? cboSource.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == cboTarget.Text)
-                : cboSource.SelectedItem as DatabaseStudioConnection;
+                ? cboSource.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == cboTarget.Text)
+                : cboSource.SelectedItem as DatabaseConnection;
             var toConnection = cboTarget.SelectedIndex < 0
-                ? cboTarget.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == cboTarget.Text)
-                : cboTarget.SelectedItem as DatabaseStudioConnection;
+                ? cboTarget.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == cboTarget.Text)
+                : cboTarget.SelectedItem as DatabaseConnection;
 
             Exception exception = null;
 
@@ -69,7 +69,7 @@ namespace PaJaMa.Database.Studio.Compare
                     _differencedTabs = new List<TabPage>();
                     try
                     {
-                        fromDataSource = Activator.CreateInstance(typeof(DataSource).Assembly.GetType(fromConnection.DataSourceType), new object[] { fromConnection.GetConnectionString() }) as DataSource;
+                        fromDataSource = Activator.CreateInstance(typeof(DataSource).Assembly.GetType(fromConnection.DataSourceType), new object[] { fromConnection }) as DataSource;
                         fromDataSource.NamedConstraints = chkNamedConstraints.Checked;
                     }
                     catch (Exception ex)
@@ -81,7 +81,7 @@ namespace PaJaMa.Database.Studio.Compare
 
                     try
                     {
-                        toDataSource = Activator.CreateInstance(typeof(DataSource).Assembly.GetType(toConnection.DataSourceType), new object[] { toConnection.GetConnectionString() }) as DataSource;
+                        toDataSource = Activator.CreateInstance(typeof(DataSource).Assembly.GetType(toConnection.DataSourceType), new object[] { toConnection }) as DataSource;
                         toDataSource.NamedConstraints = chkNamedConstraints.Checked;
                     }
                     catch (Exception ex)
@@ -150,8 +150,8 @@ namespace PaJaMa.Database.Studio.Compare
                 refreshPage(false);
 
                 var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-                settings.LastCompareSourceConnection = cboSource.SelectedItem as DatabaseStudioConnection;
-                settings.LastCompareTargetConnection = cboTarget.SelectedItem as DatabaseStudioConnection;
+                settings.LastCompareSourceConnection = cboSource.SelectedItem as DatabaseConnection;
+                settings.LastCompareTargetConnection = cboTarget.SelectedItem as DatabaseConnection;
                 PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
                 _lockDbChange = true;
@@ -311,7 +311,7 @@ namespace PaJaMa.Database.Studio.Compare
             }
 
 
-            var dropSpaces = (gridDropObjects.DataSource as BindingList<DropWorkspace>)
+            var dropSpaces = gridDropObjects.DataSource == null ? new List<DropWorkspace>() : (gridDropObjects.DataSource as BindingList<DropWorkspace>)
                 .Where(t => t.Select).ToList();
 
             var structureSpaces = (gridTables.DataSource as BindingList<TableWorkspace>)
@@ -684,13 +684,13 @@ namespace PaJaMa.Database.Studio.Compare
             if (connected)
                 btnDisconnect_Click(sender, e);
 
-            var source = cboSource.SelectedItem as DatabaseStudioConnection;
-            var target = cboTarget.SelectedItem as DatabaseStudioConnection;
+            var source = cboSource.SelectedItem as DatabaseConnection;
+            var target = cboTarget.SelectedItem as DatabaseConnection;
 
             if (target != null)
-                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == target.ConnectionName);
+                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == target.ConnectionName);
             if (source != null)
-                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == source.ConnectionName);
+                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == source.ConnectionName);
 
             if (connected)
                 btnConnect_Click(sender, e);
@@ -968,10 +968,10 @@ namespace PaJaMa.Database.Studio.Compare
             new GridHelper().DecorateGrid(gridDropObjects);
 
             if (settings.LastCompareSourceConnection != null)
-                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == settings.LastCompareSourceConnection.ConnectionName);
+                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareSourceConnection.ConnectionName);
 
             if (settings.LastCompareTargetConnection != null)
-                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseStudioConnection>().First(x => x.ConnectionName == settings.LastCompareTargetConnection.ConnectionName);
+                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareTargetConnection.ConnectionName);
 
             this.ParentForm.FormClosing += ParentForm_FormClosing;
             this.ParentForm.Load += ParentForm_Load;
@@ -1000,6 +1000,7 @@ namespace PaJaMa.Database.Studio.Compare
             formSettings.DropsSplitterDistance = splitDrops.SplitterDistance;
             formSettings.DropDifferencesSplitterDistance = diffDrops.splitMain.SplitterDistance;
             Common.SettingsHelper.SaveUserSettings<CompareFormSettings>(formSettings);
+            if (_compareHelper != null) _compareHelper.Dispose();
         }
 
         private void cboDriver_Format(object sender, ListControlConvertEventArgs e)

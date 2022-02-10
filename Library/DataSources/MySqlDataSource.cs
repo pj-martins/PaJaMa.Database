@@ -12,7 +12,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
     public class MySqlDataSource : DataSource
     {
-        public MySqlDataSource(string connectionString) : base(connectionString)
+        public MySqlDataSource(DatabaseConnection connection) : base(connection)
         {
         }
 
