@@ -1047,7 +1047,10 @@ ON UPDATE {6}
         {
             if (_sshProcess != null)
             {
-                _sshProcess.Kill();
+                if (!_sshProcess.HasExited)
+                {
+                    _sshProcess.Kill();
+                }
                 _sshProcess.Dispose();
                 _sshProcess = null;
                 GC.Collect();
