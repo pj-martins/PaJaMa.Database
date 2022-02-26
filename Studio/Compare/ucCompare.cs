@@ -960,8 +960,8 @@ namespace PaJaMa.Database.Studio.Compare
         {
             if (DesignMode || LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
 
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             refreshConnStrings();
+            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 
             new GridHelper().DecorateGrid(gridTables);
             new GridHelper().DecorateGrid(gridObjects);

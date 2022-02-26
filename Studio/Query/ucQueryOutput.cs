@@ -246,7 +246,10 @@ namespace PaJaMa.Database.Studio.Query
 					try
 					{
 						if (CurrentConnection.State != ConnectionState.Open)
+						{
 							CurrentConnection = _dataSource.OpenConnection();
+							_currentCommand = CurrentConnection.CreateCommand();
+						}
 
 						_currentCommand.CommandText = part;
 						_currentCommand.CommandTimeout = 600000;
