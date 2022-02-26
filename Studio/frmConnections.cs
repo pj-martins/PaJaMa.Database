@@ -29,9 +29,9 @@ namespace PaJaMa.Database.Studio
                 Type = t,
                 ShortName = t.FullName.Substring(t.FullName.LastIndexOf('.') + 1)
             }).ToArray());
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+            var connections = DatabaseConnection.GetConnections();
             gridMain.AutoGenerateColumns = false;
-            gridMain.DataSource = new BindingList<DatabaseConnection>(settings.Connections.OrderBy(x => x.ConnectionName).ToList());
+            gridMain.DataSource = new BindingList<DatabaseConnection>(connections.OrderBy(x => x.ConnectionName).ToList());
             enableDisableControls();
         }
 
@@ -120,9 +120,7 @@ namespace PaJaMa.Database.Studio
         private void save()
         {
             var newConnections = gridMain.Rows.OfType<DataGridViewRow>().Select(x => x.DataBoundItem as DatabaseConnection).ToList();
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            settings.Connections = newConnections;
-            PaJaMa.Common.SettingsHelper.SaveUserSettings(settings);
+            DatabaseConnection.SetConnections(newConnections);
             ConnectionsChanged?.Invoke(this, new EventArgs());
         }
 

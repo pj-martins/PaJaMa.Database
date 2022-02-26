@@ -17,7 +17,6 @@ namespace PaJaMa.Database.Studio.Query
 {
 	public partial class ucQuery : UserControl
 	{
-		private DatabaseStudioSettings _settings;
 		public ucQuery()
 		{
 			InitializeComponent();
@@ -26,28 +25,6 @@ namespace PaJaMa.Database.Studio.Query
 
 		private void frmMain_Load(object sender, EventArgs e)
 		{
-			_settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (_settings.QueryOutputs == null)
-			{
-				_settings.QueryOutputs = new Common.SerializableDictionary<string, List<QueryOutput>>();
-            }
-			else
-            {
-				bool missing = false;
-				foreach (var output in _settings.QueryOutputs.ToList())
-                {
-					if (!_settings.Connections.Any(x => x.ConnectionName == output.Key))
-                    {
-						_settings.QueryOutputs.Remove(output.Key);
-						missing = true;
-					}
-                }
-				if (missing)
-                {
-					PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(_settings);
-				}
-            }
-
 			if (tabMain.TabPages.Count < 1)
 				addWorkspace(null);
 		}
@@ -122,7 +99,6 @@ namespace PaJaMa.Database.Studio.Query
 		private ucWorkspace addWorkspace(WinControls.TabControl.TabPage tabPage)
 		{
 			var uc = new ucWorkspace();
-			uc.Settings = _settings;
 			bool add = false;
 			if (tabPage == null)
 			{
@@ -141,14 +117,14 @@ namespace PaJaMa.Database.Studio.Query
 			return uc;
 		}
 
-		private void copyToolStripMenuItem_Click(object sender, EventArgs e)
-		{
-			if (tabMain.SelectedTab != null)
-			{
-				var workSpace = tabMain.SelectedTab.Controls[0] as ucWorkspace;
-				workSpace.CopyWorkspace(true);
-			}
-		}
+		//private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+		//{
+		//	if (tabMain.SelectedTab != null)
+		//	{
+		//		var workSpace = tabMain.SelectedTab.Controls[0] as ucWorkspace;
+		//		workSpace.CopyWorkspace(true);
+		//	}
+		//}
 
 		private void tabMain_TabClosing(object sender, WinControls.TabControl.TabEventArgs e)
 		{

@@ -1,10 +1,14 @@
 ﻿using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using PaJaMa.Common;
 using PaJaMa.Database.Library.DataSources;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Xml.Serialization;
 
 namespace PaJaMa.Database.Library
@@ -13,6 +17,7 @@ namespace PaJaMa.Database.Library
     {
         const string PASSWORD = "D3tabase$tudio";
 
+        public Guid ID { get; set; }
         public string DataSourceType { get; set; }
         public string ConnectionName { get; set; }
         public string Server { get; set; }
@@ -25,71 +30,73 @@ namespace PaJaMa.Database.Library
         public string Tunnel { get; set; }
         public int TunnelPort { get; set; }
         public string TunnelKeyFile { get; set; }
+        public List<QueryOutput> QueryOutputs { get; set; }
 
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore]
         public string Password
         {
             get { return string.IsNullOrEmpty(PasswordEncrypted) ? string.Empty : EncrypterDecrypter.Decrypt(PasswordEncrypted, PASSWORD); }
             set { PasswordEncrypted = EncrypterDecrypter.Encrypt(value, PASSWORD); }
         }
 
-        public static void ConvertFromLegacy(DatabaseStudioSettings settings)
-        {
-            if (settings.ConnectionStrings == null) return;
-            var connStrings = settings.ConnectionStrings.Split('|');
-            List<DatabaseConnection> connections = new List<DatabaseConnection>();
-            foreach (var connString in connStrings)
-            {
-                if (string.IsNullOrEmpty(connString)) continue;
-                var appends = new List<string>();
-                var conn = new DatabaseConnection();
-                try
-                {
-                    var connStringBuilder = new SqlConnectionStringBuilder(connString);
-                    conn.Server = connStringBuilder.DataSource;
-                    conn.ConnectionName = conn.Server + " - " + connStringBuilder.InitialCatalog;
-                    conn.DataSourceType = typeof(SqlServerDataSource).FullName;
-                    conn.Database = connStringBuilder.InitialCatalog;
-                    conn.UserName = connStringBuilder.UserID;
-                    conn.Password = connStringBuilder.Password;
-                    conn.IntegratedSecurity = connStringBuilder.IntegratedSecurity;
-                }
-                catch
-                {
-                    try
-                    {
-                        var connStringBuilder = new MySqlConnectionStringBuilder(connString);
-                        if (connStringBuilder.OldGuids)
-                            appends.Add("Old Guids=true");
-                        if (connStringBuilder.AllowUserVariables)
-                            appends.Add("Allow User Variables=True");
-                        if (connStringBuilder.AllowZeroDateTime)
-                            appends.Add("AllowZeroDateTime=True");
-                        conn.Server = connStringBuilder.Server;
-                        conn.Port = (int)connStringBuilder.Port;
-                        conn.ConnectionName = conn.Server + ":" + conn.Port.ToString() + " - " + connStringBuilder.Database;
-                        conn.DataSourceType = typeof(MySqlDataSource).FullName;
-                        conn.Database = connStringBuilder.Database;
-                        conn.UserName = connStringBuilder.UserID;
-                        conn.Password = connStringBuilder.Password;
-                        conn.IntegratedSecurity = connStringBuilder.IntegratedSecurity;
-                    }
-                    catch
-                    {
-                        throw new NotImplementedException(connString);
-                    }
-                }
+        public DatabaseConnection()
+		{
+            this.ID = Guid.NewGuid();
+            this.QueryOutputs = new List<QueryOutput>();
+		}
 
-                conn.Append = string.Join(";", appends.ToArray());
-                connections.Add(conn);
-            }
-            settings.Connections = connections;
-            PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
+        public void Save()
+		{
+            SettingsHelper.SaveUserSettings(this, $"connection_{this.ID}");
+        }
+
+        public void SaveQueryOutputs()
+		{
+            var conn = SettingsHelper.GetUserSettings<DatabaseConnection>($"connection_{this.ID}");
+            conn.QueryOutputs = this.QueryOutputs;
+            conn.Save();
+        }
+
+        public static List<DatabaseConnection> GetConnections()
+		{
+            var connectionFiles = new DirectoryInfo(DatabaseStudioSettings.ConfigRoot).GetFiles("connection_*.json");
+            var dbConnections = new List<DatabaseConnection>();
+            foreach (var file in connectionFiles)
+			{
+                dbConnections.Add(JsonConvert.DeserializeObject<DatabaseConnection>(File.ReadAllText(file.FullName)));
+			}
+            return dbConnections;
+		}
+
+        public static void SetConnections(List<DatabaseConnection> connections)
+		{
+            var connectionFiles = new DirectoryInfo(DatabaseStudioSettings.ConfigRoot).GetFiles("connection_*.json").ToList();
+            var existingFiles = new List<string>();
+            foreach (var conn in connections)
+			{
+                var fileName = $"connection_{conn.ID}.json";
+                File.WriteAllText(Path.Combine(DatabaseStudioSettings.ConfigRoot, fileName), JsonConvert.SerializeObject(conn));
+                existingFiles.Add(fileName);
+			}
+
+            foreach (var file in connectionFiles)
+			{
+                if (!existingFiles.Contains(file.Name))
+                {
+                    file.Delete();
+                }
+			}
         }
 
         public override string ToString()
         {
             return ConnectionName;
         }
+    }
+
+    public class QueryOutput
+    {
+        public string Database { get; set; }
+        public string Query { get; set; }
     }
 }
