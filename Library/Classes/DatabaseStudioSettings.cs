@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -98,7 +99,22 @@ namespace PaJaMa.Database.Library
                     }
                     catch
                     {
-                        throw new NotImplementedException(connString);
+                        try
+                        {
+                            var connStringBuilder = new SQLiteConnectionStringBuilder(connString);
+                            if (string.IsNullOrWhiteSpace(connStringBuilder.DataSource)) throw new Exception("Not SQLITE");
+                            conn.Server = connStringBuilder.DataSource;
+                            conn.ConnectionName = connStringBuilder.DataSource;
+                            conn.DataSourceType = typeof(SQLiteDataSource).FullName;
+                            conn.Database = connStringBuilder.DataSource;
+                            // conn.UserName = connStringBuilder.;
+                            conn.Password = connStringBuilder.Password;
+                        }
+                        catch
+                        {
+                            // throw new NotImplementedException(connString);
+                            continue;
+                        }
                     }
                 }
 
@@ -136,6 +152,13 @@ namespace PaJaMa.Database.Library
                 connectionStringBuilder.UserID = UserName;
                 connectionStringBuilder.Password = Password;
                 connectionStringBuilder.IntegratedSecurity = IntegratedSecurity;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
+            else if (DataSourceType == typeof(SQLiteDataSource).FullName)
+			{
+                var connectionStringBuilder = new SQLiteConnectionStringBuilder();
+                connectionStringBuilder.DataSource = Server;
+                connectionStringBuilder.Password = Password;
                 connectionString = connectionStringBuilder.ConnectionString;
             }
             if (string.IsNullOrEmpty(connectionString))
