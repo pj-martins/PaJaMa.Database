@@ -33,12 +33,12 @@ namespace PaJaMa.Database.Studio.Monitor
         private void refreshConnStrings()
         {
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
+            var connections = DatabaseConnection.GetConnections();
             cboConnection.Items.Clear();
-            cboConnection.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
+            cboConnection.Items.AddRange(connections.OrderBy(c => c.ConnectionName).ToArray());
 
             if (settings.LastMonitorConnection != null)
-                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastSearchConnection.ConnectionName);
+                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastSearchConnection);
         }
 
         private void ucMonitor_Load(object sender, EventArgs e)
@@ -48,7 +48,7 @@ namespace PaJaMa.Database.Studio.Monitor
             refreshConnStrings();
 
             if (settings.LastMonitorConnection != null)
-                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastMonitorConnection.ConnectionName);
+                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastMonitorConnection);
 
             gridResults.AutoGenerateColumns = false;
             gridResults.DataSource = _filtered;
@@ -346,7 +346,7 @@ namespace PaJaMa.Database.Studio.Monitor
             if (startProfiling())
             {
                 var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-                settings.LastMonitorConnection = cboConnection.SelectedItem as DatabaseConnection;
+                settings.LastMonitorConnection = (cboConnection.SelectedItem as DatabaseConnection).ConnectionName;
                 PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
                 btnConnect.Visible = btnRemoveConnString.Visible = false;

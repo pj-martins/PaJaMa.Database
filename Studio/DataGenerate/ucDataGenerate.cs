@@ -35,9 +35,6 @@ namespace PaJaMa.Database.Studio.DataGenerate
 
 		private void UcDataGenerate_Load(object sender, EventArgs e)
 		{
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
-
 			refreshConnStrings();
 
 			//if (!string.IsNullOrEmpty(settings.LastQueryConnectionString))
@@ -48,10 +45,9 @@ namespace PaJaMa.Database.Studio.DataGenerate
 
 		private void refreshConnStrings()
 		{
-			var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-			if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
-				cboConnection.Items.Clear();
-				cboConnection.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
+			var connections = DatabaseConnection.GetConnections();
+			cboConnection.Items.Clear();
+			cboConnection.Items.AddRange(connections.OrderBy(c => c.ConnectionName).ToArray());
 		}
 
 		private void btnConnect_Click(object sender, EventArgs e)
@@ -65,7 +61,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 			string database = string.Empty;
 
 			var worker = new BackgroundWorker();
-			worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
+			worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 			{
 				try
 				{
@@ -84,7 +80,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 					return;
 				}
 
-                // TODO:
+				// TODO:
 				_generatorHelper = new GeneratorHelper(typeof(SqlConnection), connString, worker);
 				_generatorHelper.Prompt += delegate (object s3, PromptEventArgs e3)
 				{
@@ -126,7 +122,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 			if (reinit)
 			{
 				var worker = new BackgroundWorker();
-				worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
+				worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 				{
 					_generatorHelper.DataSource.PopulateChildren(null, true, worker);
 				};
@@ -200,7 +196,7 @@ namespace PaJaMa.Database.Studio.DataGenerate
 			var worker = new BackgroundWorker();
 			worker.WorkerReportsProgress = true;
 			worker.WorkerSupportsCancellation = true;
-			worker.DoWork += delegate(object sender2, DoWorkEventArgs e2)
+			worker.DoWork += delegate (object sender2, DoWorkEventArgs e2)
 			{
 				if (workspaces.Any() && !_generatorHelper.Generate(worker, workspaces))
 					return;

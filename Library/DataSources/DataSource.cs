@@ -2,13 +2,13 @@
 using PaJaMa.Common;
 using PaJaMa.Database.Library.DatabaseObjects;
 using PaJaMa.Database.Library.Synchronization;
+using Renci.SshNet;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -16,7 +16,7 @@ namespace PaJaMa.Database.Library.DataSources
 {
     public abstract class DataSource : IDisposable
     {
-        private Process _sshProcess;
+        private SshClient _sshClient;
         public List<DatabaseObjects.Database> Databases { get; private set; }
         public List<string> UnsupportedTypes { get; private set; }
         public DatabaseObjects.Database CurrentDatabase { get; private set; }
@@ -107,91 +107,32 @@ namespace PaJaMa.Database.Library.DataSources
             return databases;
         }
 
-        private void runSSH(DatabaseConnection connection)
+        private void connectToTunnel(DatabaseConnection connection)
         {
-            if (_sshProcess != null) return;
+            if (_sshClient != null && _sshClient.IsConnected) return;
 
-            string arguments = "";
-
-            arguments += $" {connection.Tunnel} -p {connection.TunnelPort}";
-            if (!string.IsNullOrEmpty(connection.TunnelKeyFile)) arguments += $" -i {connection.TunnelKeyFile}";
-            arguments += $" -L {connection.Port}:{connection.Server}";
-            var startInf = new ProcessStartInfo("ssh.exe", arguments.Trim());
-            startInf.UseShellExecute = false;
-            startInf.RedirectStandardOutput = true;
-            startInf.RedirectStandardError = true;
-            startInf.CreateNoWindow = true;
-            _sshProcess = Process.Start(startInf);
-            // _processes.Add(proc);
-            //if (captureError)
-            //{
-            //    var error = proc.StandardError.ReadToEnd();
-            //    this.Invoke(new Action(() => MessageBox.Show("ERROR:\r\n" + error)));
-            //}
-            //if (terminal.TunnelSSH)
-            //{
-            DateTime current = DateTime.Now;
-            _sshProcess.OutputDataReceived += delegate (object sender, DataReceivedEventArgs e)
-            {
-                current = DateTime.Now;
-            };
-            _sshProcess.BeginOutputReadLine();
-            while ((DateTime.Now - current).TotalSeconds < 1) continue;
-            //    new Thread(new ThreadStart(() =>
-            //    {
-            //        var parts = terminal.Host.Split('@');
-            //        var tunnel = new Terminal()
-            //        {
-            //            Host = $"{(parts.Length < 2 ? "" : $"{parts[0]}@")}127.0.0.1",
-            //            Key = terminal.Key,
-            //            Port = terminal.TunnelPort
-            //        };
-            //        runSSH(tunnel);
-            //    })).Start();
-            //}
-            //else
-            //{
-            //    this.Invoke(new Action(() =>
-            //    {
-            //        btnConnect.Enabled = true;
-            //        btnConnect.Text = "Disconnect";
-            //        btnExplore.Visible = true;
-            //    }));
-
-            //}
-            //proc.WaitForExit();
-            ////_processes.Remove(proc);
-            ////if (_processes.Any())
-            ////{
-            ////    killAllProcesses();
-            ////}
-            //if (!captureError && (proc.ExitTime - proc.StartTime).TotalSeconds < 2)
-            //{
-            //    runSSH(terminal, true);
-            //}
-            //else
-            //{
-            //    this.Invoke(new Action(() =>
-            //    {
-            //        btnConnect.Text = "Connect";
-            //        btnExplore.Visible = false;
-            //    }));
-            //}
+            var port = new ForwardedPortLocal("127.0.0.1", (uint)connection.TunnelForward, connection.Server, (uint)connection.Port);
+            _sshClient = new SshClient(connection.Tunnel, connection.TunnelPort, connection.TunnelUser, new PrivateKeyFile(connection.TunnelKeyFile));
+            _sshClient.Connect();
+            _sshClient.AddForwardedPort(port);
+            port.Start();
         }
 
         public DbConnection OpenConnection(string database = "")
         {
             string connectionString = string.Empty;
             string server = Connection.Server;
+            int port = Connection.Port;
             if (!string.IsNullOrEmpty(Connection.Tunnel))
             {
                 server = "127.0.0.1";
-                this.runSSH(Connection);
+                port = Connection.TunnelForward;
+                this.connectToTunnel(Connection);
             }
             if (Connection.DataSourceType == typeof(SqlServerDataSource).FullName)
             {
                 var connectionStringBuilder = new SqlConnectionStringBuilder();
-                connectionStringBuilder.DataSource = server + (Connection.Port != 0 ? $", {Connection.Port}" : "");
+                connectionStringBuilder.DataSource = server + (port != 0 ? $", {port}" : "");
                 connectionStringBuilder.InitialCatalog = Connection.Database;
                 connectionStringBuilder.UserID = Connection.UserName;
                 connectionStringBuilder.Password = Connection.Password;
@@ -202,7 +143,7 @@ namespace PaJaMa.Database.Library.DataSources
             {
                 var connectionStringBuilder = new MySqlConnectionStringBuilder();
                 connectionStringBuilder.Server = server;
-                connectionStringBuilder.Port = (uint)Connection.Port;
+                connectionStringBuilder.Port = (uint)port;
                 connectionStringBuilder.Database = Connection.Database;
                 connectionStringBuilder.UserID = Connection.UserName;
                 connectionStringBuilder.Password = Connection.Password;
@@ -213,7 +154,7 @@ namespace PaJaMa.Database.Library.DataSources
             {
                 var connectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder();
                 connectionStringBuilder.Host = server;
-                connectionStringBuilder.Port = Connection.Port;
+                connectionStringBuilder.Port = port;
                 connectionStringBuilder.Database = Connection.Database;
                 connectionStringBuilder.Username = Connection.UserName;
                 connectionStringBuilder.Password = Connection.Password;
@@ -1045,15 +986,14 @@ ON UPDATE {6}
 
         public void Dispose()
         {
-            if (_sshProcess != null)
+            if (_sshClient != null)
             {
-                if (!_sshProcess.HasExited)
+                if (_sshClient.IsConnected)
                 {
-                    _sshProcess.Kill();
+                    _sshClient.Disconnect();
                 }
-                _sshProcess.Dispose();
-                _sshProcess = null;
-                GC.Collect();
+                _sshClient.Dispose();
+                _sshClient = null;
             }
         }
     }

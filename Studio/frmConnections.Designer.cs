@@ -32,12 +32,15 @@
             this.gridMain = new System.Windows.Forms.DataGridView();
             this.ConnectionName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Server = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.numTunnelPort = new System.Windows.Forms.NumericUpDown();
-            this.btnBrowseKey = new System.Windows.Forms.Button();
-            this.labelkey = new System.Windows.Forms.Label();
-            this.txtTunnelKey = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.numForward = new System.Windows.Forms.NumericUpDown();
+            this.label10 = new System.Windows.Forms.Label();
             this.txtTunnel = new System.Windows.Forms.TextBox();
+            this.btnBrowseKey = new System.Windows.Forms.Button();
+            this.numTunnelPort = new System.Windows.Forms.NumericUpDown();
+            this.labelkey = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.txtTunnelKey = new System.Windows.Forms.TextBox();
             this.btnCopy = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.chkIntegratedSecurity = new System.Windows.Forms.CheckBox();
@@ -59,11 +62,15 @@
             this.txtAppend = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.txtServer = new System.Windows.Forms.TextBox();
+            this.txtTunnelUser = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.gridMain)).BeginInit();
+            this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numForward)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numTunnelPort)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).BeginInit();
             this.SuspendLayout();
@@ -80,12 +87,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            this.splitContainer1.Panel2.Controls.Add(this.numTunnelPort);
-            this.splitContainer1.Panel2.Controls.Add(this.btnBrowseKey);
-            this.splitContainer1.Panel2.Controls.Add(this.labelkey);
-            this.splitContainer1.Panel2.Controls.Add(this.txtTunnelKey);
-            this.splitContainer1.Panel2.Controls.Add(this.label9);
-            this.splitContainer1.Panel2.Controls.Add(this.txtTunnel);
+            this.splitContainer1.Panel2.Controls.Add(this.groupBox1);
             this.splitContainer1.Panel2.Controls.Add(this.btnCopy);
             this.splitContainer1.Panel2.Controls.Add(this.btnSave);
             this.splitContainer1.Panel2.Controls.Add(this.chkIntegratedSecurity);
@@ -146,18 +148,60 @@
             this.Server.ReadOnly = true;
             this.Server.Width = 400;
             // 
-            // numTunnelPort
+            // groupBox1
             // 
-            this.numTunnelPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numTunnelPort.Location = new System.Drawing.Point(280, 262);
-            this.numTunnelPort.Name = "numTunnelPort";
-            this.numTunnelPort.Size = new System.Drawing.Size(75, 20);
-            this.numTunnelPort.TabIndex = 23;
+            this.groupBox1.Controls.Add(this.txtTunnelUser);
+            this.groupBox1.Controls.Add(this.label11);
+            this.groupBox1.Controls.Add(this.numForward);
+            this.groupBox1.Controls.Add(this.label10);
+            this.groupBox1.Controls.Add(this.txtTunnel);
+            this.groupBox1.Controls.Add(this.btnBrowseKey);
+            this.groupBox1.Controls.Add(this.numTunnelPort);
+            this.groupBox1.Controls.Add(this.labelkey);
+            this.groupBox1.Controls.Add(this.label9);
+            this.groupBox1.Controls.Add(this.txtTunnelKey);
+            this.groupBox1.Location = new System.Drawing.Point(15, 252);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(340, 138);
+            this.groupBox1.TabIndex = 24;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Tunnel";
+            // 
+            // numForward
+            // 
+            this.numForward.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numForward.Location = new System.Drawing.Point(63, 71);
+            this.numForward.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
+            this.numForward.Name = "numForward";
+            this.numForward.Size = new System.Drawing.Size(115, 20);
+            this.numForward.TabIndex = 25;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(10, 73);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(45, 13);
+            this.label10.TabIndex = 24;
+            this.label10.Text = "Forward";
+            // 
+            // txtTunnel
+            // 
+            this.txtTunnel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtTunnel.Location = new System.Drawing.Point(63, 19);
+            this.txtTunnel.Name = "txtTunnel";
+            this.txtTunnel.Size = new System.Drawing.Size(208, 20);
+            this.txtTunnel.TabIndex = 19;
             // 
             // btnBrowseKey
             // 
             this.btnBrowseKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowseKey.Location = new System.Drawing.Point(331, 287);
+            this.btnBrowseKey.Location = new System.Drawing.Point(309, 96);
             this.btnBrowseKey.Name = "btnBrowseKey";
             this.btnBrowseKey.Size = new System.Drawing.Size(24, 22);
             this.btnBrowseKey.TabIndex = 22;
@@ -165,41 +209,40 @@
             this.btnBrowseKey.UseVisualStyleBackColor = true;
             this.btnBrowseKey.Click += new System.EventHandler(this.btnBrowseKey_Click);
             // 
+            // numTunnelPort
+            // 
+            this.numTunnelPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.numTunnelPort.Location = new System.Drawing.Point(277, 19);
+            this.numTunnelPort.Name = "numTunnelPort";
+            this.numTunnelPort.Size = new System.Drawing.Size(57, 20);
+            this.numTunnelPort.TabIndex = 23;
+            // 
             // labelkey
             // 
             this.labelkey.AutoSize = true;
-            this.labelkey.Location = new System.Drawing.Point(12, 291);
+            this.labelkey.Location = new System.Drawing.Point(10, 100);
             this.labelkey.Name = "labelkey";
             this.labelkey.Size = new System.Drawing.Size(25, 13);
             this.labelkey.TabIndex = 20;
             this.labelkey.Text = "Key";
             // 
-            // txtTunnelKey
-            // 
-            this.txtTunnelKey.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtTunnelKey.Location = new System.Drawing.Point(71, 288);
-            this.txtTunnelKey.Name = "txtTunnelKey";
-            this.txtTunnelKey.Size = new System.Drawing.Size(254, 20);
-            this.txtTunnelKey.TabIndex = 21;
-            // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(12, 265);
+            this.label9.Location = new System.Drawing.Point(9, 22);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(40, 13);
             this.label9.TabIndex = 18;
             this.label9.Text = "Tunnel";
             // 
-            // txtTunnel
+            // txtTunnelKey
             // 
-            this.txtTunnel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.txtTunnelKey.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtTunnel.Location = new System.Drawing.Point(71, 262);
-            this.txtTunnel.Name = "txtTunnel";
-            this.txtTunnel.Size = new System.Drawing.Size(203, 20);
-            this.txtTunnel.TabIndex = 19;
+            this.txtTunnelKey.Location = new System.Drawing.Point(63, 97);
+            this.txtTunnelKey.Name = "txtTunnelKey";
+            this.txtTunnelKey.Size = new System.Drawing.Size(241, 20);
+            this.txtTunnelKey.TabIndex = 21;
             // 
             // btnCopy
             // 
@@ -409,6 +452,24 @@
             this.txtServer.TabIndex = 3;
             this.txtServer.TextChanged += new System.EventHandler(this.txtServer_TextChanged);
             // 
+            // txtTunnelUser
+            // 
+            this.txtTunnelUser.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtTunnelUser.Location = new System.Drawing.Point(63, 45);
+            this.txtTunnelUser.Name = "txtTunnelUser";
+            this.txtTunnelUser.Size = new System.Drawing.Size(271, 20);
+            this.txtTunnelUser.TabIndex = 27;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(9, 48);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(29, 13);
+            this.label11.TabIndex = 26;
+            this.label11.Text = "User";
+            // 
             // frmConnections
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -425,6 +486,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.gridMain)).EndInit();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numForward)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numTunnelPort)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numPort)).EndInit();
             this.ResumeLayout(false);
@@ -464,5 +528,10 @@
         private System.Windows.Forms.TextBox txtTunnel;
         private System.Windows.Forms.Button btnBrowseKey;
         private System.Windows.Forms.NumericUpDown numTunnelPort;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.NumericUpDown numForward;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox txtTunnelUser;
+        private System.Windows.Forms.Label label11;
     }
 }

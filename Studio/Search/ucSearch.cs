@@ -30,12 +30,11 @@ namespace PaJaMa.Database.Studio.Search
         private void UcSearch_Load(object sender, EventArgs e)
         {
             var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
 
             refreshConnStrings();
 
             if (settings.LastSearchConnection != null)
-                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastSearchConnection.ConnectionName);
+                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastSearchConnection);
 
             var types = DataSource.GetDataSourceTypes();
 
@@ -45,10 +44,9 @@ namespace PaJaMa.Database.Studio.Search
 
         private void refreshConnStrings()
         {
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
+            var connections = DatabaseConnection.GetConnections();
             cboConnection.Items.Clear();
-            cboConnection.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
+            cboConnection.Items.AddRange(connections.OrderBy(c => c.ConnectionName).ToArray());
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
@@ -90,7 +88,7 @@ namespace PaJaMa.Database.Studio.Search
                 refreshPage(false);
 
                 var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-                settings.LastSearchConnection = cboConnection.SelectedItem as DatabaseConnection;
+                settings.LastSearchConnection = (cboConnection.SelectedItem as DatabaseConnection).ConnectionName;
                 PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
                 _lockDbChange = true;

@@ -41,12 +41,12 @@ namespace PaJaMa.Database.Studio.Compare
 
         private void refreshConnStrings()
         {
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            if (!settings.Connections.Any()) DatabaseConnection.ConvertFromLegacy(settings);
+            var settings = DatabaseStudioSettings.LoadSettings();
             cboSource.Items.Clear();
             cboTarget.Items.Clear();
-            cboSource.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
-            cboTarget.Items.AddRange(settings.Connections.OrderBy(c => c.ConnectionName).ToArray());
+            var connections = DatabaseConnection.GetConnections();
+            cboSource.Items.AddRange(connections.OrderBy(c => c.ConnectionName).ToArray());
+            cboTarget.Items.AddRange(connections.OrderBy(c => c.ConnectionName).ToArray());
         }
 
         private void btnConnect_Click(object sender, EventArgs e)
@@ -150,8 +150,8 @@ namespace PaJaMa.Database.Studio.Compare
                 refreshPage(false);
 
                 var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-                settings.LastCompareSourceConnection = cboSource.SelectedItem as DatabaseConnection;
-                settings.LastCompareTargetConnection = cboTarget.SelectedItem as DatabaseConnection;
+                settings.LastCompareSourceConnection = (cboSource.SelectedItem as DatabaseConnection).ConnectionName;
+                settings.LastCompareTargetConnection = (cboTarget.SelectedItem as DatabaseConnection).ConnectionName;
                 PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
 
                 _lockDbChange = true;
@@ -960,18 +960,18 @@ namespace PaJaMa.Database.Studio.Compare
         {
             if (DesignMode || LicenseManager.UsageMode == LicenseUsageMode.Designtime) return;
 
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
             refreshConnStrings();
+            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
 
             new GridHelper().DecorateGrid(gridTables);
             new GridHelper().DecorateGrid(gridObjects);
             new GridHelper().DecorateGrid(gridDropObjects);
 
             if (settings.LastCompareSourceConnection != null)
-                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareSourceConnection.ConnectionName);
+                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareSourceConnection);
 
             if (settings.LastCompareTargetConnection != null)
-                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareTargetConnection.ConnectionName);
+                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareTargetConnection);
 
             this.ParentForm.FormClosing += ParentForm_FormClosing;
             this.ParentForm.Load += ParentForm_Load;

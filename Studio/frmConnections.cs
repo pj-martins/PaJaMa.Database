@@ -29,9 +29,9 @@ namespace PaJaMa.Database.Studio
                 Type = t,
                 ShortName = t.FullName.Substring(t.FullName.LastIndexOf('.') + 1)
             }).ToArray());
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
+            var connections = DatabaseConnection.GetConnections();
             gridMain.AutoGenerateColumns = false;
-            gridMain.DataSource = new BindingList<DatabaseConnection>(settings.Connections.OrderBy(x => x.ConnectionName).ToList());
+            gridMain.DataSource = new BindingList<DatabaseConnection>(connections.OrderBy(x => x.ConnectionName).ToList());
             enableDisableControls();
         }
 
@@ -49,7 +49,9 @@ namespace PaJaMa.Database.Studio
                 txtPassword.Text = conn.Password;
                 txtAppend.Text = conn.Append;
                 txtTunnel.Text = conn.Tunnel;
+                txtTunnelUser.Text = conn.TunnelUser;
                 numTunnelPort.Value = conn.TunnelPort;
+                numForward.Value = conn.TunnelForward;
                 txtTunnelKey.Text = conn.TunnelKeyFile;
                 chkIntegratedSecurity.Checked = conn.IntegratedSecurity;
                 if (!string.IsNullOrEmpty(conn.DataSourceType))
@@ -88,7 +90,9 @@ namespace PaJaMa.Database.Studio
             selectedItem.Append = txtAppend.Text;
             selectedItem.IntegratedSecurity = chkIntegratedSecurity.Checked;
             selectedItem.Tunnel = txtTunnel.Text;
+            selectedItem.TunnelUser = txtTunnelUser.Text;
             selectedItem.TunnelPort = (int)numTunnelPort.Value;
+            selectedItem.TunnelForward = (int)numForward.Value;
             selectedItem.TunnelKeyFile = txtTunnelKey.Text;
             selectedItem.DataSourceType = (cboDataSource.SelectedItem as TypeDisplay).Type.FullName;
             save();
@@ -110,7 +114,9 @@ namespace PaJaMa.Database.Studio
                 IntegratedSecurity = selectedItem.IntegratedSecurity,
                 Append = selectedItem.Append,
                 Tunnel = selectedItem.Tunnel,
+                TunnelUser = selectedItem.TunnelUser,
                 TunnelPort = selectedItem.TunnelPort,
+                TunnelForward = selectedItem.TunnelForward,
                 TunnelKeyFile = selectedItem.TunnelKeyFile
             };
             (gridMain.DataSource as BindingList<DatabaseConnection>).Add(clone);
@@ -120,9 +126,7 @@ namespace PaJaMa.Database.Studio
         private void save()
         {
             var newConnections = gridMain.Rows.OfType<DataGridViewRow>().Select(x => x.DataBoundItem as DatabaseConnection).ToList();
-            var settings = PaJaMa.Common.SettingsHelper.GetUserSettings<DatabaseStudioSettings>();
-            settings.Connections = newConnections;
-            PaJaMa.Common.SettingsHelper.SaveUserSettings(settings);
+            DatabaseConnection.SetConnections(newConnections);
             ConnectionsChanged?.Invoke(this, new EventArgs());
         }
 
@@ -143,6 +147,8 @@ namespace PaJaMa.Database.Studio
                 btnRemove.Enabled =
                 txtTunnel.Enabled =
                 txtTunnelKey.Enabled =
+                numTunnelPort.Enabled =
+                numForward.Enabled =
                     enabled;
         }
 

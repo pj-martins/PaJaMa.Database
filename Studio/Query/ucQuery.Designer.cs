@@ -31,7 +31,6 @@
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openQueryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.tabMain = new PaJaMa.WinControls.TabControl.TabControl();
@@ -45,7 +44,6 @@
 			this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.saveToolStripMenuItem,
             this.loadToolStripMenuItem,
-            this.copyToolStripMenuItem,
             this.saveQueryToolStripMenuItem,
             this.openQueryToolStripMenuItem,
             this.openHistoryToolStripMenuItem});
@@ -68,13 +66,6 @@
 			this.loadToolStripMenuItem.Size = new System.Drawing.Size(106, 20);
 			this.loadToolStripMenuItem.Text = "&Load Workspace";
 			this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
-			// 
-			// copyToolStripMenuItem
-			// 
-			this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-			this.copyToolStripMenuItem.Size = new System.Drawing.Size(108, 20);
-			this.copyToolStripMenuItem.Text = "&Copy Workspace";
-			this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
 			// 
 			// saveQueryToolStripMenuItem
 			// 
@@ -132,7 +123,6 @@
 		private PaJaMa.WinControls.TabControl.TabControl tabMain;
 		private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveQueryToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openQueryToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openHistoryToolStripMenuItem;

@@ -16,10 +16,4 @@ namespace PaJaMa.Database.Library.Workspaces
 			Queries = new List<QueryOutput>();
 		}
 	}
-
-	public class QueryOutput
-	{
-		public string Database { get; set; }
-		public string Query { get; set; }
-	}
 }

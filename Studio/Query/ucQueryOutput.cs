@@ -34,7 +34,7 @@ namespace PaJaMa.Database.Studio.Query
 		private DateTime _start;
 		private DbCommand _currentCommand;
 		private DataSource _dataSource;
-		private DatabaseConnection _studioConnection;
+		private DatabaseConnection _databaseConnection;
 		private string _query;
 		private bool _flagIntellisense;
 		private ListBox _intelliBox;
@@ -104,12 +104,12 @@ namespace PaJaMa.Database.Studio.Query
 			SaveOutput(true);
 		}
 
-		public bool Connect(DbConnection connection, DatabaseConnection studioConnection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
+		public bool Connect(DbConnection connection, DatabaseConnection databaseConnection, DataSource dataSource, QueryOutput queryOutput, bool useDummyDA)
 		{
 			try
 			{
 				_dataSource = dataSource;
-				_studioConnection = studioConnection;
+				_databaseConnection = databaseConnection;
 				_intellisenseHelper = new IntellisenseHelper(_dataSource);
 				if (useDummyDA)
 					CurrentConnection = connection;
@@ -246,7 +246,10 @@ namespace PaJaMa.Database.Studio.Query
 					try
 					{
 						if (CurrentConnection.State != ConnectionState.Open)
-							CurrentConnection.Open();
+						{
+							CurrentConnection = _dataSource.OpenConnection();
+							_currentCommand = CurrentConnection.CreateCommand();
+						}
 
 						_currentCommand.CommandText = part;
 						_currentCommand.CommandTimeout = 600000;
@@ -633,7 +636,7 @@ namespace PaJaMa.Database.Studio.Query
 				string.IsNullOrEmpty(dbName) ? string.Empty : dbName + "."
 				));
 
-			SaveOutput(true);
+			SaveOutput(false);
 		}
 
 		public void PopulateScript(string script, TreeNode selectedNode)
@@ -913,14 +916,14 @@ namespace PaJaMa.Database.Studio.Query
 			QueryOutput.Query = txtQuery.Text.Length > 50000 ? "" : txtQuery.Text;
 			if (andSave)
 			{
-				PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(Workspace.Settings);
+				_databaseConnection.SaveQueryOutputs();
 			}
 
 			var queryHistoryPath = new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
 				"DatabaseStudio", "QueryHistory", "QueryHistory_" + DateTime.Now.ToString("yyyyMMdd") + ".sql"));
 			if (!queryHistoryPath.Directory.Exists) queryHistoryPath.Directory.Create();
 			File.AppendAllText(queryHistoryPath.FullName, "\r\n\r\n\r\n" + 
-				_studioConnection.ConnectionName + "\r\n\r\n" +
+				_databaseConnection.ConnectionName + "\r\n\r\n" +
 				txtQuery.Text);
 		}
 
