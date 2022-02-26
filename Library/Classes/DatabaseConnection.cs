@@ -23,7 +23,9 @@ namespace PaJaMa.Database.Library
         public bool IntegratedSecurity { get; set; }
         public string Append { get; set; }
         public string Tunnel { get; set; }
+        public string TunnelUser { get; set; }
         public int TunnelPort { get; set; }
+        public int TunnelForward { get; set; }
         public string TunnelKeyFile { get; set; }
 
         [XmlIgnore]
