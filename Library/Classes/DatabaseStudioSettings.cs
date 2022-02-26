@@ -13,7 +13,7 @@ namespace PaJaMa.Database.Library
     public class DatabaseStudioSettings
     {
         public SerializableDictionary<string, List<QueryOutput>> QueryOutputs { get; set; }
-        public List<DatabaseStudioConnection> Connections { get; set; }
+        public List<DatabaseConnection> Connections { get; set; }
         public DatabaseConnection LastCompareSourceConnection { get; set; }
         public DatabaseConnection LastCompareTargetConnection { get; set; }
         public DatabaseConnection LastSearchConnection { get; set; }
@@ -27,7 +27,7 @@ namespace PaJaMa.Database.Library
         public DatabaseStudioSettings()
         {
             QueryOutputs = new SerializableDictionary<string, List<QueryOutput>>();
-            Connections = new List<DatabaseStudioConnection>();
+            Connections = new List<DatabaseConnection>();
         }
     }
 
@@ -52,74 +52,74 @@ namespace PaJaMa.Database.Library
             set { PasswordEncrypted = EncrypterDecrypter.Encrypt(value, PASSWORD); }
         }
 
-        public static void ConvertFromLegacy(DatabaseStudioSettings settings)
-        {
-            if (settings.ConnectionStrings == null) return;
-            var connStrings = settings.ConnectionStrings.Split('|');
-            List<DatabaseStudioConnection> connections = new List<DatabaseStudioConnection>();
-            foreach (var connString in connStrings)
-            {
-                if (string.IsNullOrEmpty(connString)) continue;
-                var appends = new List<string>();
-                var conn = new DatabaseStudioConnection();
-                try
-                {
-                    var connStringBuilder = new SqlConnectionStringBuilder(connString);
-                    conn.Server = connStringBuilder.DataSource;
-                    conn.ConnectionName = conn.Server + " - " + connStringBuilder.InitialCatalog;
-                    conn.DataSourceType = typeof(SqlServerDataSource).FullName;
-                    conn.Database = connStringBuilder.InitialCatalog;
-                    conn.UserName = connStringBuilder.UserID;
-                    conn.Password = connStringBuilder.Password;
-                    conn.IntegratedSecurity = connStringBuilder.IntegratedSecurity;
-                }
-                catch
-                {
-                    try
-                    {
-                        var connStringBuilder = new MySqlConnectionStringBuilder(connString);
-                        if (connStringBuilder.OldGuids)
-                            appends.Add("Old Guids=true");
-                        if (connStringBuilder.AllowUserVariables)
-                            appends.Add("Allow User Variables=True");
-                        if (connStringBuilder.AllowZeroDateTime)
-                            appends.Add("AllowZeroDateTime=True");
-                        conn.Server = connStringBuilder.Server;
-                        conn.Port = (int)connStringBuilder.Port;
-                        conn.ConnectionName = conn.Server + ":" + conn.Port.ToString() + " - " + connStringBuilder.Database;
-                        conn.DataSourceType = typeof(MySqlDataSource).FullName;
-                        conn.Database = connStringBuilder.Database;
-                        conn.UserName = connStringBuilder.UserID;
-                        conn.Password = connStringBuilder.Password;
-                        conn.IntegratedSecurity = connStringBuilder.IntegratedSecurity;
-                    }
-                    catch
-                    {
-                        try
-                        {
-                            var connStringBuilder = new SQLiteConnectionStringBuilder(connString);
-                            if (string.IsNullOrWhiteSpace(connStringBuilder.DataSource)) throw new Exception("Not SQLITE");
-                            conn.Server = connStringBuilder.DataSource;
-                            conn.ConnectionName = connStringBuilder.DataSource;
-                            conn.DataSourceType = typeof(SQLiteDataSource).FullName;
-                            conn.Database = connStringBuilder.DataSource;
-                            // conn.UserName = connStringBuilder.;
-                            conn.Password = connStringBuilder.Password;
-                        }
-                        catch
-                        {
-                            // throw new NotImplementedException(connString);
-                            continue;
-                        }
-                    }
-                }
+        //public static void ConvertFromLegacy(DatabaseStudioSettings settings)
+        //{
+        //    if (settings.ConnectionStrings == null) return;
+        //    var connStrings = settings.ConnectionStrings.Split('|');
+        //    List<DatabaseStudioConnection> connections = new List<DatabaseStudioConnection>();
+        //    foreach (var connString in connStrings)
+        //    {
+        //        if (string.IsNullOrEmpty(connString)) continue;
+        //        var appends = new List<string>();
+        //        var conn = new DatabaseStudioConnection();
+        //        try
+        //        {
+        //            var connStringBuilder = new SqlConnectionStringBuilder(connString);
+        //            conn.Server = connStringBuilder.DataSource;
+        //            conn.ConnectionName = conn.Server + " - " + connStringBuilder.InitialCatalog;
+        //            conn.DataSourceType = typeof(SqlServerDataSource).FullName;
+        //            conn.Database = connStringBuilder.InitialCatalog;
+        //            conn.UserName = connStringBuilder.UserID;
+        //            conn.Password = connStringBuilder.Password;
+        //            conn.IntegratedSecurity = connStringBuilder.IntegratedSecurity;
+        //        }
+        //        catch
+        //        {
+        //            try
+        //            {
+        //                var connStringBuilder = new MySqlConnectionStringBuilder(connString);
+        //                if (connStringBuilder.OldGuids)
+        //                    appends.Add("Old Guids=true");
+        //                if (connStringBuilder.AllowUserVariables)
+        //                    appends.Add("Allow User Variables=True");
+        //                if (connStringBuilder.AllowZeroDateTime)
+        //                    appends.Add("AllowZeroDateTime=True");
+        //                conn.Server = connStringBuilder.Server;
+        //                conn.Port = (int)connStringBuilder.Port;
+        //                conn.ConnectionName = conn.Server + ":" + conn.Port.ToString() + " - " + connStringBuilder.Database;
+        //                conn.DataSourceType = typeof(MySqlDataSource).FullName;
+        //                conn.Database = connStringBuilder.Database;
+        //                conn.UserName = connStringBuilder.UserID;
+        //                conn.Password = connStringBuilder.Password;
+        //                conn.IntegratedSecurity = connStringBuilder.IntegratedSecurity;
+        //            }
+        //            catch
+        //            {
+        //                try
+        //                {
+        //                    var connStringBuilder = new SQLiteConnectionStringBuilder(connString);
+        //                    if (string.IsNullOrWhiteSpace(connStringBuilder.DataSource)) throw new Exception("Not SQLITE");
+        //                    conn.Server = connStringBuilder.DataSource;
+        //                    conn.ConnectionName = connStringBuilder.DataSource;
+        //                    conn.DataSourceType = typeof(SQLiteDataSource).FullName;
+        //                    conn.Database = connStringBuilder.DataSource;
+        //                    // conn.UserName = connStringBuilder.;
+        //                    conn.Password = connStringBuilder.Password;
+        //                }
+        //                catch
+        //                {
+        //                    // throw new NotImplementedException(connString);
+        //                    continue;
+        //                }
+        //            }
+        //        }
 
-                conn.Append = string.Join(";", appends.ToArray());
-                connections.Add(conn);
-            }
-            settings.Connections = connections;
-            PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
-        }
+        //        conn.Append = string.Join(";", appends.ToArray());
+        //        connections.Add(conn);
+        //    }
+        //    settings.Connections = connections;
+        //    PaJaMa.Common.SettingsHelper.SaveUserSettings<DatabaseStudioSettings>(settings);
+        //}
 
         public override string ToString()
         {
