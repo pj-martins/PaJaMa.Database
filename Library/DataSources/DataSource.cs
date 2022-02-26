@@ -143,7 +143,7 @@ namespace PaJaMa.Database.Library.DataSources
             {
                 var connectionStringBuilder = new MySqlConnectionStringBuilder();
                 connectionStringBuilder.Server = server;
-                connectionStringBuilder.Port = (uint)port;
+                if (port != 0) connectionStringBuilder.Port = (uint)port;
                 connectionStringBuilder.Database = Connection.Database;
                 connectionStringBuilder.UserID = Connection.UserName;
                 connectionStringBuilder.Password = Connection.Password;
@@ -154,7 +154,7 @@ namespace PaJaMa.Database.Library.DataSources
             {
                 var connectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder();
                 connectionStringBuilder.Host = server;
-                connectionStringBuilder.Port = port;
+                if (port != 0) connectionStringBuilder.Port = port;
                 connectionStringBuilder.Database = Connection.Database;
                 connectionStringBuilder.Username = Connection.UserName;
                 connectionStringBuilder.Password = Connection.Password;
