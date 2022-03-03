@@ -799,8 +799,7 @@ namespace PaJaMa.Database.Studio.Compare
                             .Select(o => SerializableObjectWorkspace.GetFromObjectWorkspace(o))
                             .ToList();
 
-
-                        PaJaMa.Common.XmlSerialize.SerializeObjectToFile<CompareWorkspace>(ws, dlg.FileName);
+                        PaJaMa.Common.JsonSerialize.SerializeObjectToFile<CompareWorkspace>(ws, dlg.FileName);
                         MessageBox.Show("Workspaces saved.");
                     }
                 }
@@ -821,7 +820,7 @@ namespace PaJaMa.Database.Studio.Compare
                     dlg.Title = "Workspaces";
                     if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                     {
-                        var workspaces = PaJaMa.Common.XmlSerialize.DeserializeObjectFromFile<CompareWorkspace>(dlg.FileName);
+                        var workspaces = PaJaMa.Common.JsonSerialize.DeserializeObjectFromFile<CompareWorkspace>(dlg.FileName);
                         if (btnDisconnect.Visible)
                             btnDisconnect_Click(sender, e);
 
