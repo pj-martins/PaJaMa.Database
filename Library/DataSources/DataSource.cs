@@ -161,6 +161,13 @@ namespace PaJaMa.Database.Library.DataSources
                 connectionStringBuilder.IntegratedSecurity = Connection.IntegratedSecurity;
                 connectionString = connectionStringBuilder.ConnectionString;
             }
+            else if (Connection.DataSourceType == typeof(SQLiteDataSource).FullName)
+            {
+                var connectionStringBuilder = new System.Data.SQLite.SQLiteConnectionStringBuilder();
+                connectionStringBuilder.DataSource = server;
+                connectionStringBuilder.Password = Connection.Password;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
 
             if (string.IsNullOrEmpty(connectionString))
                 throw new NotImplementedException();

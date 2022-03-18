@@ -94,6 +94,12 @@ where type = 'table'
 								colType = m.Groups[1].Value;
 								col.CharacterMaximumLength = Convert.ToInt16(m.Groups[2].Value);
 							}
+							m = Regex.Match(colType, "(.*varchar)\\((\\d*)\\)", RegexOptions.IgnoreCase);
+							if (m.Success)
+							{
+								colType = m.Groups[1].Value;
+								col.CharacterMaximumLength = Convert.ToInt16(m.Groups[2].Value);
+							}
 							m = Regex.Match(colType, "(.*numeric)\\((\\d*),(\\d*)\\)", RegexOptions.IgnoreCase);
 							if (m.Success)
 							{
