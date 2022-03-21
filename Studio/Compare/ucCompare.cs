@@ -967,10 +967,10 @@ namespace PaJaMa.Database.Studio.Compare
             new GridHelper().DecorateGrid(gridDropObjects);
 
             if (settings.LastCompareSourceConnection != null)
-                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareSourceConnection);
+                cboSource.SelectedItem = cboSource.Items.OfType<DatabaseConnection>().FirstOrDefault(x => x.ConnectionName == settings.LastCompareSourceConnection);
 
             if (settings.LastCompareTargetConnection != null)
-                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastCompareTargetConnection);
+                cboTarget.SelectedItem = cboTarget.Items.OfType<DatabaseConnection>().FirstOrDefault(x => x.ConnectionName == settings.LastCompareTargetConnection);
 
             this.ParentForm.FormClosing += ParentForm_FormClosing;
             this.ParentForm.Load += ParentForm_Load;
