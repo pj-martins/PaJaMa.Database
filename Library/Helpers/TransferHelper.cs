@@ -55,7 +55,10 @@ namespace PaJaMa.Database.Library.Helpers
 							_worker.ReportProgress((int)(100 * i / counts), string.Format("Copying {1} of {2}: {0}",
 											table.SourceTable.GetObjectNameWithSchema(table.TargetDatabase.DataSource), i, counts));
 							long rowCount = 0;
-							var commonCols = table.SourceTable.Columns.Where(c => string.IsNullOrEmpty(c.Formula)).Select(c => c.ColumnName).Intersect(table.TargetTable.Columns.Select(c => c.ColumnName));
+							var keyCols = table.TargetTable.KeyConstraints.SelectMany(kc => kc.Columns).Select(c => c.ColumnName).ToArray();
+							var commonCols = table.SourceTable.Columns.Where(c => string.IsNullOrEmpty(c.Formula))
+								.Where(c => table.KeepIdentity || keyCols.Length < 1 || !keyCols.Contains(c.ColumnName))
+								.Select(c => c.ColumnName).Intersect(table.TargetTable.Columns.Select(c => c.ColumnName));
 							cmdSrc.CommandText = string.Format("select count(*) from {0} {1}", table.SourceTable.GetObjectNameWithSchema(table.SourceTable.Database.DataSource),
 								table.WhereClause);
 							rowCount = Convert.ToInt64(cmdSrc.ExecuteScalar());
