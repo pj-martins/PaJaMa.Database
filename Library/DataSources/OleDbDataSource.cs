@@ -16,7 +16,16 @@ namespace PaJaMa.Database.Library.DataSources
 
 		public override string DefaultSchemaName => throw new NotImplementedException();
 
-		internal override string SchemaSQL => throw new NotImplementedException();
+		internal override string DatabaseSQL => "";
+		internal override string ExtendedPropertySQL => "";
+		internal override string CredentialSQL => "";
+		internal override string DatabasePrincipalSQL => "";
+		internal override string PermissionSQL => "";
+		internal override string ServerLoginSQL => "";
+		internal override string RoutineSynonymSQL => "";
+		internal override string DefaultConstraintSQL => "";
+
+		internal override string SchemaSQL => "";
 
 		internal override string ViewSQL => throw new NotImplementedException();
 
@@ -30,15 +39,22 @@ namespace PaJaMa.Database.Library.DataSources
 
 		internal override string IndexSQL => throw new NotImplementedException();
 
-		internal override string DefaultConstraintSQL => throw new NotImplementedException();
-
 		internal override string TriggerSQL => throw new NotImplementedException();
-
-		internal override string DatabaseSQL => throw new NotImplementedException();
 
 		protected override Type connectionType => typeof(OleDbConnection);
 
-		public override List<ColumnType> ColumnTypes => throw new NotImplementedException();
+		private List<ColumnType> _columnTypes;
+		public override List<ColumnType> ColumnTypes
+		{
+			get
+			{
+				if (_columnTypes == null)
+				{
+					_columnTypes = new List<ColumnType>();
+				}
+				return _columnTypes;
+			}
+		}
 
 		public override List<string> SurroundingCharacters => throw new NotImplementedException();
 

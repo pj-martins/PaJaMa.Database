@@ -168,6 +168,12 @@ namespace PaJaMa.Database.Library.DataSources
                 connectionStringBuilder.Password = Connection.Password;
                 connectionString = connectionStringBuilder.ConnectionString;
             }
+            else if (Connection.DataSourceType == typeof(OleDbDataSource).FullName)
+            {
+                var connectionStringBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder();
+                connectionStringBuilder.DataSource = server;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
 
             if (string.IsNullOrEmpty(connectionString))
                 throw new NotImplementedException();
