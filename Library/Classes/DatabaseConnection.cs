@@ -56,6 +56,8 @@ namespace PaJaMa.Database.Library
 
         public static List<DatabaseConnection> GetConnections()
         {
+            var dinf = new DirectoryInfo(DatabaseStudioSettings.ConfigRoot);
+            if (!dinf.Exists) dinf.Create();
             var connectionFiles = new DirectoryInfo(DatabaseStudioSettings.ConfigRoot).GetFiles("connection_*.json");
             var dbConnections = new List<DatabaseConnection>();
             foreach (var file in connectionFiles)
