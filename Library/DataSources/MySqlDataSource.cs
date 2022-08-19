@@ -195,6 +195,12 @@ WHERE c.TABLE_SCHEMA = '{0}'
                 if (dt.Year == 0) return null;
                 return dt.GetDateTime().ToString("yyyy-MM-dd HH:mm:ss");
             }
+            else if (rawValue != null && rawValue.GetType() == typeof(DateTime))
+            {
+                var dt = (DateTime)rawValue;
+                if (dt.Year == 0) return null;
+                return dt.ToString("yyyy-MM-dd HH:mm:ss");
+            }
             return base.FormatValueForInsert(rawValue);
         }
 
