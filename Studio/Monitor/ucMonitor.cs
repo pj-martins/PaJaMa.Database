@@ -38,7 +38,7 @@ namespace PaJaMa.Database.Studio.Monitor
             cboConnection.Items.AddRange(connections.OrderBy(c => c.ConnectionName).ToArray());
 
             if (settings.LastMonitorConnection != null)
-                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastSearchConnection);
+                cboConnection.SelectedItem = cboConnection.Items.OfType<DatabaseConnection>().First(x => x.ConnectionName == settings.LastMonitorConnection);
         }
 
         private void ucMonitor_Load(object sender, EventArgs e)
@@ -58,7 +58,8 @@ namespace PaJaMa.Database.Studio.Monitor
         {
             try
             {
-                _reader = new RawTraceReader(cboConnection.Text);
+                var conn = cboConnection.SelectedItem as DatabaseConnection;
+                _reader = new RawTraceReader(conn);
                 _reader.CreateTrace();
                 if (true)
                 {

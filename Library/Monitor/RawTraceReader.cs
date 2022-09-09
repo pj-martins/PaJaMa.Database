@@ -1170,6 +1170,7 @@ order by trace_column_id
 		private readonly byte[] m_B2 = new byte[2];
 		private readonly byte[] m_B4 = new byte[4];
 		private readonly SqlConnection _connection;
+		private readonly DatabaseConnection _dbConnection;
 		private int m_TraceId;
 		public int TraceId
 		{
@@ -1196,9 +1197,10 @@ order by trace_column_id
 			m_LastRead = false;
 		}
 
-		public RawTraceReader(string connectionString)
+		public RawTraceReader(DatabaseConnection dbConnection)
 		{
-			_connection = new SqlConnection(connectionString);
+			_dbConnection = dbConnection;
+			_connection = new SqlConnection(_dbConnection.GetConnectionString());
 			_connection.Open();
 			SetEventDelegate evtInt = SetIntColumn;
 			SetEventDelegate evtLong = SetLongColumn;
@@ -1495,7 +1497,7 @@ order by trace_column_id
 
 		public void StopTrace()
 		{
-			using (var conn = new SqlConnection(_connection.ConnectionString))
+			using (var conn = new SqlConnection(_dbConnection.GetConnectionString()))
 			{
 				conn.Open();
 				ControlTrace(conn, 0);
