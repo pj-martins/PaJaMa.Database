@@ -1,7 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using PaJaMa.Common;
+using PaJaMa.Database.Library.DataSources;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
@@ -54,8 +57,66 @@ namespace PaJaMa.Database.Library
             conn.Save();
         }
 
+        public string GetConnectionString()
+        {
+            // TODO: tunnel
+            string connectionString = string.Empty;
+            if (DataSourceType == typeof(SqlServerDataSource).FullName)
+            {
+                var connectionStringBuilder = new SqlConnectionStringBuilder();
+                connectionStringBuilder.DataSource = Server + (Port != 0 ? $", {Port}" : "");
+                connectionStringBuilder.InitialCatalog = Database;
+                connectionStringBuilder.UserID = UserName;
+                connectionStringBuilder.Password = Password;
+                connectionStringBuilder.IntegratedSecurity = IntegratedSecurity;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
+            else if (DataSourceType == typeof(MySqlDataSource).FullName || DataSourceType == typeof(MySqlDataSourceForCompare).FullName)
+            {
+                var connectionStringBuilder = new MySqlConnectionStringBuilder();
+                connectionStringBuilder.Server = Server;
+                if (Port != 0) connectionStringBuilder.Port = (uint)Port;
+                connectionStringBuilder.Database = Database;
+                connectionStringBuilder.UserID = UserName;
+                connectionStringBuilder.Password = Password;
+                connectionStringBuilder.IntegratedSecurity = IntegratedSecurity;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
+            else if (DataSourceType == typeof(PostgreSQLDataSource).FullName)
+            {
+                var connectionStringBuilder = new Npgsql.NpgsqlConnectionStringBuilder();
+                connectionStringBuilder.Host = Server;
+                if (Port != 0) connectionStringBuilder.Port = Port;
+                connectionStringBuilder.Database = Database;
+                connectionStringBuilder.Username = UserName;
+                connectionStringBuilder.Password = Password;
+                connectionStringBuilder.IntegratedSecurity = IntegratedSecurity;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
+            else if (DataSourceType == typeof(SQLiteDataSource).FullName)
+            {
+                var connectionStringBuilder = new System.Data.SQLite.SQLiteConnectionStringBuilder();
+                connectionStringBuilder.DataSource = Server;
+                connectionStringBuilder.Password = Password;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
+            else if (DataSourceType == typeof(OleDbDataSource).FullName)
+            {
+                var connectionStringBuilder = new System.Data.OleDb.OleDbConnectionStringBuilder();
+                connectionStringBuilder.DataSource = Server;
+                connectionString = connectionStringBuilder.ConnectionString;
+            }
+
+            if (string.IsNullOrEmpty(connectionString))
+                throw new NotImplementedException();
+            connectionString += (string.IsNullOrEmpty(Append) ? "" : ";" + Append);
+            return connectionString;
+        }
+
         public static List<DatabaseConnection> GetConnections()
         {
+            var dinf = new DirectoryInfo(DatabaseStudioSettings.ConfigRoot);
+            if (!dinf.Exists) dinf.Create();
             var connectionFiles = new DirectoryInfo(DatabaseStudioSettings.ConfigRoot).GetFiles("connection_*.json");
             var dbConnections = new List<DatabaseConnection>();
             foreach (var file in connectionFiles)
