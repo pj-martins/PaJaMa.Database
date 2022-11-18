@@ -40,6 +40,7 @@ namespace PaJaMa.Database.Studio
             var selection = gridMain.SelectedRows.Count > 0 ? gridMain.SelectedRows[0] : null;
             if (selection != null)
             {
+                txtPassword.PasswordChar = '*';
                 var conn = (DatabaseConnection)selection.DataBoundItem;
                 txtConnectionName.Text = conn.ConnectionName;
                 txtServer.Text = conn.Server;
@@ -165,9 +166,14 @@ namespace PaJaMa.Database.Studio
                 txtTunnelKey.Text = dlg.FileName;
             }
         }
-    }
 
-    public class TypeDisplay
+		private void btnShow_Click(object sender, EventArgs e)
+		{
+            txtPassword.PasswordChar = '\0';
+		}
+	}
+
+	public class TypeDisplay
     {
         public string ShortName { get; set; }
         public Type Type { get; set; }
