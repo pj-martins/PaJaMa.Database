@@ -78,6 +78,15 @@ where type = 'table'
 
 			foreach (var tbl in database.Schemas.First().Tables)
 			{
+				PopulateChildColumns(cmd.Connection, tbl);
+			}
+		}
+
+		public override void PopulateChildColumns(DbConnection connection, DatabaseObjectWithColumns obj)
+		{
+			var tbl = obj as Table;
+			using (var cmd = connection.CreateCommand())
+			{
 				cmd.CommandText = $"pragma table_info({tbl.TableName})";
 				using (var rdr = cmd.ExecuteReader())
 				{
@@ -85,7 +94,7 @@ where type = 'table'
 					{
 						while (rdr.Read())
 						{
-							var col = new Column(database);
+							var col = new Column(obj.Database);
 							col.ColumnName = rdr["name"].ToString();
 							var colType = rdr["type"].ToString();
 							var m = Regex.Match(colType, "(.*nvarchar)\\((\\d*)\\)", RegexOptions.IgnoreCase);
