@@ -621,7 +621,14 @@ namespace PaJaMa.Database.Studio.Query
 				if (!tbl.Columns.Any())
 					tbl.Database.DataSource.PopulateChildColumns(CurrentConnection, tbl);
 				dbName = tbl.Database.DataSource.GetConvertedObjectName(tbl.Database.DatabaseName);
-				CurrentConnection.ChangeDatabase(tbl.Database.DatabaseName);
+				try
+				{
+					CurrentConnection.ChangeDatabase(tbl.Database.DatabaseName);
+				}
+				catch (NotImplementedException)
+				{
+					// nada
+				}
 				objName = tbl.GetObjectNameWithSchema(tbl.Database.DataSource);
 				columns = tbl.Columns.Select(c => c.ColumnName).ToArray();
 			}

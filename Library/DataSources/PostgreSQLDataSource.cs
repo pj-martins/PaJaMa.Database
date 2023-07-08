@@ -71,7 +71,7 @@ left join
 		t.relname as ""TableName"",
 		coalesce(c.conname, 'DF_' || t.relname || '_' || a.attname) as ""ConstraintName"",
 		a.attname as ""ColumnName"",
-		d.adsrc as ""ColumnDefault"",
+		pg_get_expr(d.adbin, d.adrelid) as ""ColumnDefault"",
 		n.nspname as ""SchemaName""
 	from pg_constraint c
 	join pg_class t on t.oid = c.conrelid
@@ -149,7 +149,7 @@ left join
 		t.relname as ""TableName"",
 		c.conname as ""ConstraintName"",
 		a.attname as ""ColumnName"",
-		d.adsrc as ""ColumnDefault"",
+		pg_get_expr(d.adbin, d.adrelid) as ""ColumnDefault"",
 		n.nspname as ""SchemaName""
 	from pg_constraint c
 	join pg_class t on t.oid = c.conrelid

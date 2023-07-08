@@ -276,5 +276,15 @@ where type = 'table'
 		{
 			return " PRIMARY KEY";
 		}
+
+		public override string GetPreTopN(int topN)
+		{
+			return String.Empty;
+		}
+
+		public override string GetPostTopN(int topN)
+		{
+			return topN <= 0 ? string.Empty : string.Format("LIMIT {0}", topN);
+		}
 	}
 }
